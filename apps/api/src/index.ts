@@ -16,8 +16,8 @@ const PORT = process.env.PORT || 4000;
 app.use(cors({
   origin: [
     'http://localhost:5173', // Vite default port
-    'https://hailmary.vercel.app',
-  ],
+    process.env.FRONTEND_URL,
+  ].filter(Boolean) as string[],
   credentials: true,
 }));
 
