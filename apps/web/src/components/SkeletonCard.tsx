@@ -1,5 +1,3 @@
-import React from 'react';
-
 export function SkeletonCard() {
   return (
     <div className="flex flex-col bg-[#161b27] border border-gray-800 rounded-xl overflow-hidden animate-pulse">

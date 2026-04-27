@@ -5,7 +5,7 @@ import type { UserProgress } from '@hailmary/types';
 
 export function useProgress() {
   const { user } = useAuth();
-  const [entries, setEntries] = useState<UserProgress[]>([]);
+  const [_entries, setEntries] = useState<UserProgress[]>([]);
   const [completed, setCompleted] = useState<Set<string>>(new Set());
 
   const fetchProgress = useCallback(async () => {
