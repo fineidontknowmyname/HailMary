@@ -1,0 +1,336 @@
+import { TutorialHero } from '../components/tutorial/TutorialHero';
+import { Section, CardGrid, InfoCard, StepList, Step, Callout, Sandbox } from '../components/tutorial/mdx';
+
+<TutorialHero
+  title="Docker: Ship Code, Not Excuses."
+  subtitle="Docker packages your app and every dependency it needs into a single portable unit. No more 'works on my machine'. Learn images, containers, volumes, networking, and Compose — the production workflow that every serious team uses."
+  accentWord="Docker"
+  themeColor="#2496ed"
+  tags={["Docker", "Containers", "DevOps", "Docker Compose", "Infrastructure"]}
+/>
+
+<Section
+  num="01"
+  title="Core Concepts"
+  desc="The entire Docker mental model in eight cards. Get these right and every command will make sense."
+>
+
+<CardGrid>
+  <InfoCard
+    icon="📦"
+    title="Image"
+    body="A read-only, layered blueprint of a filesystem. It describes an OS, a runtime, and your app code. Images are immutable — you never modify them, you build new ones."
+  />
+  <InfoCard
+    icon="🏃"
+    title="Container"
+    body="A running instance of an image. Containers are isolated processes on the host OS — they share the kernel but have their own filesystem, network, and process space. Ephemeral by default."
+  />
+  <InfoCard
+    icon="📜"
+    title="Dockerfile"
+    body="The recipe that builds an image. A sequence of instructions: FROM (base image), RUN (execute commands), COPY (add files), EXPOSE (document a port), CMD (default start command)."
+  />
+  <InfoCard
+    icon="🏪"
+    title="Registry"
+    body="A server that stores and distributes images. Docker Hub is the public default. `docker pull nginx` fetches from Docker Hub. You can self-host a registry or use GitHub Container Registry, AWS ECR, or Google Artifact Registry."
+  />
+  <InfoCard
+    icon="🗂️"
+    title="Volume"
+    body="Persistent storage that exists outside the container lifecycle. When a container is deleted, its filesystem is gone — volumes survive. Use them for databases, user uploads, and any state you care about."
+  />
+  <InfoCard
+    icon="🌐"
+    title="Network"
+    body="Docker creates virtual networks that containers join. Containers on the same network can reach each other by name (e.g. `db:5432`). By default, nothing is exposed to the host unless you explicitly map a port."
+  />
+  <InfoCard
+    icon="🎼"
+    title="Docker Compose"
+    body="A YAML file that defines a multi-container application — services, networks, volumes — as a single unit. `docker compose up` starts everything. `docker compose down` stops and cleans it up."
+  />
+  <InfoCard
+    icon="🏗️"
+    title="Layer Caching"
+    body="Each Dockerfile instruction creates a layer. Docker caches layers — if an instruction and its inputs haven't changed, Docker reuses the cached layer. Order your instructions from least to most likely to change."
+  />
+</CardGrid>
+
+## Image vs Container — The Exact Analogy
+
+```
+Dockerfile   →  docker build  →  Image  →  docker run  →  Container
+  (recipe)                     (template)                (running instance)
+
+class User {}         →         new User()         →         user object
+```
+
+A Docker image is a class definition. A container is an instance. You can run 50 containers from one image, each isolated from the others.
+
+<Callout type="info" title="Containers Are Not VMs">
+  A Virtual Machine emulates an entire computer including the kernel. A container is just a process with namespace and cgroup isolation — it shares the host OS kernel. This makes containers start in milliseconds and use a fraction of the RAM of a VM.
+</Callout>
+
+</Section>
+
+<Section
+  num="02"
+  title="Setup & First Container"
+  desc="Install Docker, write your first Dockerfile, and run a production-ready Node.js container in minutes."
+>
+
+<StepList>
+  <Step num="1" title="Install Docker Desktop">
+    Download from [docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop). On Linux, install Docker Engine directly. Verify:
+
+    ```bash
+    docker --version
+    docker compose version
+    ```
+  </Step>
+
+  <Step num="2" title="Run Your First Container">
+    ```bash
+    docker run hello-world
+    ```
+    Docker pulls the `hello-world` image from Docker Hub, creates a container, runs it, prints output, and exits. The container is gone — the image stays cached locally.
+  </Step>
+
+  <Step num="3" title="Write a Production Dockerfile">
+    Create `Dockerfile` in your project root. This is a **multi-stage build** — the industry standard for keeping production images small:
+
+    ```dockerfile
+    # ── Stage 1: Build ──────────────────────────────────────────
+    FROM node:20-alpine AS builder
+    WORKDIR /app
+    COPY package*.json ./
+    RUN npm ci
+    COPY . .
+    RUN npm run build
+
+    # ── Stage 2: Production ─────────────────────────────────────
+    FROM node:20-alpine AS production
+    WORKDIR /app
+    ENV NODE_ENV=production
+    COPY package*.json ./
+    RUN npm ci --omit=dev
+    COPY --from=builder /app/dist ./dist
+    EXPOSE 4000
+    CMD ["node", "dist/index.js"]
+    ```
+
+    The `builder` stage compiles your code. The `production` stage copies only the compiled output — it never contains TypeScript, `devDependencies`, or source files.
+  </Step>
+
+  <Step num="4" title="Build the Image">
+    ```bash
+    docker build -t myapp .
+    ```
+    `-t myapp` tags the image as `myapp:latest`. The `.` tells Docker to use the current directory as the build context (where it looks for the Dockerfile).
+  </Step>
+
+  <Step num="5" title="Create a .dockerignore File">
+    ```
+    node_modules
+    dist
+    .env
+    .env.local
+    .git
+    *.log
+    coverage
+    ```
+    This tells Docker not to copy these into the build context. Without it, `COPY . .` would send `node_modules` (potentially gigabytes) to the daemon on every build.
+  </Step>
+
+  <Step num="6" title="Run the Container">
+    ```bash
+    docker run -d -p 4000:4000 --name api myapp
+    ```
+    `-d` = detached (background). `-p 4000:4000` = map host port 4000 to container port 4000. `--name api` = give it a human-readable name.
+  </Step>
+
+  <Step num="7" title="Create a docker-compose.yml">
+    For local development with a database, one command should start your entire stack:
+
+    ```yaml
+    services:
+      api:
+        build: .
+        ports:
+          - "4000:4000"
+        environment:
+          DATABASE_URL: postgres://postgres:secret@db:5432/myapp
+        depends_on:
+          db:
+            condition: service_healthy
+
+      db:
+        image: postgres:15-alpine
+        environment:
+          POSTGRES_USER:     postgres
+          POSTGRES_PASSWORD: secret
+          POSTGRES_DB:       myapp
+        volumes:
+          - postgres_data:/var/lib/postgresql/data
+        healthcheck:
+          test: ["CMD-SHELL", "pg_isready -U postgres"]
+          interval: 5s
+          retries: 5
+
+    volumes:
+      postgres_data:
+    ```
+
+    ```bash
+    docker compose up          # Start everything
+    docker compose up --build  # Rebuild images first
+    docker compose down -v     # Stop everything and delete volumes
+    ```
+  </Step>
+</StepList>
+
+<Callout type="tip" title="Use Alpine-based Images">
+  `node:20` is 1.1GB. `node:20-alpine` is 173MB. Alpine Linux is a minimal distribution designed for containers. Always reach for the `-alpine` tag unless you have a specific reason not to.
+</Callout>
+
+</Section>
+
+<Section
+  num="03"
+  title="Interactive Playground"
+  desc="Docker's CLI is the control plane for every container. Learn the commands you'll use daily by running them in the simulator."
+>
+
+## The Container Lifecycle
+
+```
+          docker build
+Dockerfile ──────────────▶ Image
+                               │
+                        docker run
+                               ▼
+                          Container (running)
+                               │
+                        docker stop
+                               ▼
+                          Container (stopped)
+                               │
+                          docker rm
+                               ▼
+                            (gone)
+```
+
+A stopped container still exists on disk — its filesystem is preserved. You can `docker start` it again. `docker rm` permanently deletes it. Images persist until you `docker rmi`.
+
+## The Commands You'll Type Every Day
+
+| Command | What it does |
+|---|---|
+| `docker ps` | List running containers |
+| `docker ps -a` | List all containers (including stopped) |
+| `docker images` | List locally cached images |
+| `docker logs api` | Stream logs from the `api` container |
+| `docker exec -it api sh` | Open a shell inside the running container |
+| `docker inspect api` | Full JSON config of a container |
+| `docker stats` | Live CPU/RAM usage across all containers |
+| `docker system prune` | Delete stopped containers, dangling images, unused networks |
+
+**Try these commands in the sandbox:**
+
+- `docker ps`
+- `docker images`
+- `docker run hello-world`
+- `docker build -t myapp .`
+- `docker compose up`
+- `docker volume ls`
+- `docker network ls`
+- `docker stop web`
+
+<Sandbox
+  type="terminal"
+  defaultCode="docker ps"
+/>
+
+<Callout type="tip" title="docker exec is Your Best Debugging Tool">
+  When a container misbehaves, open a shell inside it: `docker exec -it <name> sh` (Alpine) or `bash` (Debian). You're now inside the container's filesystem and process space. Check env vars with `env`, verify files with `ls`, test network with `curl`. No SSH required.
+</Callout>
+
+## How Networking Works Inside Compose
+
+When you define services in `docker-compose.yml`, Docker creates a shared virtual network automatically. Services can reach each other using their **service name as the hostname**:
+
+```yaml
+services:
+  api:
+    environment:
+      DATABASE_URL: postgres://postgres:secret@db:5432/myapp
+      #                                            ^^
+      #               This resolves to the "db" container's IP
+
+  db:
+    image: postgres:15-alpine
+```
+
+Port mapping (`ports: - "4000:4000"`) only exposes ports to your **host machine**. Container-to-container traffic uses the internal network — no port mapping needed.
+
+</Section>
+
+<Section
+  num="04"
+  title="Best Practices & Pro Tips"
+  desc="The patterns that make Docker containers production-safe, fast to build, and cheap to run."
+>
+
+<Callout type="tip" title="Order Dockerfile Layers by Change Frequency">
+  Docker caches layers from top to bottom and invalidates everything after the first changed layer. Put `COPY package*.json ./` and `RUN npm ci` **before** `COPY . .` — your dependencies rarely change, so the install layer stays cached even when source files change. This turns a 60-second build into a 3-second one.
+
+  ```dockerfile
+  # ✅ Fast — npm ci cached unless package.json changes
+  COPY package*.json ./
+  RUN npm ci
+  COPY . .
+
+  # ❌ Slow — npm ci re-runs on every source file change
+  COPY . .
+  RUN npm ci
+  ```
+</Callout>
+
+<Callout type="warn" title="Never Store Secrets in Images">
+  `ENV API_KEY=abc123` in a Dockerfile bakes the secret into every layer of the image forever — even if a later layer deletes it, the value is recoverable from the layer history. Pass secrets at runtime via environment variables or Docker secrets, never bake them in at build time.
+</Callout>
+
+<Callout type="danger" title="Don't Run Containers as Root">
+  By default, containers run as `root`. If an attacker escapes the container, they have root on the host. Add a non-root user to your Dockerfile:
+
+  ```dockerfile
+  RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+  USER appuser
+  ```
+
+  Every production container should run as a dedicated non-root user.
+</Callout>
+
+<Callout type="info" title="Use Health Checks So Compose Knows When a Service Is Ready">
+  `depends_on: db` only waits for the container to start — not for Postgres to be accepting connections. Add a `healthcheck` to the `db` service and use `condition: service_healthy` in dependants. No more race conditions on startup.
+</Callout>
+
+<Callout type="tip" title="Prune Regularly to Reclaim Disk Space">
+  Docker accumulates dangling images, stopped containers, and unused volumes quickly. Run `docker system prune` weekly. Use `docker system df` to see exactly how much space each category is using before you nuke anything.
+</Callout>
+
+<Callout type="info" title="Tag Images with Git SHAs in CI">
+  `docker build -t myapp:latest` is fine locally. In CI, tag with the commit SHA:
+
+  ```bash
+  docker build -t myapp:${GIT_SHA} -t myapp:latest .
+  docker push myapp:${GIT_SHA}
+  docker push myapp:latest
+  ```
+
+  This gives every deployed version a permanent, traceable tag. Rolling back becomes `docker run myapp:a3f92c1` — no guessing which `latest` broke production.
+</Callout>
+
+</Section>

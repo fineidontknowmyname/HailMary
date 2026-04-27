@@ -1,0 +1,302 @@
+import { TutorialHero } from '../components/tutorial/TutorialHero';
+import { Section, CardGrid, InfoCard, StepList, Step, Callout, Sandbox } from '../components/tutorial/mdx';
+
+<TutorialHero
+  title="Firebase: Build Without a Backend."
+  subtitle="Firebase is Google's app development platform — auth, realtime database, file storage, and serverless functions, all managed for you. Learn the tools that let a single developer ship like a team."
+  accentWord="Firebase"
+  themeColor="#f5820d"
+  tags={["Firebase", "Firestore", "Auth", "Cloud Functions", "BaaS"]}
+/>
+
+<Section
+  num="01"
+  title="Core Concepts"
+  desc="Firebase is not one product — it's a suite of services. Know what each one does before wiring anything up."
+>
+
+<CardGrid>
+  <InfoCard
+    icon="🔥"
+    title="Firebase Project"
+    body="The top-level container. One project holds all services — Auth, Firestore, Storage, Functions — for a single app. Each project gets a unique ID used in every SDK call."
+  />
+  <InfoCard
+    icon="🗄️"
+    title="Firestore"
+    body="A NoSQL document database. Data lives in Collections → Documents → Fields. It streams updates in real time to connected clients. Not a relational DB — stop trying to use JOINs."
+  />
+  <InfoCard
+    icon="🔐"
+    title="Firebase Auth"
+    body="Handles identity. Email/password, Google, GitHub, phone — it manages sessions, JWTs, and token refresh automatically. Every authenticated request carries a uid you trust."
+  />
+  <InfoCard
+    icon="📁"
+    title="Cloud Storage"
+    body="Object storage for files (images, PDFs, videos). Built on Google Cloud Storage. Security rules control read/write access per path, tied to the authenticated user's uid."
+  />
+  <InfoCard
+    icon="⚡"
+    title="Cloud Functions"
+    body="Node.js functions that run server-side in response to Firebase events (Firestore writes, Auth triggers, HTTP calls). The escape hatch when you need server logic."
+  />
+  <InfoCard
+    icon="🛡️"
+    title="Security Rules"
+    body="Firestore and Storage ship their own declarative rules engine. Rules run server-side before any read or write. They are your only defense — never trust client-side guards alone."
+  />
+</CardGrid>
+
+## Firestore's Data Model — The Critical Mental Shift
+
+Firestore is not a table. Rethink your schema as **access patterns, not entities**.
+
+```
+firestore-root/
+├── users/                          ← Collection
+│   └── uid_aX9k2mP/               ← Document (keyed by uid)
+│       ├── name: "Ada Lovelace"   ← Fields
+│       ├── role: "admin"
+│       └── posts/                 ← Subcollection (nested collection)
+│           └── post_01/
+│               └── title: "..."
+└── posts/                          ← Top-level collection (denormalised copy)
+    └── post_01/
+        └── authorId: "uid_aX9k2mP"
+```
+
+<Callout type="warn" title="Denormalise by Default">
+  Firestore charges per document read. A query can only filter on indexed fields in a single collection — no JOINs, no foreign keys. The correct pattern is **duplication over normalisation**: store `authorName` directly in each post document so you don't need a second read to show it.
+</Callout>
+
+<CardGrid>
+  <InfoCard
+    icon="📖"
+    title="onSnapshot (Real-time)"
+    body="Subscribe to a document or query. Every time the data changes, your callback fires with the new snapshot. Firestore pushes the diff — you don't poll."
+  />
+  <InfoCard
+    icon="📷"
+    title="getDocs (One-time Read)"
+    body="Fetch a query once and stop. No ongoing listener. Use this for data that doesn't need real-time updates — saves listener overhead and reads."
+  />
+  <InfoCard
+    icon="⚛️"
+    title="Transactions & Batched Writes"
+    body="Transactions read then write atomically — if the document changed between read and write, Firestore retries. Batched writes commit up to 500 operations simultaneously."
+  />
+</CardGrid>
+
+</Section>
+
+<Section
+  num="02"
+  title="Setup & First App"
+  desc="From a blank terminal to a live Firestore read in under 10 minutes."
+>
+
+<StepList>
+  <Step num="1" title="Create a Firebase Project">
+    Go to [console.firebase.google.com](https://console.firebase.google.com) → **Add project** → name it → disable Google Analytics (you can add it later) → **Create project**.
+  </Step>
+
+  <Step num="2" title="Register Your Web App">
+    In the project console → **Project settings** → **Add app** → Web (the `</>` icon). Copy the `firebaseConfig` object — you need this in your app.
+  </Step>
+
+  <Step num="3" title="Install the SDK">
+    ```bash
+    npm install firebase
+    ```
+    Firebase v9+ uses a modular tree-shakeable API. Import only what you use — your bundle size will thank you.
+  </Step>
+
+  <Step num="4" title="Initialise Firebase in Your App">
+    Create `src/lib/firebase.ts`:
+
+    ```ts
+    import { initializeApp } from 'firebase/app';
+    import { getFirestore }   from 'firebase/firestore';
+    import { getAuth }        from 'firebase/auth';
+
+    const firebaseConfig = {
+      apiKey:            import.meta.env.VITE_FIREBASE_API_KEY,
+      authDomain:        import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+      projectId:         import.meta.env.VITE_FIREBASE_PROJECT_ID,
+      storageBucket:     import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+      messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+      appId:             import.meta.env.VITE_FIREBASE_APP_ID,
+    };
+
+    const app = initializeApp(firebaseConfig);
+    export const db   = getFirestore(app);
+    export const auth = getAuth(app);
+    ```
+
+    Store every key in `.env.local`. Never commit `firebaseConfig` values directly in source code.
+  </Step>
+
+  <Step num="5" title="Enable Firestore">
+    Firebase console → **Firestore Database** → **Create database** → choose a region → start in **test mode** (open rules, 30-day expiry). Lock it down before going live.
+  </Step>
+
+  <Step num="6" title="Your First Write">
+    ```ts
+    import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+    import { db } from './lib/firebase';
+
+    await setDoc(doc(db, 'users', auth.currentUser!.uid), {
+      name:      'Ada Lovelace',
+      role:      'member',
+      createdAt: serverTimestamp(),
+    });
+    ```
+  </Step>
+
+  <Step num="7" title="Install the Firebase CLI">
+    ```bash
+    npm install -g firebase-tools
+    firebase login
+    firebase init
+    ```
+    The CLI lets you deploy Security Rules, Hosting, and Cloud Functions with a single `firebase deploy`.
+  </Step>
+
+  <Step num="8" title="Start the Local Emulator Suite">
+    ```bash
+    firebase emulators:start
+    ```
+    Runs local emulators for Auth (`:9099`), Firestore (`:8080`), and Hosting (`:5000`). Point your app at the emulators during development — zero cost, zero risk to production data.
+  </Step>
+</StepList>
+
+<Callout type="danger" title="Rotate Your API Keys Before Going Live">
+  Firebase's web API keys are technically public (they're embedded in your app bundle and visible in DevTools). Security comes from **Security Rules**, not from hiding the key. But your key still belongs in environment variables — if Rules are misconfigured, a public key + open Rules = an open database.
+</Callout>
+
+</Section>
+
+<Section
+  num="03"
+  title="Interactive Playground"
+  desc="Firestore's query API is chainable and readable. Learn the syntax by running real queries against a simulated dataset."
+>
+
+## The Firestore Query Chain
+
+Every Firestore read follows the same shape:
+
+```ts
+const snapshot = await getDocs(
+  query(
+    collection(db, 'users'),
+    where('role', '==', 'admin'),
+    orderBy('createdAt', 'desc'),
+    limit(10)
+  )
+);
+
+snapshot.forEach(doc => console.log(doc.id, doc.data()));
+```
+
+The `query()` function composes filters — Firestore validates that the required indexes exist at query time, not at write time.
+
+## Real-time Subscriptions
+
+The most powerful feature in Firestore is `onSnapshot`:
+
+```ts
+import { onSnapshot, doc } from 'firebase/firestore';
+
+const unsub = onSnapshot(doc(db, 'users', userId), (snap) => {
+  if (snap.exists()) {
+    setUser({ id: snap.id, ...snap.data() });
+  }
+});
+
+return () => unsub(); // ← Clean up in useEffect return
+```
+
+The listener opens a WebSocket to Firestore. Every document change flows to every connected client in milliseconds. **Always call the unsubscribe function** when the component unmounts.
+
+## Try the Query Simulator
+
+Type one of these exact queries and hit **Run**:
+
+```
+collection("users").get()
+collection("users").where("role","==","admin").get()
+doc("users/uid_aX9k2mP").get()
+collection("posts").orderBy("createdAt","desc").limit(3).get()
+```
+
+<Sandbox
+  type="firestore"
+  defaultCode={`collection("users").get()`}
+/>
+
+<Callout type="tip" title="Composite Indexes Are Auto-Generated">
+  When you run a multi-field query locally (e.g. `where` + `orderBy` on different fields), Firestore throws an error with a direct link to the console to create the required index with one click. Don't hand-write index configs — let the error message do it for you.
+</Callout>
+
+## Security Rules — The Only Thing Standing Between You and a Data Breach
+
+```js
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Users can only read/write their own document
+    match /users/{userId} {
+      allow read, write: if request.auth != null
+                         && request.auth.uid == userId;
+    }
+
+    // Posts: anyone can read, only the author can write
+    match /posts/{postId} {
+      allow read: if true;
+      allow write: if request.auth != null
+                   && request.auth.uid == resource.data.authorId;
+    }
+  }
+}
+```
+
+<Callout type="warn" title="Test Mode Rules Expire in 30 Days">
+  When you create a Firestore database in test mode, the open rules (`allow read, write: if true`) expire after 30 days. After that, every request is denied. Set real rules before you share your app with anyone.
+</Callout>
+
+</Section>
+
+<Section
+  num="04"
+  title="Best Practices & Pro Tips"
+  desc="The patterns that prevent the mistakes Firebase developers make in production."
+>
+
+<Callout type="tip" title="Always Use the Emulator Suite During Development">
+  `firebase emulators:start` gives you local Auth, Firestore, and Functions with a UI at `localhost:4000`. Point your SDK at the emulator with `connectFirestoreEmulator(db, 'localhost', 8080)`. You get free reads/writes, instant resets, and no risk of corrupting production data.
+</Callout>
+
+<Callout type="warn" title="Paginate — Never Load Entire Collections">
+  `collection('posts').get()` with 50,000 documents charges you 50,000 reads instantly. Use `.limit()` and cursor-based pagination with `startAfter(lastDoc)`. Always put an upper bound on every query — treat unlimited reads as a billing incident waiting to happen.
+</Callout>
+
+<Callout type="danger" title="Never Put Admin Logic in the Client">
+  The Firebase client SDK runs in the browser. Any code there can be inspected, modified, or replayed by the user. Server-side operations — deleting other users' data, updating privileged fields, sending emails — belong in Cloud Functions with the Admin SDK, where the service account key is never exposed.
+</Callout>
+
+<Callout type="info" title="Structure Documents Around How You Read, Not How You Write">
+  The most common Firestore mistake: designing a schema that's clean to write but expensive to read. Every screen that shows user data alongside their posts is a second read if you normalise. Store `authorName` and `authorAvatar` on the post document. Yes, you'll update two places on profile change — that's the trade-off, and it's worth it.
+</Callout>
+
+<Callout type="tip" title="Set Up Budget Alerts Before You Go Public">
+  Firebase has a generous free tier (Spark plan), but at scale, costs grow fast. Go to **Google Cloud Console → Billing → Budgets & Alerts** and set a budget with email notification at 50% and 90%. A viral app without alerts is a credit card surprise.
+</Callout>
+
+<Callout type="info" title="Use serverTimestamp() — Never new Date()">
+  `new Date()` uses the client's clock, which can be wrong, manipulated, or timezone-inconsistent. `serverTimestamp()` is resolved by Firestore's servers at write time. Use it for `createdAt`, `updatedAt`, and any timestamp you sort or filter on.
+</Callout>
+
+</Section>
