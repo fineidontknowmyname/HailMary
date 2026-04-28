@@ -80,7 +80,7 @@ function QuizInterface() {
   const {
     assessmentType, questions, answers, currentQuestionIndex, timeLeftSeconds,
     selectAnswer, nextQuestion, prevQuestion, jumpToQuestion,
-    skipQuestion, submitAssessment, status,
+    skipQuestion, submitAssessment,
   } = useAssessmentStore();
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
