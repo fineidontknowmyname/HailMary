@@ -34,9 +34,9 @@ function normalizeCategory(category: string): string {
   return categoryMap[category.toLowerCase()] || category;
 }
 
-function normalizeTags(tags: any[]): string[] {
+function normalizeTags(tags: any): string[] {
   if (typeof tags === 'string') {
-    return tags.split(',').map(t => t.trim().toLowerCase());
+    return tags.split(',').map((t: string) => t.trim().toLowerCase());
   }
   return Array.isArray(tags) ? tags.map(t => String(t).toLowerCase()) : [];
 }

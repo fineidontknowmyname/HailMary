@@ -75,8 +75,9 @@ export default function AuthModal({ onClose }: Props) {
           )}
         </button>
 
-        <p className="text-center text-xs text-[#7a849a] mt-6">
-          Free forever · No credit card required
+        <p className="text-center mt-6">
+          <span className="text-xs text-gray-500">Don't have an account? </span>
+          <span className="text-xs text-gray-400">Continuing will automatically create one for you.</span>
         </p>
       </div>
     </div>

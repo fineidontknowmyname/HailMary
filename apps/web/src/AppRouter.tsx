@@ -6,6 +6,7 @@ import ProfilePage from './pages/ProfilePage';
 import UpdatePasswordModal from './components/UpdatePasswordModal';
 import { AssessmentEngine } from './components/AssessmentEngine';
 import IdeaVault from './pages/IdeaVault';
+import TutorialsAndLabs from './pages/TutorialsAndLabs';
 
 // ─── Placeholder pages for routes not yet built ────────────────────────────
 // Replace each with the real page component once built.
@@ -90,19 +91,23 @@ export function AppRouter() {
               /* Break out of AppLayout's padding so the quiz header + sidebar
                  can span the full viewport width and height. */
               <div className="-mx-4 sm:-mx-6 lg:-mx-8 -my-6 md:-my-8">
-                <AssessmentEngine />
+                <AssessmentEngine variant="mock" />
               </div>
             }
           />
           <Route
             path="/aptitude"
-            element={<PlaceholderPage title="Competitive Aptitude" />}
+            element={
+              <div className="-mx-4 sm:-mx-6 lg:-mx-8 -my-6 md:-my-8">
+                <AssessmentEngine variant="codevita" />
+              </div>
+            }
           />
 
           {/* ── Learn section ──────────────────────────────────── */}
           <Route
             path="/tutorials/*"
-            element={<PlaceholderPage title="Tutorials & Labs" />}
+            element={<TutorialsAndLabs />}
           />
 
           {/* ── 404 fallback ───────────────────────────────────── */}

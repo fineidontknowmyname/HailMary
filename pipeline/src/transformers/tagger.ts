@@ -15,7 +15,7 @@ export function applyTags(resource: any, additionalTags: string[] = []) {
     'express',
   ];
 
-  titleWords.forEach(word => {
+  titleWords.forEach((word: string) => {
     if (commonTags.includes(word)) extractedTags.add(word);
   });
 

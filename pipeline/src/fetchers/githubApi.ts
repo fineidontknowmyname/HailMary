@@ -5,7 +5,7 @@ const GITHUB_API_TOKEN = process.env.GITHUB_API_TOKEN;
 
 export async function fetchGitHubRepositories(queries: string[]) {
   try {
-    const resources = [];
+    const resources: any[] = [];
 
     for (const query of queries) {
       const response = await axios.get('https://api.github.com/search/repositories', {

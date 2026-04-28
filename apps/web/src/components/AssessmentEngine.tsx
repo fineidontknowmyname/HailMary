@@ -9,29 +9,35 @@ function formatTime(seconds: number): string {
   return `${m}:${s}`;
 }
 
-function StartScreen() {
-  const { startAssessment, status, error } = useAssessmentStore();
-  const [company, setCompany] = useState('');
+export interface AssessmentEngineProps {
+  variant: 'mock' | 'codevita';
+}
 
-  const handleStart = () => {
-    if (company.trim()) startAssessment(company.trim());
-  };
+function StartScreen({ variant }: { variant: 'mock' | 'codevita' }) {
+  const { startAssessment, error } = useAssessmentStore();
+  const isMock = variant === 'mock';
 
   return (
     <div className="assessment-start-screen">
       <div className="assessment-start-card">
-        <div className="assessment-start-badge">Corporate Assessment Engine</div>
+        <div className="assessment-start-badge">
+          {isMock ? 'Corporate Assessment Engine' : 'CodeVita Assessment Engine'}
+        </div>
         <h1 className="assessment-start-title">
-          Ready to prove your <span className="assessment-accent">skills?</span>
+          {isMock ? (
+            <>Corporate <span className="assessment-accent">Aptitude</span></>
+          ) : (
+            <>Competitive <span className="assessment-accent">Aptitude</span></>
+          )}
         </h1>
         <p className="assessment-start-subtitle">
-          50 questions · 30 minutes · Adaptive difficulty · Instant results
+          {isMock ? '50 Questions / 30 Minutes' : '40 Questions / 45 Minutes'}
         </p>
 
         <div className="assessment-start-rules">
           {[
-            ['🕐', '30 minutes', 'The timer starts immediately. No pausing.'],
-            ['📋', '50 Questions', 'Fetched specifically for your target company.'],
+            ['🕐', 'Timed', 'The timer starts immediately. No pausing.'],
+            ['📋', 'Curated', 'Carefully selected questions for your track.'],
             ['⚡', 'Auto-submit', 'When time runs out, your answers are submitted automatically.'],
             ['🔒', 'No going back', 'You can skip and return, but cannot re-open the test.'],
           ].map(([icon, title, desc]) => (
@@ -45,36 +51,26 @@ function StartScreen() {
           ))}
         </div>
 
-        <div className="assessment-company-input-group">
-          <label className="assessment-label" htmlFor="company-input">
-            Target Company
-          </label>
-          <input
-            id="company-input"
-            className="assessment-input"
-            type="text"
-            placeholder="e.g. Google, Amazon, Microsoft"
-            value={company}
-            onChange={(e) => setCompany(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleStart()}
-          />
-        </div>
-
         {error && <div className="assessment-error">{error}</div>}
 
-        <button
-          className="assessment-btn-primary"
-          onClick={handleStart}
-          disabled={!company.trim() || status === 'loading'}
-        >
-          {status === 'loading' ? (
-            <span className="assessment-btn-loading">
-              <span className="assessment-spinner" /> Loading questions…
-            </span>
+        <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+          {isMock ? (
+            <button
+              className="assessment-btn-primary"
+              onClick={() => startAssessment('mock')}
+            >
+              Start Mock (30m) →
+            </button>
           ) : (
-            'Start Assessment →'
+            <button
+              className="assessment-btn-secondary"
+              onClick={() => startAssessment('codevita')}
+              style={{ flex: 1, padding: '1rem', borderRadius: '12px', fontSize: '1rem', fontWeight: 600, cursor: 'pointer', background: 'var(--accent)', color: 'var(--bg)' }}
+            >
+              Start CodeVita (45m) →
+            </button>
           )}
-        </button>
+        </div>
       </div>
     </div>
   );
@@ -82,7 +78,7 @@ function StartScreen() {
 
 function QuizInterface() {
   const {
-    questions, answers, currentQuestionIndex, timeLeftSeconds,
+    assessmentType, questions, answers, currentQuestionIndex, timeLeftSeconds,
     selectAnswer, nextQuestion, prevQuestion, jumpToQuestion,
     skipQuestion, submitAssessment, status,
   } = useAssessmentStore();
@@ -118,7 +114,7 @@ function QuizInterface() {
       <header className="assessment-quiz-header">
         <div className="assessment-quiz-header-left">
           <span className="assessment-quiz-brand">Assessment Engine</span>
-          <span className="assessment-quiz-company">{useAssessmentStore.getState().company}</span>
+          <span className="assessment-quiz-company">{assessmentType === 'mock' ? 'Mock Assessment' : 'CodeVita Assessment'}</span>
         </div>
 
         <div className="assessment-quiz-progress-wrap">
@@ -186,9 +182,8 @@ function QuizInterface() {
           <button
             className="assessment-btn-submit"
             onClick={submitAssessment}
-            disabled={status === 'submitting'}
           >
-            {status === 'submitting' ? 'Submitting…' : 'Submit Test'}
+            Submit Test
           </button>
         </aside>
 
@@ -202,6 +197,14 @@ function QuizInterface() {
           </div>
 
           <h2 className="assessment-question-text">{q.question_text}</h2>
+
+          {q.dataCtx && (
+            <div 
+              className="assessment-data-ctx" 
+              style={{ marginBottom: '1.5rem', background: 'var(--surface2, rgba(255,255,255,0.03))', padding: '1rem', borderRadius: '8px', borderLeft: '3px solid var(--accent, #3b82f6)', fontSize: '0.85rem' }}
+              dangerouslySetInnerHTML={{ __html: q.dataCtx }} 
+            />
+          )}
 
           <ul className="assessment-options-list">
             {q.options.map((option, idx) => (
@@ -247,7 +250,7 @@ function QuizInterface() {
 }
 
 function ResultScreen() {
-  const { result, company, resetAssessment } = useAssessmentStore();
+  const { result, assessmentType, resetAssessment } = useAssessmentStore();
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   if (!result) return null;
@@ -271,7 +274,7 @@ function ResultScreen() {
         </div>
         <h1 className="assessment-result-grade">{grade}</h1>
         <p className="assessment-result-summary">
-          {totalCorrect} of {totalQuestions} correct · {formatTime(timeTakenSeconds)} taken · {company}
+          {totalCorrect} of {totalQuestions} correct · {formatTime(timeTakenSeconds)} taken · {assessmentType === 'mock' ? 'Mock Assessment' : 'CodeVita Assessment'}
         </p>
       </div>
 
@@ -351,19 +354,13 @@ function ResultScreen() {
   );
 }
 
-export function AssessmentEngine() {
+export function AssessmentEngine({ variant }: AssessmentEngineProps) {
   const status = useAssessmentStore((s) => s.status);
 
   return (
     <div className="assessment-engine">
-      {(status === 'idle' || status === 'loading') && <StartScreen />}
-      {status === 'in-progress'                    && <QuizInterface />}
-      {status === 'submitting'                     && (
-        <div className="assessment-submitting">
-          <div className="assessment-spinner assessment-spinner--lg" />
-          <p>Grading your answers…</p>
-        </div>
-      )}
+      {status === 'idle' && <StartScreen variant={variant} />}
+      {status === 'in-progress' && <QuizInterface />}
       {status === 'completed' && <ResultScreen />}
     </div>
   );

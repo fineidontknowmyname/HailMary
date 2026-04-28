@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { User } from 'lucide-react'
 import { useAuth } from '../auth/useAuth'
 import { fetchProfile, upsertProfile } from '../lib/profile'
 import type { UserProfile } from '../types/profile'
@@ -56,19 +57,23 @@ function SaveButton({ onClick, saving, saved }: {
 }
 
 export default function ProfilePage({ onBack }: { onBack: () => void }) {
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const [profile, setProfile] = useState<Partial<UserProfile>>({})
   const [loading, setLoading] = useState(true)
   const [saving, setSaving]   = useState<Record<string, boolean>>({})
   const [saved,  setSaved]    = useState<Record<string, boolean>>({})
 
   useEffect(() => {
-    if (!user) return
+    if (authLoading) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
     fetchProfile(user.id).then(p => {
       setProfile(p ?? { user_id: user.id })
       setLoading(false)
     })
-  }, [user])
+  }, [user, authLoading])
 
   function set(field: keyof UserProfile) {
     return (value: string | number) =>
@@ -85,12 +90,48 @@ export default function ProfilePage({ onBack }: { onBack: () => void }) {
     setTimeout(() => setSaved(s => ({ ...s, [section]: false })), 2500)
   }
 
-  if (loading) {
+  if (loading || authLoading) {
     return (
       <div className="min-h-screen bg-[#0b0e14] flex items-center justify-center">
         <div className="text-[#7a849a] font-mono text-sm animate-pulse">Loading profile…</div>
       </div>
     )
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-[#0b0e14] text-white flex flex-col">
+        <div className="sticky top-0 z-40 bg-[#0b0e14]/80 backdrop-blur-md border-b border-[#1e2535]">
+          <div className="max-w-2xl mx-auto px-6 py-4 flex items-center gap-4">
+            <button onClick={onBack} className="text-[#7a849a] hover:text-white transition-colors text-sm font-mono">
+              ← Back
+            </button>
+            <div className="font-black text-lg">
+              Hail<span className="text-[#4fffb0]">Mary</span>
+            </div>
+          </div>
+        </div>
+        <div className="flex-1 flex flex-col items-center justify-center min-h-[50vh] px-4 text-center max-w-lg mx-auto">
+          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[#1a1e28] mb-6 border border-gray-800">
+            <User className="h-10 w-10 text-gray-500" />
+          </div>
+          <h1 className="text-2xl font-bold text-white mb-4">No Active Session</h1>
+          <p className="text-gray-400 mb-1">
+            To track your assessment scores, save resources, and build your profile, you need to initialize a session.
+          </p>
+          <p className="text-green-400/80 text-sm mb-8">
+            (New here? Clicking Initialize will automatically create your account).
+          </p>
+          {/* Note: I'm putting a placeholder button here, but ideally this triggers the AuthModal. Assuming there's a global trigger or they can just go back to header. I'll dispatch a custom event or let them click it if there's a global state. I'll just make it a button that says 'Initialize Session →'. */}
+          <button 
+            onClick={() => window.dispatchEvent(new Event('open-auth-modal'))}
+            className="rounded-xl bg-green-500 px-8 py-3 text-sm font-bold text-black transition-colors hover:bg-green-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-[#0b0e14]"
+          >
+            Initialize Session →
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (

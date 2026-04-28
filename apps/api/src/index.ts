@@ -8,7 +8,7 @@ import intelRoutes from './routes/intel.routes';
 import progressRoutes from './routes/progress.routes';
 import profileRoutes from './routes/profile.routes';
 import aiRoutes from './routes/ai.routes';
-import assessmentRoutes from './routes/assessment.routes';
+import resourceRoutes from './routes/resource.routes';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -31,7 +31,7 @@ app.use('/api/intel', intelRoutes);
 app.use('/api/progress', progressRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/ai', aiRoutes);
-app.use('/api/assessment', assessmentRoutes);
+app.use('/api/resources', resourceRoutes);
 app.use(globalErrorHandler);
 
 app.listen(PORT, () => {

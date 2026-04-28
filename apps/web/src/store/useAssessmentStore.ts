@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
+import { mockQuestions, type RawQuestion } from '../data/mockQuestions';
+import { codevitaQuestions } from '../data/codevitaQuestions';
 
 export interface SafeQuestion {
   id: string;
@@ -8,6 +10,7 @@ export interface SafeQuestion {
   options: string[];
   difficulty: 'easy' | 'medium' | 'hard';
   company_tags: string[];
+  dataCtx?: string;
 }
 
 export interface GradedAnswer {
@@ -37,11 +40,11 @@ export interface GradedResult {
   gradedAnswers: GradedAnswer[];
 }
 
-export type AssessmentStatus = 'idle' | 'loading' | 'in-progress' | 'submitting' | 'completed';
+export type AssessmentStatus = 'idle' | 'in-progress' | 'completed';
 
 export interface AssessmentState {
   status: AssessmentStatus;
-  company: string;
+  assessmentType: 'mock' | 'codevita' | null;
   questions: SafeQuestion[];
   answers: (number | null)[];
   currentQuestionIndex: number;
@@ -49,27 +52,27 @@ export interface AssessmentState {
   result: GradedResult | null;
   error: string | null;
 
-  startAssessment: (company: string) => Promise<void>;
+  startAssessment: (type: 'mock' | 'codevita') => void;
   selectAnswer: (questionIndex: number, optionIndex: number) => void;
   nextQuestion: () => void;
   prevQuestion: () => void;
   jumpToQuestion: (index: number) => void;
   skipQuestion: () => void;
   tickTimer: () => void;
-  submitAssessment: () => Promise<void>;
+  submitAssessment: () => void;
   resetAssessment: () => void;
 }
 
-const EXAM_DURATION_SECONDS = 30 * 60;
-const API = import.meta.env.VITE_API_BASE_URL;
+const MOCK_DURATION_SECONDS = 30 * 60;
+const CODEVITA_DURATION_SECONDS = 45 * 60;
 
 const initialState = {
   status: 'idle' as AssessmentStatus,
-  company: '',
+  assessmentType: null as 'mock' | 'codevita' | null,
   questions: [],
   answers: [],
   currentQuestionIndex: 0,
-  timeLeftSeconds: EXAM_DURATION_SECONDS,
+  timeLeftSeconds: MOCK_DURATION_SECONDS,
   result: null,
   error: null,
 };
@@ -79,32 +82,40 @@ export const useAssessmentStore = create<AssessmentState>()(
     (set, get) => ({
       ...initialState,
 
-      startAssessment: async (company: string) => {
-        set({ status: 'loading', company, error: null });
-
-        try {
-          const res = await fetch(
-            `${API}/api/assessment/generate?company=${encodeURIComponent(company)}`
-          );
-          const json = await res.json();
-
-          if (!res.ok || !json.success) {
-            throw new Error(json.error ?? 'Failed to load questions.');
-          }
-
-          const questions: SafeQuestion[] = json.data;
-
-          set({
-            status: 'in-progress',
-            questions,
-            answers: new Array(questions.length).fill(null),
-            currentQuestionIndex: 0,
-            timeLeftSeconds: EXAM_DURATION_SECONDS,
-            result: null,
-          });
-        } catch (err: any) {
-          set({ status: 'idle', error: err.message });
+      startAssessment: (type: 'mock' | 'codevita') => {
+        let rawData: RawQuestion[] = [];
+        let time = 0;
+        
+        if (type === 'mock') {
+          rawData = mockQuestions;
+          time = MOCK_DURATION_SECONDS;
+        } else if (type === 'codevita') {
+          rawData = codevitaQuestions;
+          time = CODEVITA_DURATION_SECONDS;
         }
+
+        const safeQuestions: SafeQuestion[] = rawData.map((q: any) => {
+          return {
+            id: String(q.id),
+            section: q.section || q.cat || 'general',
+            question_text: q.text || q.question_text || '',
+            options: q.options || [],
+            difficulty: (q.diff || q.difficulty || 'medium') as 'easy' | 'medium' | 'hard',
+            company_tags: q.company_tags || [],
+            dataCtx: q.dataCtx
+          };
+        });
+
+        set({
+          status: 'in-progress',
+          assessmentType: type,
+          questions: safeQuestions,
+          answers: new Array(safeQuestions.length).fill(null),
+          currentQuestionIndex: 0,
+          timeLeftSeconds: time,
+          result: null,
+          error: null,
+        });
       },
 
       selectAnswer: (questionIndex, optionIndex) => {
@@ -156,39 +167,66 @@ export const useAssessmentStore = create<AssessmentState>()(
         });
       },
 
-      submitAssessment: async () => {
-        const { questions, answers, timeLeftSeconds, company } = get();
-        set({ status: 'submitting' });
+      submitAssessment: () => {
+        const { questions, answers, timeLeftSeconds, assessmentType } = get();
+        
+        const rawData = assessmentType === 'mock' ? mockQuestions : codevitaQuestions;
+        const totalTime = assessmentType === 'mock' ? MOCK_DURATION_SECONDS : CODEVITA_DURATION_SECONDS;
+        const timeTakenSeconds = totalTime - timeLeftSeconds;
 
-        const payload = questions.map((q, i) => ({
-          questionId: q.id,
-          selectedOptionIndex: answers[i] ?? -1,
-        }));
+        let totalCorrect = 0;
+        const sectionMap = new Map<string, { total: number; correct: number }>();
+        const gradedAnswers: GradedAnswer[] = [];
 
-        const timeTaken = EXAM_DURATION_SECONDS - timeLeftSeconds;
+        questions.forEach((q, i) => {
+          const rawQ = rawData[i]; 
+          const correctAnswerIndex = rawQ ? rawQ.answer : -1;
+          const explanation = rawQ ? rawQ.explanation : '';
+          const selectedOptionIndex = answers[i] ?? -1;
+          const isCorrect = selectedOptionIndex !== -1 && selectedOptionIndex === correctAnswerIndex;
 
-        try {
-          const token = localStorage.getItem('sb-token');
-          const res = await fetch(`${API}/api/assessment/submit`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              ...(token ? { Authorization: `Bearer ${token}` } : {}),
-            },
-            body: JSON.stringify({
-              answers: payload,
-              timeTakenSeconds: timeTaken,
-              company,
-            }),
+          if (isCorrect) totalCorrect++;
+
+          gradedAnswers.push({
+            questionId: q.id,
+            questionText: q.question_text,
+            options: q.options,
+            selectedOptionIndex,
+            correctAnswerIndex,
+            isCorrect,
+            explanation,
+            section: q.section,
           });
 
-          const json = await res.json();
-          if (!res.ok || !json.success) throw new Error(json.error ?? 'Submission failed.');
+          const existing = sectionMap.get(q.section) || { total: 0, correct: 0 };
+          sectionMap.set(q.section, {
+            total: existing.total + 1,
+            correct: existing.correct + (isCorrect ? 1 : 0)
+          });
+        });
 
-          set({ status: 'completed', result: json.data });
-        } catch (err: any) {
-          set({ status: 'idle', error: err.message });
-        }
+        const totalQuestions = questions.length;
+        const percentageScore = totalQuestions > 0 ? Math.round((totalCorrect / totalQuestions) * 100) : 0;
+
+        const sectionBreakdowns: SectionBreakdown[] = Array.from(sectionMap.entries()).map(
+          ([section, stats]) => ({
+            section,
+            total: stats.total,
+            correct: stats.correct,
+            score: Math.round((stats.correct / stats.total) * 100),
+          })
+        );
+
+        const result: GradedResult = {
+          totalQuestions,
+          totalCorrect,
+          percentageScore,
+          timeTakenSeconds,
+          sectionBreakdowns,
+          gradedAnswers,
+        };
+
+        set({ status: 'completed', result });
       },
 
       resetAssessment: () => set(initialState),

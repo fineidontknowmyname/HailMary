@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Postman — Complete Developer Guide & Sandbox</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,700;1,300&family=Clash+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:       #0d0d0d;
+  --bg2:      #141414;
+  --bg3:      #1a1a1a;
+  --border:   #2a2a2a;
+  --border2:  #333;
+  --text:     #e8e4dc;
+  --muted:    #666;
+  --muted2:   #888;
+  --orange:   #ff6c37;
+  --orange2:  #ff8c5a;
+  --orange-dim: rgba(255,108,55,0.1);
+  --orange-border: rgba(255,108,55,0.25);
+  --green:    #4ade80;
+  --green-dim: rgba(74,222,128,0.08);
+  --blue:     #60a5fa;
+  --blue-dim: rgba(96,165,250,0.08);
+  --yellow:   #fbbf24;
+  --yellow-dim: rgba(251,191,36,0.08);
+  --red:      #f87171;
+  --red-dim:  rgba(248,113,113,0.08);
+  --purple:   #a78bfa;
+  --purple-dim: rgba(167,139,250,0.08);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Manrope', sans-serif;
+  font-weight: 300;
+  line-height: 1.7;
+  overflow-x: hidden;
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+/* ── HERO ── */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 0 72px 64px;
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid var(--border);
+}
+
+.hero-scanlines {
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(255,108,55,0.012) 2px,
+    rgba(255,108,55,0.012) 4px
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+.hero-grid {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 60px 60px;
+  opacity: 0.35;
+  pointer-events: none;
+  mask-image: radial-gradient(ellipse 80% 80% at 20% 80%, black 0%, transparent 70%);
+}
+
+.hero-glow {
+  position: absolute;
+  top: 30%; left: -10%;
+  width: 700px; height: 700px;
+  background: radial-gradient(ellipse, rgba(255,108,55,0.12) 0%, transparent 65%);
+  pointer-events: none;
+}
+
+.hero-content { position: relative; z-index: 1; max-width: 1000px; margin: 0 auto; width: 100%; }
+
+.hero-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 3px;
+  color: var(--orange);
+  text-transform: uppercase;
+  margin-bottom: 28px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  opacity: 0;
+  animation: rise 0.6s ease 0.1s forwards;
+}
+.hero-tag::before {
+  content: '▶';
+  font-size: 8px;
+  animation: blink 1.2s step-end infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+.hero h1 {
+  font-family: 'Manrope', sans-serif;
+  font-size: clamp(52px, 9vw, 112px);
+  font-weight: 700;
+  line-height: 0.88;
+  letter-spacing: -3px;
+  color: var(--text);
+  opacity: 0;
+  animation: rise 0.7s ease 0.2s forwards;
+}
+
+.hero h1 .accent { color: var(--orange); }
+.hero h1 .dim { color: var(--muted); }
+
+.hero-sub {
+  margin-top: 32px;
+  max-width: 600px;
+  font-size: 15px;
+  color: var(--muted2);
+  line-height: 1.85;
+  opacity: 0;
+  animation: rise 0.7s ease 0.35s forwards;
+}
+
+.hero-pills {
+  margin-top: 36px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  opacity: 0;
+  animation: rise 0.7s ease 0.5s forwards;
+}
+
+.pill {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  padding: 5px 13px;
+  border-radius: 2px;
+  border: 1px solid var(--border2);
+  color: var(--muted2);
+  letter-spacing: 0.5px;
+}
+.pill.orange { border-color: var(--orange-border); color: var(--orange2); background: var(--orange-dim); }
+
+.hero-bottom {
+  margin-top: 56px;
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  opacity: 0;
+  animation: rise 0.7s ease 0.65s forwards;
+}
+
+.hero-stat { text-align: center; }
+.stat-num {
+  font-family: 'Manrope', sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--orange);
+  line-height: 1;
+}
+.stat-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+.hero-divider { width: 1px; height: 40px; background: var(--border2); }
+
+/* ── HAMBURGER & OVERLAY ── */
+.menu-btn {
+  position: fixed;
+  top: 24px;
+  left: 24px;
+  z-index: 300;
+  background: rgba(20, 20, 20, 0.8);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+.menu-btn:hover {
+  border-color: var(--orange-border);
+  background: var(--bg3);
+}
+.menu-btn span {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: var(--orange);
+  transition: 0.3s ease;
+  border-radius: 2px;
+}
+.menu-btn.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.menu-btn.open span:nth-child(2) { opacity: 0; }
+.menu-btn.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+.nav-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(2px);
+  z-index: 240;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+.nav-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ── NAV ── */
+.sidenav {
+  position: fixed;
+  left: 0; top: 0; bottom: 0;
+  width: 220px;
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  padding: 32px 0;
+  overflow-y: auto;
+  z-index: 250;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+}
+.sidenav.open {
+  transform: translateX(0);
+}
+.sidenav::-webkit-scrollbar { display: none; }
+
+.nav-logo {
+  padding: 0 24px 28px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 20px;
+}
+.nav-logo-text {
+  font-family: 'Manrope', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--orange);
+  letter-spacing: -0.5px;
+}
+.nav-logo-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: var(--muted);
+  letter-spacing: 1px;
+  margin-top: 2px;
+}
+
+.nav-section-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 0 24px 8px;
+  margin-top: 8px;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 24px;
+  font-size: 12.5px;
+  color: var(--muted2);
+  text-decoration: none;
+  transition: color 0.15s, background 0.15s;
+  border-left: 2px solid transparent;
+}
+.nav-link:hover { color: var(--text); background: rgba(255,255,255,0.03); }
+.nav-link.active { color: var(--orange); border-left-color: var(--orange); background: var(--orange-dim); }
+.nav-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--border2); flex-shrink: 0; }
+.nav-link.active .nav-dot { background: var(--orange); }
+
+/* ── LAYOUT ── */
+.layout { display: flex; justify-content: center; }
+.main-content {
+  margin-left: 0;
+  flex: 1;
+  min-width: 0;
+  max-width: 1000px;
+}
+
+/* ── SECTION ── */
+.doc-section {
+  padding: 72px 72px;
+  border-bottom: 1px solid var(--border);
+  max-width: 960px;
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.doc-section.visible { opacity: 1; transform: translateY(0); }
+
+.section-eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.section-eyebrow::before {
+  content: '';
+  display: block;
+  width: 20px; height: 1px;
+}
+
+.doc-section h2 {
+  font-family: 'Manrope', sans-serif;
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.8px;
+  line-height: 1.1;
+  margin-bottom: 12px;
+}
+
+.section-desc {
+  font-size: 14.5px;
+  color: var(--muted2);
+  max-width: 600px;
+  line-height: 1.8;
+  margin-bottom: 36px;
+}
+
+/* ── CARDS GRID ── */
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+.card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 22px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.2s, transform 0.2s;
+}
+.card:hover { border-color: var(--border2); transform: translateY(-2px); }
+.card-stripe { position: absolute; top:0; left:0; right:0; height:2px; }
+.card-icon { font-size: 20px; margin-bottom: 12px; display: block; }
+.card-title {
+  font-family: 'Manrope', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--text);
+  line-height: 1.3;
+}
+.card-body { font-size: 12.5px; color: var(--muted2); line-height: 1.72; }
+
+/* ── CODE BLOCK ── */
+.code-block {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+  margin: 16px 0;
+}
+.code-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(255,255,255,0.02);
+}
+.code-lang {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+.code-dots { display: flex; gap: 6px; }
+.code-dot { width: 10px; height: 10px; border-radius: 50%; }
+.code-dot.r { background: #ff5f57; }
+.code-dot.y { background: #febc2e; }
+.code-dot.g { background: #28c840; }
+.code-body {
+  padding: 18px 20px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  line-height: 1.7;
+  color: #c9d1d9;
+  overflow-x: auto;
+}
+.code-body .cm { color: var(--muted); font-style: italic; }
+.code-body .kw { color: var(--purple); }
+.code-body .fn { color: var(--blue); }
+.code-body .str { color: var(--green); }
+.code-body .var { color: var(--orange2); }
+.code-body .num { color: var(--yellow); }
+.code-body .pm-obj { color: var(--orange); }
+
+/* ── INTERACTIVE SANDBOX ── */
+.sandbox {
+  background: var(--bg3);
+  border: 1px solid var(--orange-border);
+  border-radius: 6px;
+  margin: 32px 0;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  position: relative;
+}
+.sandbox::before {
+  content: 'INTERACTIVE SANDBOX';
+  position: absolute;
+  top: 0; right: 0;
+  background: var(--orange-dim);
+  color: var(--orange);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  padding: 4px 12px;
+  border-bottom-left-radius: 6px;
+  letter-spacing: 1px;
+}
+.sandbox-header-bar {
+  display: flex;
+  gap: 8px;
+  padding: 24px 16px 12px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg2);
+}
+.sandbox-method {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--orange2);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 8px 12px;
+  border-radius: 4px;
+  outline: none;
+  cursor: pointer;
+}
+.sandbox-url {
+  flex: 1;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  padding: 8px 12px;
+  border-radius: 4px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.sandbox-url:focus { border-color: var(--orange-border); }
+.sandbox-send {
+  background: var(--orange);
+  color: var(--bg);
+  border: none;
+  padding: 8px 24px;
+  font-family: 'Manrope', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: transform 0.1s, opacity 0.2s;
+}
+.sandbox-send:active { transform: scale(0.96); }
+.sandbox-send:hover { opacity: 0.9; }
+
+.sandbox-tabs {
+  display: flex;
+  gap: 20px;
+  padding: 0 16px;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+}
+.sandbox-tab {
+  font-size: 12px;
+  color: var(--muted);
+  padding: 10px 0;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+}
+.sandbox-tab.active {
+  color: var(--orange);
+  border-bottom-color: var(--orange);
+}
+
+.sandbox-req-body { display: none; }
+.sandbox-req-body.active { display: block; }
+.sandbox-input {
+  width: 100%;
+  height: 120px;
+  background: var(--bg);
+  border: none;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  padding: 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  resize: vertical;
+  outline: none;
+}
+
+.sandbox-response {
+  display: none;
+  padding: 16px;
+  background: #0a0a0a;
+  border-top: 1px solid var(--border);
+}
+.sandbox-response.visible { display: block; }
+.sandbox-status-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.sandbox-status-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+}
+.sandbox-time {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+}
+.sandbox-res-body {
+  margin: 0;
+  padding: 16px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  max-height: 250px;
+  overflow-y: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #c9d1d9;
+}
+.sandbox-test-results {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.test-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  padding: 6px 10px;
+  border-radius: 4px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+}
+.test-badge.pass { border-left: 3px solid var(--green); color: var(--green); }
+.test-badge.fail { border-left: 3px solid var(--red); color: var(--red); }
+
+/* ── STEP LIST ── */
+.step-list { display: flex; flex-direction: column; gap: 0; }
+.step-item {
+  display: flex;
+  gap: 0;
+  position: relative;
+}
+.step-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 48px;
+  flex-shrink: 0;
+}
+.step-num-circle {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+  z-index: 1;
+  margin-top: 2px;
+}
+.step-line {
+  width: 1px;
+  flex: 1;
+  min-height: 24px;
+  background: var(--border);
+  margin: 4px 0;
+}
+.step-item:last-child .step-line { display: none; }
+.step-right {
+  padding: 0 0 28px 20px;
+  flex: 1;
+}
+.step-title {
+  font-family: 'Manrope', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  margin-top: 4px;
+  line-height: 1.3;
+}
+.step-body { font-size: 13px; color: var(--muted2); line-height: 1.75; }
+
+/* ── INLINE CODE ── */
+code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  padding: 1px 6px;
+  border-radius: 3px;
+  color: var(--orange2);
+}
+
+/* ── METHOD BADGES ── */
+.method {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 3px;
+  letter-spacing: 0.5px;
+}
+.GET    { background: var(--green-dim);  color: var(--green);  border: 1px solid rgba(74,222,128,0.25); }
+.POST   { background: var(--yellow-dim); color: var(--yellow); border: 1px solid rgba(251,191,36,0.25); }
+.PATCH  { background: var(--blue-dim);   color: var(--blue);   border: 1px solid rgba(96,165,250,0.25); }
+.DELETE { background: var(--red-dim);    color: var(--red);    border: 1px solid rgba(248,113,113,0.25); }
+
+/* ── STATUS TABLE ── */
+.status-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+.status-table th {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: left;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.status-table td {
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--muted2);
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+.status-table tr:last-child td { border-bottom: none; }
+.status-table tr:hover td { background: rgba(255,255,255,0.02); }
+.status-code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+.s2xx { color: var(--green);  background: var(--green-dim);  border: 1px solid rgba(74,222,128,0.2); }
+.s4xx { color: var(--red);    background: var(--red-dim);    border: 1px solid rgba(248,113,113,0.2); }
+
+/* ── CALLOUT ── */
+.callout {
+  display: flex;
+  gap: 14px;
+  padding: 16px 18px;
+  border-radius: 5px;
+  margin: 16px 0;
+  border: 1px solid;
+  align-items: flex-start;
+}
+.callout.tip  { background: var(--orange-dim); border-color: var(--orange-border); }
+.callout.info { background: var(--blue-dim);   border-color: rgba(96,165,250,0.2); }
+.callout.warn { background: var(--yellow-dim); border-color: rgba(251,191,36,0.2); }
+.callout-icon { font-size: 15px; flex-shrink:0; margin-top:1px; }
+.callout-title {
+  font-family: 'Manrope', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.callout.tip  .callout-title { color: var(--orange2); }
+.callout.info .callout-title { color: var(--blue); }
+.callout.warn .callout-title { color: var(--yellow); }
+.callout-text { font-size: 12.5px; color: var(--muted2); line-height: 1.7; }
+
+/* ── VAR SCOPE TABLE ── */
+.var-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-top: 4px; }
+.var-card {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 16px 18px;
+}
+.var-scope {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+.var-desc { font-size: 12px; color: var(--muted2); line-height: 1.65; }
+.s-collection { color: var(--orange2); }
+.s-global { color: var(--purple); }
+.s-environment { color: var(--green); }
+
+/* ── FULL-WIDTH CARD ── */
+.card.full { grid-column: 1 / -1; }
+
+/* ── SECTION COLORS ── */
+.sec-orange .section-eyebrow { color: var(--orange); }
+.sec-orange .section-eyebrow::before { background: var(--orange); }
+.sec-orange .step-num-circle { background: var(--orange-dim); color: var(--orange); border: 1px solid var(--orange-border); }
+.sec-orange .card-stripe { background: var(--orange); }
+
+.sec-green .section-eyebrow { color: var(--green); }
+.sec-green .section-eyebrow::before { background: var(--green); }
+.sec-green .step-num-circle { background: var(--green-dim); color: var(--green); border: 1px solid rgba(74,222,128,0.3); }
+.sec-green .card-stripe { background: var(--green); }
+
+.sec-blue .section-eyebrow { color: var(--blue); }
+.sec-blue .section-eyebrow::before { background: var(--blue); }
+.sec-blue .step-num-circle { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(96,165,250,0.3); }
+.sec-blue .card-stripe { background: var(--blue); }
+
+.sec-purple .section-eyebrow { color: var(--purple); }
+.sec-purple .section-eyebrow::before { background: var(--purple); }
+.sec-purple .step-num-circle { background: var(--purple-dim); color: var(--purple); border: 1px solid rgba(167,139,250,0.3); }
+.sec-purple .card-stripe { background: var(--purple); }
+
+.sec-yellow .section-eyebrow { color: var(--yellow); }
+.sec-yellow .section-eyebrow::before { background: var(--yellow); }
+.sec-yellow .step-num-circle { background: var(--yellow-dim); color: var(--yellow); border: 1px solid rgba(251,191,36,0.3); }
+.sec-yellow .card-stripe { background: var(--yellow); }
+
+.sec-red .section-eyebrow { color: var(--red); }
+.sec-red .section-eyebrow::before { background: var(--red); }
+.sec-red .step-num-circle { background: var(--red-dim); color: var(--red); border: 1px solid rgba(248,113,113,0.3); }
+.sec-red .card-stripe { background: var(--red); }
+
+/* ── FOOTER ── */
+footer {
+  margin: 0 auto;
+  max-width: 1000px;
+  padding: 36px 72px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+footer span { color: var(--orange); }
+
+@keyframes rise {
+  from { opacity:0; transform:translateY(14px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+@media (max-width: 900px) {
+  .hero, .doc-section, footer { padding-left: 24px; padding-right: 24px; }
+  .var-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- HAMBURGER MENU & OVERLAY -->
+<button id="menu-btn" class="menu-btn">
+  <span></span><span></span><span></span>
+</button>
+<div id="nav-overlay" class="nav-overlay"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-scanlines"></div>
+  <div class="hero-grid"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-content">
+    <div class="hero-tag">Complete Developer Guide</div>
+    <h1>
+      <span class="dim">Master</span><br>
+      <span class="accent">Post</span>man<span class="dim">.</span>
+    </h1>
+    <p class="hero-sub">From your first GET request to fully automated CI/CD test pipelines. Everything you need to go from beginner to intermediate API testing — structured, practical, and interactive.</p>
+    <div class="hero-pills">
+      <span class="pill orange">Interactive Sandbox Mode</span>
+      <span class="pill">REST API</span>
+      <span class="pill">JavaScript Scripting</span>
+      <span class="pill">Automation</span>
+    </div>
+  </div>
+</div>
+
+<!-- SIDE NAV + MAIN -->
+<div class="layout">
+
+<nav class="sidenav">
+  <div class="nav-logo">
+    <div class="nav-logo-text">Postman Guide</div>
+    <div class="nav-logo-sub">Interactive Handbook</div>
+  </div>
+  <div class="nav-section-label">Getting Started</div>
+  <a href="#setup" class="nav-link active"><span class="nav-dot"></span>Setup & UI</a>
+  <a href="#requests" class="nav-link"><span class="nav-dot"></span>HTTP Requests</a>
+  <a href="#params" class="nav-link"><span class="nav-dot"></span>Parameters & Body</a>
+  <a href="#variables" class="nav-link"><span class="nav-dot"></span>Variables</a>
+  <div class="nav-section-label">Intermediate</div>
+  <a href="#auth" class="nav-link"><span class="nav-dot"></span>Authentication</a>
+  <a href="#scripting" class="nav-link"><span class="nav-dot"></span>Scripting</a>
+  <a href="#testing" class="nav-link"><span class="nav-dot"></span>Testing</a>
+  <div class="nav-section-label">Advanced</div>
+  <a href="#automation" class="nav-link"><span class="nav-dot"></span>Automation & CI/CD</a>
+</nav>
+
+<div class="main-content">
+
+<!-- ── SECTION 1: SETUP ── -->
+<section class="doc-section sec-orange" id="setup">
+  <div class="section-eyebrow">Section 01</div>
+  <h2>Setup & UI Orientation</h2>
+  <p class="section-desc">Install Postman, navigate the interface, and set up your first Collection to organize your API requests like a pro.</p>
+
+  <div class="step-list">
+    <div class="step-item">
+      <div class="step-left"><div class="step-num-circle">1</div><div class="step-line"></div></div>
+      <div class="step-right">
+        <div class="step-title">Download & Install</div>
+        <div class="step-body">Head to <code>postman.com</code> and download the desktop app. You can also use the browser version. On the sign-in screen, click <strong>"Skip and go to app"</strong> — you don't need an account to use the core features.</div>
+      </div>
+    </div>
+    <div class="step-item">
+      <div class="step-left"><div class="step-num-circle">2</div><div class="step-line"></div></div>
+      <div class="step-right">
+        <div class="step-title">Create a Workspace</div>
+        <div class="step-body">Workspaces are top-level containers. Use the default "My Workspace" for personal projects. For team projects, create a shared workspace.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SECTION 2: HTTP REQUESTS ── -->
+<section class="doc-section sec-green" id="requests">
+  <div class="section-eyebrow">Section 02</div>
+  <h2>HTTP Requests — GET, POST, PATCH, DELETE</h2>
+  <p class="section-desc">The four main HTTP methods you'll use daily. Try changing the method below and sending a live request to our test API.</p>
+
+  <div class="cards" style="margin-bottom:28px;">
+    <div class="card">
+      <div class="card-stripe"></div>
+      <div class="card-icon">📥</div>
+      <div class="card-title"><span class="method GET">GET</span> &nbsp;Fetch Data</div>
+      <div class="card-body">Retrieves data from the server. No request body needed.</div>
+    </div>
+    <div class="card">
+      <div class="card-stripe"></div>
+      <div class="card-icon">📤</div>
+      <div class="card-title"><span class="method POST">POST</span> &nbsp;Send Data</div>
+      <div class="card-body">Sends a JSON payload to create something new.</div>
+    </div>
+  </div>
+
+  <!-- INTERACTIVE SANDBOX 1 -->
+  <div class="sandbox">
+    <div class="sandbox-header-bar">
+      <select class="sandbox-method">
+        <option value="GET">GET</option>
+        <option value="POST">POST</option>
+        <option value="DELETE">DELETE</option>
+      </select>
+      <input type="text" class="sandbox-url" value="https://jsonplaceholder.typicode.com/posts/1">
+      <button class="sandbox-send">Send</button>
+    </div>
+    <div class="sandbox-response">
+      <div class="sandbox-status-bar">
+        <div class="sandbox-status-text"></div>
+        <div class="sandbox-time"></div>
+      </div>
+      <pre class="sandbox-res-body"></pre>
+    </div>
+  </div>
+
+  <h3 style="font-family:'Manrope',sans-serif;font-size:16px;font-weight:600;margin-bottom:16px;color:var(--text);">HTTP Status Codes You'll See</h3>
+  <table class="status-table">
+    <thead><tr><th>Code</th><th>Meaning</th><th>When You'll See It</th></tr></thead>
+    <tbody>
+      <tr><td><span class="status-code s2xx">200 OK</span></td><td>Request succeeded</td><td>Successful GET, PATCH, DELETE</td></tr>
+      <tr><td><span class="status-code s2xx">201 Created</span></td><td>Resource created</td><td>Successful POST request</td></tr>
+      <tr><td><span class="status-code s4xx">404 Not Found</span></td><td>Resource doesn't exist</td><td>Wrong URL or wrong ID</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ── SECTION 3: PARAMS & BODY ── -->
+<section class="doc-section sec-blue" id="params">
+  <div class="section-eyebrow">Section 03</div>
+  <h2>Parameters, Body & Headers</h2>
+  <p class="section-desc">How to send data the right way. Edit the JSON body below and send a POST request to see the server echo it back with a newly created ID.</p>
+
+  <!-- INTERACTIVE SANDBOX 2 -->
+  <div class="sandbox">
+    <div class="sandbox-header-bar">
+      <select class="sandbox-method">
+        <option value="POST">POST</option>
+      </select>
+      <input type="text" class="sandbox-url" value="https://jsonplaceholder.typicode.com/posts">
+      <button class="sandbox-send">Send</button>
+    </div>
+    <div class="sandbox-tabs">
+      <div class="sandbox-tab active">Body (Raw JSON)</div>
+    </div>
+    <div class="sandbox-req-body active">
+      <textarea class="sandbox-input">{
+  "title": "Interactive Sandbox Test",
+  "body": "This payload is being sent straight from the browser!",
+  "userId": 42
+}</textarea>
+    </div>
+    <div class="sandbox-response">
+      <div class="sandbox-status-bar">
+        <div class="sandbox-status-text"></div>
+        <div class="sandbox-time"></div>
+      </div>
+      <pre class="sandbox-res-body"></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ── SECTION 4: VARIABLES ── -->
+<section class="doc-section sec-purple" id="variables">
+  <div class="section-eyebrow">Section 04</div>
+  <h2>Variables — Stop Hardcoding Everything</h2>
+  <p class="section-desc">Variables make your collections dynamic. In this sandbox, we've pre-configured <code>{{baseUrl}}</code> and <code>{{$randomInt}}</code>. Notice how the URL resolves dynamically when you click Send.</p>
+
+  <!-- INTERACTIVE SANDBOX 3 -->
+  <div class="sandbox">
+    <div class="sandbox-header-bar">
+      <select class="sandbox-method">
+        <option value="GET">GET</option>
+      </select>
+      <input type="text" class="sandbox-url" value="{{baseUrl}}/users/{{$randomInt}}">
+      <button class="sandbox-send">Send</button>
+    </div>
+    <div class="sandbox-response">
+      <div class="sandbox-status-bar">
+        <div class="sandbox-status-text"></div>
+        <div class="sandbox-time"></div>
+      </div>
+      <pre class="sandbox-res-body"></pre>
+    </div>
+  </div>
+
+  <h3 style="font-family:'Manrope',sans-serif;font-size:16px;font-weight:600;margin:24px 0 14px;color:var(--text);">Built-in Dynamic Variables</h3>
+  <div class="cards">
+    <div class="card">
+      <div class="card-stripe"></div>
+      <div class="card-title"><code>{{$randomEmail}}</code></div>
+      <div class="card-body">Generates a random email like <code>jane.doe@example.com</code> on every request.</div>
+    </div>
+    <div class="card">
+      <div class="card-stripe"></div>
+      <div class="card-title"><code>{{$randomInt}}</code></div>
+      <div class="card-body">Generates a random integer. In our sandbox above, it resolves to a number between 1 and 10 to fetch a random user.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SECTION 5 & 6: AUTH & SCRIPTING (Static Theory) ── -->
+<section class="doc-section sec-yellow" id="auth">
+  <div class="section-eyebrow">Section 05</div>
+  <h2>Authentication & Scripting</h2>
+  <p class="section-desc">Most real APIs require authentication. You usually send a login request, capture the token using a script, and pass it in Headers.</p>
+  <div class="code-block">
+    <div class="code-header"><span class="code-lang">Tests Tab — Auto-Capture Token</span><div class="code-dots"><div class="code-dot r"></div><div class="code-dot y"></div><div class="code-dot g"></div></div></div>
+    <div class="code-body"><span class="kw">const</span> <span class="var">response</span> = <span class="pm-obj">pm</span>.<span class="fn">response</span>.<span class="fn">json</span>();
+<span class="pm-obj">pm</span>.<span class="fn">globals</span>.<span class="fn">set</span>(<span class="str">"accessToken"</span>, <span class="var">response</span>.accessToken);
+<span class="cm">// Now use {{accessToken}} in any request's Auth tab</span></div>
+  </div>
+</section>
+
+<!-- ── SECTION 7: TESTING ── -->
+<section class="doc-section sec-green" id="testing">
+  <div class="section-eyebrow">Section 07</div>
+  <h2>Writing API Tests</h2>
+  <p class="section-desc">Stop manually checking responses. Try sending the request below. The built-in sandbox tests will validate the status code and check if the response contains specific fields.</p>
+
+  <!-- INTERACTIVE SANDBOX 4 (Tests) -->
+  <div class="sandbox" data-has-tests="true">
+    <div class="sandbox-header-bar">
+      <select class="sandbox-method">
+        <option value="GET">GET</option>
+      </select>
+      <input type="text" class="sandbox-url" value="https://jsonplaceholder.typicode.com/users/1">
+      <button class="sandbox-send">Send</button>
+    </div>
+    <div class="sandbox-tabs">
+      <div class="sandbox-tab active">Tests (Read Only)</div>
+    </div>
+    <div class="sandbox-req-body active">
+      <textarea class="sandbox-input" readonly style="color:var(--muted);">pm.test("Status code is 200", function () {
+    pm.response.to.have.status(200);
+});
+
+pm.test("Response contains an email address", function () {
+    var jsonData = pm.response.json();
+    pm.expect(jsonData.email).to.be.a("string");
+});</textarea>
+    </div>
+    <div class="sandbox-response">
+      <div class="sandbox-status-bar">
+        <div class="sandbox-status-text"></div>
+        <div class="sandbox-time"></div>
+      </div>
+      <div class="sandbox-test-results"></div>
+      <pre class="sandbox-res-body" style="margin-top:12px;"></pre>
+    </div>
+  </div>
+</section>
+
+</div><!-- end main-content -->
+</div><!-- end layout -->
+
+<footer>
+  <span>Postman</span> Complete Guide & Sandbox &nbsp;·&nbsp; Beginner → CI/CD
+  <span>freeapi.app &nbsp;·&nbsp; postman.com</span>
+</footer>
+
+<script>
+// --- UI Layout Scripts ---
+const menuBtn = document.getElementById('menu-btn');
+const sidenav = document.querySelector('.sidenav');
+const overlay = document.getElementById('nav-overlay');
+
+function toggleMenu() {
+  menuBtn.classList.toggle('open');
+  sidenav.classList.toggle('open');
+  overlay.classList.toggle('open');
+}
+
+menuBtn.addEventListener('click', toggleMenu);
+overlay.addEventListener('click', toggleMenu);
+
+const sections = document.querySelectorAll('.doc-section');
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.06 });
+sections.forEach(s => io.observe(s));
+
+const navLinks = document.querySelectorAll('.nav-link');
+window.addEventListener('scroll', () => {
+  let cur = '';
+  sections.forEach(s => { if (window.scrollY >= s.offsetTop - 120) cur = s.id; });
+  navLinks.forEach(l => {
+    l.classList.toggle('active', l.getAttribute('href') === `#${cur}`);
+  });
+});
+
+// Close menu when clicking a link
+navLinks.forEach(link => {
+  link.addEventListener('click', () => {
+    if (sidenav.classList.contains('open')) toggleMenu();
+  });
+});
+
+// --- Sandbox Logic ---
+
+// 1. Mock Environment Variables
+const environment = {
+  baseUrl: 'https://jsonplaceholder.typicode.com',
+  $randomInt: () => Math.floor(Math.random() * 10) + 1, // Random user ID between 1 and 10
+  $randomEmail: () => `user${Math.floor(Math.random() * 1000)}@sandbox.local`
+};
+
+function resolveVariables(text) {
+  if (!text) return text;
+  return text.replace(/\{\{([^}]+)\}\}/g, (match, key) => {
+    if (environment[key]) {
+      return typeof environment[key] === 'function' ? environment[key]() : environment[key];
+    }
+    return match;
+  });
+}
+
+// 2. Simple JSON Syntax Highlighter
+function syntaxHighlight(json) {
+  if (typeof json != 'string') {
+      json = JSON.stringify(json, undefined, 2);
+  }
+  json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+      let cls = 'num'; // Default variable color (yellow)
+      if (/^"/.test(match)) {
+          if (/:$/.test(match)) {
+              cls = 'str'; // Keys are green
+              match = match.replace(/:$/, '<span style="color:var(--text)">:</span>');
+          } else {
+              cls = 'str'; // Strings are green
+          }
+      } else if (/true|false/.test(match)) {
+          cls = 'kw'; // Booleans are purple
+      } else if (/null/.test(match)) {
+          cls = 'muted'; // null is muted
+      }
+      return '<span class="' + cls + '">' + match + '</span>';
+  });
+}
+
+// 3. Attach Logic to all Sandboxes
+document.querySelectorAll('.sandbox').forEach(sandbox => {
+  const btn = sandbox.querySelector('.sandbox-send');
+  const methodSelect = sandbox.querySelector('.sandbox-method');
+  const urlInput = sandbox.querySelector('.sandbox-url');
+  const bodyInput = sandbox.querySelector('.sandbox-input');
+  
+  const responsePane = sandbox.querySelector('.sandbox-response');
+  const statusText = sandbox.querySelector('.sandbox-status-text');
+  const timeText = sandbox.querySelector('.sandbox-time');
+  const responseBody = sandbox.querySelector('.sandbox-res-body');
+  const testResultsBox = sandbox.querySelector('.sandbox-test-results');
+  
+  const hasTests = sandbox.getAttribute('data-has-tests') === "true";
+
+  btn.addEventListener('click', async () => {
+    // UI Loading state
+    btn.textContent = 'Sending...';
+    btn.style.opacity = '0.7';
+    responsePane.classList.add('visible');
+    statusText.innerHTML = '<span style="color:var(--muted)">Fetching...</span>';
+    timeText.textContent = '';
+    responseBody.textContent = '';
+    if(testResultsBox) testResultsBox.innerHTML = '';
+
+    // Prepare Request Data
+    const rawUrl = urlInput.value;
+    const url = resolveVariables(rawUrl);
+    const method = methodSelect.value;
+    let requestBody = bodyInput ? resolveVariables(bodyInput.value) : null;
+    
+    const options = { method };
+    
+    // Add Body & Headers if method is not GET/DELETE
+    if (method !== 'GET' && method !== 'DELETE' && requestBody) {
+      try {
+        // Validate JSON before sending
+        JSON.parse(requestBody);
+        options.body = requestBody;
+        options.headers = { 'Content-type': 'application/json; charset=UTF-8' };
+      } catch (err) {
+        statusText.innerHTML = '<span class="status-code s4xx">400 Bad Request (Sandbox)</span>';
+        responseBody.textContent = 'Invalid JSON format in the request body:\n' + err.message;
+        btn.textContent = 'Send';
+        btn.style.opacity = '1';
+        return;
+      }
+    }
+
+    try {
+      const startTime = performance.now();
+      
+      // Execute the actual HTTP request
+      const res = await fetch(url, options);
+      
+      const endTime = performance.now();
+      const timeMs = Math.round(endTime - startTime);
+
+      const resText = await res.text();
+      let formattedJson = resText;
+      let parsedJson = null;
+
+      try {
+        parsedJson = JSON.parse(resText);
+        formattedJson = JSON.stringify(parsedJson, null, 2);
+      } catch(e) {
+        // It's not JSON, keep as raw text
+      }
+
+      // Render Response UI
+      const statusClass = res.ok ? 's2xx' : 's4xx';
+      statusText.innerHTML = `<span class="status-code ${statusClass}">${res.status} ${res.statusText}</span>`;
+      timeText.textContent = `${timeMs} ms`;
+      responseBody.innerHTML = parsedJson ? syntaxHighlight(formattedJson) : formattedJson;
+
+      // Run Mock Tests if this sandbox requires it
+      if (hasTests && parsedJson) {
+        let testsHTML = '';
+        
+        // Test 1: Status Code is 200
+        if(res.status === 200) {
+          testsHTML += `<div class="test-badge pass">✓ Status code is 200</div>`;
+        } else {
+          testsHTML += `<div class="test-badge fail">✕ Status code is 200 (Got ${res.status})</div>`;
+        }
+
+        // Test 2: Has Email string
+        if(parsedJson.email && typeof parsedJson.email === 'string') {
+          testsHTML += `<div class="test-badge pass">✓ Response contains an email address</div>`;
+        } else {
+          testsHTML += `<div class="test-badge fail">✕ Response contains an email address</div>`;
+        }
+        
+        testResultsBox.innerHTML = testsHTML;
+      }
+
+    } catch (error) {
+      statusText.innerHTML = '<span class="status-code s4xx">Network Error</span>';
+      responseBody.textContent = "Failed to fetch: " + error.message + "\n(Check console or ensure the URL is correct)";
+    }
+
+    // Reset button
+    btn.textContent = 'Send';
+    btn.style.opacity = '1';
+  });
+});
+</script>
+</body>
+</html>
