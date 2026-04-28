@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import Fuse from 'fuse.js'
 import type { Resource } from '../types'
 
-const API = import.meta.env.VITE_API_URL
+const API = import.meta.env.VITE_API_BASE_URL
 
 interface Filters {
   domain: string
