@@ -61,7 +61,7 @@ export interface AssessmentState {
 }
 
 const EXAM_DURATION_SECONDS = 30 * 60;
-const API = import.meta.env.VITE_API_URL ?? 'http://localhost:4000';
+const API = import.meta.env.VITE_API_URL;
 
 const initialState = {
   status: 'idle' as AssessmentStatus,
