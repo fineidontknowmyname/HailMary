@@ -1,23 +1,11 @@
-import { useState } from 'react';
 import type { Intel } from '@hailmary/types';
-import { PlayCircle, FileText, Code, ExternalLink, CheckCircle, HelpCircle } from 'lucide-react';
+import { PlayCircle, FileText, Code, ExternalLink } from 'lucide-react';
 
 interface IntelCardProps {
   intel: Intel;
-  isLoggedIn?: boolean;
-  isComplete?: boolean;
-  onToggle?: () => void;
-  onAskDoubt?: () => void;
-  onChallenge?: () => void;
 }
 
-
-export function IntelCard({ intel, isLoggedIn, isComplete, onToggle, onAskDoubt, onChallenge }: IntelCardProps) {
-  const [imgError, setImgError] = useState(false);
-
-  const thumbnailUrl = intel.video_id 
-    ? `https://img.youtube.com/vi/${intel.video_id}/${imgError ? 'hqdefault' : 'maxresdefault'}.jpg`
-    : null;
+export function IntelCard({ intel }: IntelCardProps) {
 
   const getIcon = () => {
     switch (intel.type) {

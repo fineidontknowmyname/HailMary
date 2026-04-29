@@ -29,7 +29,7 @@ export default function App() {
   const isLoggedIn = !!user;
 
   const { intel, isLoading, error, fetchIntel } = useBoundStore();
-  const { completed, toggleComplete, isComplete } = useProgress();
+  const { completed, toggleComplete } = useProgress();
 
   useEffect(() => {
     initialize();
@@ -197,11 +197,6 @@ export default function App() {
               <IntelCard
                 key={item.id}
                 intel={item}
-                isLoggedIn={isLoggedIn}
-                isComplete={isComplete(item.id)}
-                onToggle={() => toggleComplete(item.id)}
-                onAskDoubt={() => setIntelForDoubt(item)}
-                onChallenge={() => setIntelForChallenge(item)}
               />
             ))}
           </div>
