@@ -6,6 +6,7 @@ import AuthModal from './components/AuthModal';
 import { DoubtSolverModal } from './components/DoubtSolverModal';
 import { ChallengeModal } from './components/ChallengeModal';
 import ProfilePage from './pages/ProfilePage';
+import SessionManager from './components/SessionManager';
 
 import { useBoundStore } from './store/useBoundStore';
 import { useProgress } from './hooks/useProgress';
@@ -22,6 +23,7 @@ export default function App() {
   const [intelForChallenge, setIntelForChallenge] = useState<Intel | null>(null);
   const [showAuth, setShowAuth] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  const [activeResource, setActiveResource] = useState<Intel | null>(null);
 
   const initialize = useAuthStore(s => s.initialize);
   const initialized = useAuthStore(s => s.initialized);
@@ -197,6 +199,7 @@ export default function App() {
               <IntelCard
                 key={item.id}
                 intel={item}
+                onStartSession={() => setActiveResource(item)}
               />
             ))}
           </div>
@@ -220,6 +223,14 @@ export default function App() {
           intel={intelForChallenge}
           onClose={() => setIntelForChallenge(null)}
           onSuccess={() => toggleComplete(intelForChallenge.id)}
+        />
+      )}
+
+      {activeResource && (
+        <SessionManager 
+          resource={activeResource} 
+          user={user}
+          onClose={() => setActiveResource(null)} 
         />
       )}
     </div>

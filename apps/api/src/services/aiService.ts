@@ -135,5 +135,32 @@ Do not include any text outside of the JSON object.`;
     } catch (error) {
       return { passed: true, feedback: 'Validation bypassed due to server load. Good work.' };
     }
+  },
+
+  tutorSession: async (resourceTitle: string, userMessage: string): Promise<string> => {
+    const systemPrompt = `You are an elite Technical Tutor helping a user with: ${resourceTitle}. DO NOT give the final answer. Ask leading questions. Keep it under 3 short paragraphs. Use markdown for code.`;
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000);
+
+    try {
+      const completion = await groq.chat.completions.create({
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userMessage }
+        ],
+        model: 'llama-3.1-8b-instant',
+        temperature: 0.6,
+        max_tokens: 300,
+      }, { signal: controller.signal });
+
+      clearTimeout(timeout);
+      
+      return completion.choices[0]?.message?.content || 'I encountered an error. Could you rephrase that?';
+    } catch (error) {
+      clearTimeout(timeout);
+      console.error("Tutor Session Error:", error);
+      return 'I encountered an error. Could you rephrase that?';
+    }
   }
 };

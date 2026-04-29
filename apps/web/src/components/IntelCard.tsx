@@ -1,14 +1,12 @@
 import type { Intel } from '@hailmary/types';
 import { PlayCircle, FileText, Code, ExternalLink } from 'lucide-react';
-import { useProgress } from '../hooks/useProgress';
 
 interface IntelCardProps {
   intel: Intel;
+  onStartSession?: () => void;
 }
 
-export function IntelCard({ intel }: IntelCardProps) {
-  const { completed, toggleComplete } = useProgress();
-  const isCompleted = completed.has(intel.id);
+export function IntelCard({ intel, onStartSession }: IntelCardProps) {
 
   const getIcon = () => {
     switch (intel.type) {
@@ -45,31 +43,13 @@ export function IntelCard({ intel }: IntelCardProps) {
       </div>
 
       {/* ACTION BAR: Link and Tracking Button */}
-      <div className="mt-6 flex items-center justify-between pt-4 border-t border-gray-800/50">
-        
-        {/* 1. The Resource Link (Always Unlocked) */}
-        <a 
-          href={intel.link} 
-          target="_blank" 
-          rel="noopener noreferrer"
-          className="text-sm font-bold text-blue-400 hover:text-blue-300 flex items-center gap-1 transition-colors"
-        >
-          Open Resource
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
-        </a>
-
-        {/* 2. Your Tracking Button Goes Here! */}
+      <div className="mt-6 pt-4 border-t border-gray-800/50">
         <button 
-          onClick={() => toggleComplete(intel.id)}
-          className={`px-3 py-1.5 text-xs font-bold rounded transition-colors ${
-            isCompleted
-              ? 'text-gray-400 bg-gray-800 hover:bg-gray-700 border border-gray-700'
-              : 'text-gray-900 bg-green-500 hover:bg-green-400'
-          }`}
+          onClick={onStartSession}
+          className="w-full px-4 py-2 bg-green-600 hover:bg-green-500 text-white font-bold rounded-lg transition-colors"
         >
-          {isCompleted ? 'Completed' : 'Mark In Progress'}
+          Start Study Session
         </button>
-
       </div>
     </div>
   );
