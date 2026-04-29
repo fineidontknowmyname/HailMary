@@ -16,9 +16,10 @@ const PORT = process.env.PORT || 4000;
 
 app.use(cors({
   origin: [
-    'http://localhost:5173',                  // Allows your local Vite app
-    'https://hail-mary-web-seven.vercel.app'  // Your EXACT live Vercel app
+    'http://localhost:5173',
+    'https://hail-mary-web-seven.vercel.app'
   ],
+  methods: ['POST', 'GET', 'OPTIONS'],
   credentials: true,
 }));
 

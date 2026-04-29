@@ -19,8 +19,7 @@ export default function SessionManager({ resource, onClose, user }: SessionManag
   const handleStartSession = async () => {
     setLoading(true);
     try {
-      // Call the Express backend we just built
-      const res = await fetch('/api/sessions/start', {
+      const res = await fetch('https://hailmary.onrender.com/api/sessions/start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -48,7 +47,7 @@ export default function SessionManager({ resource, onClose, user }: SessionManag
   const handleEndSession = async (feeling: 'great' | 'neutral' | 'stuck') => {
     setLoading(true);
     try {
-      const res = await fetch('/api/sessions/end', {
+      const res = await fetch('https://hailmary.onrender.com/api/sessions/end', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
