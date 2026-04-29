@@ -49,28 +49,27 @@ export default function TutorialsAndLabs() {
 
       {/* Directory Grid */}
       <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2">
-        {TUTORIALS.map((tutorial) => (
-          <a
-            key={tutorial.title}
-            href={tutorial.href}
-            className="group flex flex-col justify-between rounded-xl border border-gray-800 bg-[#13161e] p-6 transition-all hover:border-green-500 hover:shadow-[0_0_15px_rgba(34,197,94,0.1)]"
-          >
-            <div>
-              <h2 className="text-xl font-semibold text-white transition-colors group-hover:text-green-400">
-                {tutorial.title}
-              </h2>
-              <p className="mt-2 text-sm text-[#7a849a]">
-                {tutorial.desc}
-              </p>
-            </div>
-            
-            <div className="mt-6 flex items-center justify-end">
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-800/50 text-gray-400 transition-colors group-hover:bg-green-500/10 group-hover:text-green-400">
-                <ArrowRight className="h-4 w-4" />
-              </span>
-            </div>
-          </a>
-        ))}
+        <div className="space-y-4">
+          {TUTORIALS.map((tutorial) => (
+            <a 
+              key={tutorial.title}
+              href={tutorial.href} 
+              className="flex items-center justify-between p-6 bg-[#13161e] border border-gray-800 rounded-lg hover:border-green-500 transition-all group"
+            >
+              <div>
+                <h2 className="text-xl font-bold text-white group-hover:text-green-400">
+                  {tutorial.title}
+                </h2>
+                <p className="text-sm text-gray-400 mt-1">{tutorial.desc}</p>
+              </div>
+              <div className="text-gray-600 group-hover:text-green-500">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                </svg>
+              </div>
+            </a>
+          ))}
+        </div>
       </div>
     </div>
   );

@@ -1,8 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
-import { CheckCircle2, Trophy, Lock } from 'lucide-react';
 import { FilterBar } from './components/FilterBar';
 import { IntelCard } from './components/IntelCard';
-import { ExternalResourceCard } from './components/ExternalResourceCard';
 import { SkeletonCard } from './components/SkeletonCard';
 import AuthModal from './components/AuthModal';
 import { DoubtSolverModal } from './components/DoubtSolverModal';
@@ -53,21 +51,7 @@ export default function App() {
     });
   }, [intel, searchQuery, selectedType, selectedDepth]);
 
-  const completedResources = useMemo(
-    () => filteredIntel.filter((item: Intel) => completed.has(item.id)),
-    [filteredIntel, completed]
-  );
 
-  const upNextResource = useMemo(
-    () => filteredIntel.find((item: Intel) => !completed.has(item.id)) ?? null,
-    [filteredIntel, completed]
-  );
-
-  const lockedResources = useMemo(() => {
-    if (!upNextResource) return [];
-    const upNextIdx = filteredIntel.findIndex((item: Intel) => item.id === upNextResource.id);
-    return filteredIntel.slice(upNextIdx + 1);
-  }, [filteredIntel, upNextResource]);
 
   if (!initialized) {
     return (
@@ -207,127 +191,6 @@ export default function App() {
             No intel matches your current parameters.
           </div>
 
-        ) : isLoggedIn ? (
-          <div className="flex flex-col gap-12">
-
-            {upNextResource ? (
-              <section aria-labelledby="up-next-heading">
-                <div className="flex items-center gap-3 mb-5">
-                  <span className="inline-block w-2 h-2 rounded-full bg-[#4fffb0] animate-pulse" />
-                  <h2
-                    id="up-next-heading"
-                    className="text-xs font-mono font-semibold uppercase tracking-widest text-[#4fffb0]"
-                  >
-                    Up Next
-                  </h2>
-                  <span className="text-xs font-mono text-[#7a849a]">
-                    — your current active challenge
-                  </span>
-                </div>
-
-                <div className="relative">
-                  <div className="absolute -inset-px rounded-xl bg-gradient-to-r from-[#4fffb0]/40 via-[#7c6aff]/30 to-[#4fffb0]/40 blur-sm" />
-                  <div className="relative rounded-xl ring-1 ring-[#4fffb0]/30 shadow-xl shadow-[#4fffb0]/5">
-                    <ExternalResourceCard intel={upNextResource} />
-                  </div>
-                </div>
-              </section>
-            ) : (
-              <section
-                aria-label="Course completed"
-                className="flex flex-col items-center justify-center py-20 text-center gap-4"
-              >
-                <div className="relative">
-                  <Trophy className="w-20 h-20 text-[#ffc93c]" />
-                  <span className="absolute -top-1 -right-1 text-2xl">🎉</span>
-                </div>
-                <h2 className="text-3xl font-black tracking-tight text-white">
-                  Mission Complete
-                </h2>
-                <p className="text-[#7a849a] max-w-sm font-mono text-sm leading-relaxed">
-                  You've conquered every piece of intel in this queue.
-                  Clear your filters or check back for new resources.
-                </p>
-                <div className="inline-flex items-center gap-2 mt-2 px-5 py-2.5 bg-[#4fffb0]/10 border border-[#4fffb0]/30 rounded-full text-[#4fffb0] text-sm font-mono font-semibold">
-                  <CheckCircle2 className="w-4 h-4" />
-                  {completedResources.length} of {filteredIntel.length} completed
-                </div>
-              </section>
-            )}
-
-            {completedResources.length > 0 && (
-              <section aria-labelledby="completed-heading">
-                <div className="flex items-center gap-3 mb-5">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                  <h2
-                    id="completed-heading"
-                    className="text-xs font-mono font-semibold uppercase tracking-widest text-emerald-400"
-                  >
-                    Completed Journey
-                  </h2>
-                  <span className="ml-auto text-xs font-mono text-[#7a849a]">
-                    {completedResources.length} mission{completedResources.length !== 1 ? 's' : ''}
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {completedResources.map((item: Intel) => (
-                    <div key={item.id} className="relative opacity-70 hover:opacity-100 transition-opacity duration-200">
-                      <div className="absolute top-3 right-3 z-10 flex items-center gap-1 bg-emerald-500/20 border border-emerald-500/30 rounded-full px-2 py-0.5 text-[10px] font-mono font-semibold text-emerald-400 uppercase tracking-wider">
-                        <CheckCircle2 className="w-3 h-3" />
-                        Done
-                      </div>
-                      <IntelCard
-                        intel={item}
-                        isLoggedIn={isLoggedIn}
-                        isComplete={true}
-                        onToggle={() => toggleComplete(item.id)}
-                        onAskDoubt={() => setIntelForDoubt(item)}
-                        onChallenge={() => setIntelForChallenge(item)}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {lockedResources.length > 0 && (
-              <section aria-labelledby="locked-heading">
-                <div className="flex items-center gap-3 mb-5">
-                  <Lock className="w-4 h-4 text-[#7a849a]" />
-                  <h2
-                    id="locked-heading"
-                    className="text-xs font-mono font-semibold uppercase tracking-widest text-[#7a849a]"
-                  >
-                    Coming Up
-                  </h2>
-                  <span className="ml-auto text-xs font-mono text-[#7a849a]">
-                    {lockedResources.length} remaining
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {lockedResources.map((item: Intel) => (
-                    <div
-                      key={item.id}
-                      className="relative opacity-40 pointer-events-none select-none"
-                      aria-hidden="true"
-                    >
-                      <div className="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-[#0b0e14]/60 backdrop-blur-[1px]">
-                        <Lock className="w-6 h-6 text-[#7a849a]" />
-                      </div>
-                      <IntelCard
-                        intel={item}
-                        isLoggedIn={false}
-                        isComplete={false}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
-
-          </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {filteredIntel.map((item: Intel) => (

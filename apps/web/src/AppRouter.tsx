@@ -7,7 +7,7 @@ import UpdatePasswordModal from './components/UpdatePasswordModal';
 import { AssessmentEngine } from './components/AssessmentEngine';
 import IdeaVault from './pages/IdeaVault';
 import TutorialsAndLabs from './pages/TutorialsAndLabs';
-
+import ContributeResource from './components/ContributeResource';
 // ─── Placeholder pages for routes not yet built ────────────────────────────
 // Replace each with the real page component once built.
 
@@ -109,6 +109,7 @@ export function AppRouter() {
             path="/tutorials/*"
             element={<TutorialsAndLabs />}
           />
+          <Route path="/contribute" element={<ContributeResource />} />
 
           {/* ── 404 fallback ───────────────────────────────────── */}
           <Route
