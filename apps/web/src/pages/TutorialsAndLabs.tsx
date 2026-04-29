@@ -5,12 +5,12 @@ const TUTORIALS = [
   {
     title: 'Git & GitHub',
     desc: 'Survival guide for detached HEADs and root inits',
-    href: '/tutorials/git-github.html',
+    href: '/tutorials/git-guide.html',
   },
   {
     title: 'Docker',
     desc: 'In the trenches: Volumes, networking, and container crashes',
-    href: '/tutorials/docker.html',
+    href: '/tutorials/docker-guide.html',
   },
   {
     title: 'MongoDB',
@@ -20,7 +20,7 @@ const TUTORIALS = [
   {
     title: 'Postman',
     desc: 'Advanced API testing, variables, and auth hacks',
-    href: '/tutorials/postman.html',
+    href: '/tutorials/pstman.html',
   },
 ];
 
