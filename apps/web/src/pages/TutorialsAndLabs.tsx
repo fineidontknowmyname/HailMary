@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, BookOpen } from 'lucide-react';
+import { BookOpen } from 'lucide-react';
 
 const TUTORIALS = [
   {
