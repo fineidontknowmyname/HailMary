@@ -169,6 +169,11 @@ body {
   border-right:1px solid var(--rule);
   padding:28px 0;
   overflow-y:auto; z-index:200;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+}
+.sidenav.open {
+  transform: translateX(0);
 }
 .sidenav::-webkit-scrollbar{display:none;}
 .nav-brand {
@@ -208,7 +213,7 @@ body {
 
 /* ── LAYOUT ── */
 .layout { display:flex; }
-.main { margin-left:236px; flex:1; min-width:0; }
+.main { margin-left:0; flex:1; min-width:0; }
 
 /* ── SECTION ── */
 .sec {
@@ -433,7 +438,7 @@ code {
 
 /* ── FOOTER ── */
 footer {
-  margin-left:236px;
+  margin-left:0;
   padding:30px 80px;
   border-top:1px solid var(--rule);
   display:flex; justify-content:space-between; align-items:center;
@@ -449,7 +454,6 @@ footer em { font-style:normal; color:var(--green); }
 }
 
 @media(max-width:900px){
-  .sidenav{display:none;}
   .main,footer{margin-left:0;}
   .hero,.sec{padding-left:24px;padding-right:24px;}
   .flow{flex-direction:column;}
@@ -457,6 +461,10 @@ footer em { font-style:normal; color:var(--green); }
 </style>
 </head>
 <body>
+
+<button id="hamburger-btn" style="position: fixed; top: 20px; left: 20px; z-index: 100; background: var(--paper2); border: 1px solid var(--rule); border-radius: 4px; padding: 8px; cursor: pointer; color: var(--ink);">
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+</button>
 
 <!-- HERO -->
 <header class="hero">
@@ -488,7 +496,9 @@ footer em { font-style:normal; color:var(--green); }
 <div class="layout">
 
 <!-- SIDENAV -->
-<nav class="sidenav">
+<aside id="sidebar" class="sidenav">
+  <button id="close-sidebar-btn" style="position: absolute; top: 16px; right: 16px; background: transparent; border: none; color: var(--ink); font-size: 24px; cursor: pointer; padding: 4px; line-height: 1;">&times;</button>
+  <nav>
   <div class="nav-brand">
     <div class="nav-brand-name"><em>Git</em> & GitHub</div>
     <div class="nav-brand-sub">Developer Handbook</div>
@@ -506,7 +516,8 @@ footer em { font-style:normal; color:var(--green); }
   <a href="#branching" class="nav-a"><span class="nav-pip"></span>Branching & Merging</a>
   <a href="#remote"    class="nav-a"><span class="nav-pip"></span>Remote & GitHub</a>
   <a href="#advanced"  class="nav-a"><span class="nav-pip"></span>Stash, Rebase & PRs</a>
-</nav>
+  </nav>
+</aside>
 
 <div class="main">
 
@@ -1117,6 +1128,13 @@ window.addEventListener('scroll', () => {
   let cur = '';
   secs.forEach(s => { if(window.scrollY >= s.offsetTop - 120) cur = s.id; });
   links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === `#${cur}`));
+});
+
+document.getElementById('hamburger-btn').addEventListener('click', () => {
+  document.getElementById('sidebar').classList.add('open');
+});
+document.getElementById('close-sidebar-btn').addEventListener('click', () => {
+  document.getElementById('sidebar').classList.remove('open');
 });
 </script>
 </body>

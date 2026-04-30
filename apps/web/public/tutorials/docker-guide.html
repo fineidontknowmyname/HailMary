@@ -156,7 +156,7 @@ body {
   opacity:0;
   animation: rise 0.7s ease 0.65s forwards;
 }
-.stat { }
+
 .stat-val {
   font-family:'Epilogue',sans-serif;
   font-size:32px; font-weight:900;
@@ -183,6 +183,11 @@ body {
   padding:28px 0;
   overflow-y:auto;
   z-index:200;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+}
+.sidenav.open {
+  transform: translateX(0);
 }
 .sidenav::-webkit-scrollbar{display:none;}
 .nav-brand {
@@ -230,7 +235,7 @@ body {
 
 /* ── LAYOUT ── */
 .layout { display:flex; }
-.content { margin-left:230px; flex:1; min-width:0; }
+.content { margin-left:0; flex:1; min-width:0; }
 
 /* ── SECTION ── */
 .sec {
@@ -489,7 +494,7 @@ code {
 
 /* ── FOOTER ── */
 footer {
-  margin-left:230px;
+  margin-left:0;
   padding:32px 80px;
   border-top:1px solid var(--border);
   display:flex; justify-content:space-between; align-items:center;
@@ -505,7 +510,6 @@ footer span { color:var(--cyan); }
 }
 
 @media (max-width:900px){
-  .sidenav{display:none;}
   .content, footer{margin-left:0;}
   .hero,.sec{padding-left:24px;padding-right:24px;}
   .compare{grid-template-columns:1fr;}
@@ -513,6 +517,10 @@ footer span { color:var(--cyan); }
 </style>
 </head>
 <body>
+
+<button id="hamburger-btn" style="position: fixed; top: 20px; left: 20px; z-index: 100; background: var(--bg3); border: 1px solid var(--border); border-radius: 4px; padding: 8px; cursor: pointer; color: var(--text);">
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+</button>
 
 <!-- HERO -->
 <header class="hero">
@@ -543,7 +551,9 @@ footer span { color:var(--cyan); }
 <div class="layout">
 
 <!-- SIDE NAV -->
-<nav class="sidenav">
+<aside id="sidebar" class="sidenav">
+  <button id="close-sidebar-btn" style="position: absolute; top: 16px; right: 16px; background: transparent; border: none; color: var(--text); font-size: 24px; cursor: pointer; padding: 4px; line-height: 1;">&times;</button>
+  <nav>
   <div class="nav-brand">
     <div class="nav-brand-name">Docker Guide</div>
     <div class="nav-brand-sub">DevOps Handbook</div>
@@ -560,7 +570,8 @@ footer span { color:var(--cyan); }
   <div class="nav-group-label">Advanced</div>
   <a href="#hub"        class="nav-link"><span class="nav-pip"></span>Docker Hub</a>
   <a href="#tips"       class="nav-link"><span class="nav-pip"></span>Tips & Best Practices</a>
-</nav>
+  </nav>
+</aside>
 
 <div class="content">
 
@@ -1135,6 +1146,13 @@ window.addEventListener('scroll', () => {
   let cur='';
   secs.forEach(s => { if(window.scrollY >= s.offsetTop - 120) cur = s.id; });
   links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === `#${cur}`));
+});
+
+document.getElementById('hamburger-btn').addEventListener('click', () => {
+  document.getElementById('sidebar').classList.add('open');
+});
+document.getElementById('close-sidebar-btn').addEventListener('click', () => {
+  document.getElementById('sidebar').classList.remove('open');
 });
 </script>
 </body>

@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { FilterBar } from './components/FilterBar';
 import { IntelCard } from './components/IntelCard';
 import { SkeletonCard } from './components/SkeletonCard';
-import AuthModal from './components/AuthModal';
+import { SignInModal } from './components/SignInModal';
 import { DoubtSolverModal } from './components/DoubtSolverModal';
 import { ChallengeModal } from './components/ChallengeModal';
 import ProfilePage from './pages/ProfilePage';
@@ -21,7 +21,7 @@ export default function App() {
   const [selectedDepth, setSelectedDepth] = useState<string | null>(null);
   const [intelForDoubt, setIntelForDoubt] = useState<Intel | null>(null);
   const [intelForChallenge, setIntelForChallenge] = useState<Intel | null>(null);
-  const [showAuth, setShowAuth] = useState(false);
+  const [showSignIn, setShowSignIn] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [activeResource, setActiveResource] = useState<Intel | null>(null);
 
@@ -72,7 +72,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#0b0e14] text-white selection:bg-[#4fffb0] selection:text-black">
 
-      {showAuth && <AuthModal onClose={() => setShowAuth(false)} />}
+      <SignInModal isOpen={showSignIn} onClose={() => setShowSignIn(false)} />
 
       <nav className="sticky top-0 z-40 bg-[#0b0e14]/80 backdrop-blur-md border-b border-[#1e2535]">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
@@ -108,10 +108,10 @@ export default function App() {
               </div>
             ) : (
               <button
-                onClick={() => setShowAuth(true)}
+                onClick={() => setShowSignIn(true)}
                 className="text-xs font-mono px-4 py-2 bg-[#4fffb0] text-[#0b0e14] font-bold rounded-xl hover:bg-[#3de89e] transition-colors"
               >
-                Initialize
+                Sign In
               </button>
             )}
           </div>

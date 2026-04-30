@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MongoDB — High-Performance Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;1,300&family=Epilogue:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:        #080e14;
+  --bg2:       #0d1520;
+  --bg3:       #111d2a;
+  --bg4:       #162030;
+  --border:    #1e2e40;
+  --border2:   #243648;
+  --text:      #d8e8f5;
+  --muted:     #4a6a85;
+  --muted2:    #6a8fa8;
+  --cyan:      #00d4ff;
+  --cyan-dim:  rgba(0,212,255,0.08);
+  --cyan-b:    rgba(0,212,255,0.2);
+  --blue:      #3b82f6;
+  --blue-dim:  rgba(59,130,246,0.08);
+  --green:     #34d399;
+  --green-dim: rgba(52,211,153,0.08);
+  --green-b:   rgba(52,211,153,0.2);
+  --yellow:    #fbbf24;
+  --yellow-dim:rgba(251,191,36,0.08);
+  --red:       #f87171;
+  --red-dim:   rgba(248,113,113,0.08);
+  --orange:    #fb923c;
+  --orange-dim:rgba(251,146,60,0.08);
+  --purple:    #a78bfa;
+  --purple-dim:rgba(167,139,250,0.08);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Epilogue', sans-serif;
+  font-weight: 300;
+  line-height: 1.7;
+  overflow-x: hidden;
+}
+::-webkit-scrollbar { width:4px; }
+::-webkit-scrollbar-track { background:var(--bg); }
+::-webkit-scrollbar-thumb { background:var(--border2); border-radius:2px; }
+
+/* ── HERO ── */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 0 80px 72px;
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid var(--border);
+}
+
+.hero-dots {
+  position: absolute; inset:0;
+  background-image: radial-gradient(circle, rgba(52,211,153,0.12) 1px, transparent 1px);
+  background-size: 32px 32px;
+  opacity: 0.6;
+  pointer-events: none;
+  mask-image: radial-gradient(ellipse 70% 70% at 80% 20%, black 0%, transparent 60%);
+  animation: dotPulse 8s ease-in-out infinite;
+}
+@keyframes dotPulse {
+  0%,100% { opacity:0.4; }
+  50% { opacity:0.8; }
+}
+
+.hero-glow {
+  position: absolute;
+  bottom:-200px; left:-100px;
+  width:800px; height:800px;
+  background: radial-gradient(ellipse, rgba(0,100,160,0.18) 0%, transparent 60%);
+  pointer-events:none;
+}
+
+.hero-glow2 {
+  position: absolute;
+  top:-100px; right:-100px;
+  width:500px; height:500px;
+  background: radial-gradient(ellipse, rgba(52,211,153,0.06) 0%, transparent 65%);
+  pointer-events:none;
+}
+
+.hero-content { position:relative; z-index:1; }
+
+.hero-eyebrow {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 4px;
+  color: var(--green);
+  text-transform: uppercase;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  opacity:0;
+  animation: rise 0.6s ease 0.1s forwards;
+}
+.hero-eyebrow::before { content:'▮'; font-size:10px; animation: blink 1s step-end infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+.hero h1 {
+  font-family: 'Epilogue', sans-serif;
+  font-weight: 900;
+  font-size: clamp(56px, 9vw, 120px);
+  line-height: 0.85;
+  letter-spacing: -4px;
+  color: var(--text);
+  opacity:0;
+  animation: rise 0.7s ease 0.2s forwards;
+}
+.hero h1 .c { color: var(--green); }
+.hero h1 .d { color: var(--muted); letter-spacing: -4px; }
+
+.hero-tagline {
+  margin-top: 32px;
+  max-width: 580px;
+  font-size: 15px;
+  color: var(--muted2);
+  line-height: 1.85;
+  opacity:0;
+  animation: rise 0.7s ease 0.35s forwards;
+}
+
+.hero-pills {
+  margin-top: 36px;
+  display: flex; flex-wrap:wrap; gap:10px;
+  opacity:0;
+  animation: rise 0.7s ease 0.5s forwards;
+}
+.pill {
+  font-family:'IBM Plex Mono', monospace;
+  font-size:11px;
+  padding:5px 13px;
+  border:1px solid var(--border2);
+  border-radius:2px;
+  color:var(--muted2);
+  letter-spacing:0.5px;
+}
+.pill.hi { border-color:var(--green-b); color:var(--green); background:var(--green-dim); }
+
+.hero-stats {
+  margin-top: 52px;
+  display: flex;
+  gap: 48px;
+  opacity:0;
+  animation: rise 0.7s ease 0.65s forwards;
+}
+
+.stat-val {
+  font-family:'Epilogue',sans-serif;
+  font-size:32px; font-weight:900;
+  letter-spacing:-1px;
+  color:var(--green);
+  line-height:1;
+}
+.stat-lbl {
+  font-family:'IBM Plex Mono',monospace;
+  font-size:9px;
+  letter-spacing:2px;
+  color:var(--muted);
+  text-transform:uppercase;
+  margin-top:4px;
+}
+
+/* ── SIDE NAV ── */
+.sidenav {
+  position:fixed;
+  left:0; top:0; bottom:0;
+  width:230px;
+  background:var(--bg2);
+  border-right:1px solid var(--border);
+  padding:28px 0;
+  overflow-y:auto;
+  z-index:200;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+}
+.sidenav.open {
+  transform: translateX(0);
+}
+.sidenav::-webkit-scrollbar{display:none;}
+.nav-brand {
+  padding:0 24px 24px;
+  border-bottom:1px solid var(--border);
+  margin-bottom:16px;
+}
+.nav-brand-name {
+  font-family:'Epilogue',sans-serif;
+  font-weight:700;
+  font-size:15px;
+  color:var(--green);
+  letter-spacing:-0.3px;
+}
+.nav-brand-sub {
+  font-family:'IBM Plex Mono',monospace;
+  font-size:9px;
+  color:var(--muted);
+  letter-spacing:1.5px;
+  margin-top:2px;
+}
+.nav-group-label {
+  font-family:'IBM Plex Mono',monospace;
+  font-size:9px;
+  letter-spacing:2.5px;
+  text-transform:uppercase;
+  color:var(--muted);
+  padding:0 24px 6px;
+  margin-top:10px;
+}
+.nav-link {
+  display:flex; align-items:center; gap:10px;
+  padding:8px 24px;
+  font-size:12.5px;
+  color:var(--muted2);
+  text-decoration:none;
+  border-left:2px solid transparent;
+  transition:all 0.15s;
+  white-space:nowrap;
+}
+.nav-link:hover { color:var(--text); background:rgba(255,255,255,0.02); }
+.nav-link.active { color:var(--green); border-left-color:var(--green); background:var(--green-dim); }
+.nav-pip { width:5px; height:5px; border-radius:50%; background:var(--border2); flex-shrink:0; }
+.nav-link.active .nav-pip { background:var(--green); }
+
+/* ── LAYOUT ── */
+.layout { display:flex; }
+.content { margin-left:0; flex:1; min-width:0; }
+
+/* ── SECTION ── */
+.sec {
+  padding: 72px 80px;
+  border-bottom: 1px solid var(--border);
+  max-width: 980px;
+  opacity:0;
+  transform:translateY(20px);
+  transition:opacity 0.5s ease, transform 0.5s ease;
+}
+.sec.visible { opacity:1; transform:translateY(0); }
+
+.sec-eye {
+  font-family:'IBM Plex Mono',monospace;
+  font-size:10px;
+  letter-spacing:3px;
+  text-transform:uppercase;
+  margin-bottom:10px;
+  display:flex; align-items:center; gap:10px;
+}
+.sec-eye::before { content:''; display:block; width:16px; height:1px; }
+
+.sec h2 {
+  font-family:'Epilogue',sans-serif;
+  font-size:30px; font-weight:700;
+  letter-spacing:-0.6px;
+  line-height:1.1;
+  margin-bottom:10px;
+}
+
+.sec-desc {
+  font-size:14.5px;
+  color:var(--muted2);
+  max-width:600px;
+  line-height:1.85;
+  margin-bottom:36px;
+}
+
+/* ── SECTION COLOR THEMES ── */
+.t-cyan .sec-eye { color:var(--cyan); }
+.t-cyan .sec-eye::before { background:var(--cyan); }
+.t-cyan .step-n { background:var(--cyan-dim); color:var(--cyan); border:1px solid var(--cyan-b); }
+.t-cyan .card-bar { background:var(--cyan); }
+
+.t-green .sec-eye { color:var(--green); }
+.t-green .sec-eye::before { background:var(--green); }
+.t-green .step-n { background:var(--green-dim); color:var(--green); border:1px solid var(--green-b); }
+.t-green .card-bar { background:var(--green); }
+
+.t-blue .sec-eye { color:var(--blue); }
+.t-blue .sec-eye::before { background:var(--blue); }
+.t-blue .step-n { background:var(--blue-dim); color:var(--blue); border:1px solid rgba(59,130,246,0.3); }
+.t-blue .card-bar { background:var(--blue); }
+
+.t-yellow .sec-eye { color:var(--yellow); }
+.t-yellow .sec-eye::before { background:var(--yellow); }
+.t-yellow .step-n { background:var(--yellow-dim); color:var(--yellow); border:1px solid rgba(251,191,36,0.3); }
+.t-yellow .card-bar { background:var(--yellow); }
+
+.t-orange .sec-eye { color:var(--orange); }
+.t-orange .sec-eye::before { background:var(--orange); }
+.t-orange .step-n { background:var(--orange-dim); color:var(--orange); border:1px solid rgba(251,146,60,0.3); }
+.t-orange .card-bar { background:var(--orange); }
+
+.t-purple .sec-eye { color:var(--purple); }
+.t-purple .sec-eye::before { background:var(--purple); }
+.t-purple .step-n { background:var(--purple-dim); color:var(--purple); border:1px solid rgba(167,139,250,0.3); }
+.t-purple .card-bar { background:var(--purple); }
+
+.t-red .sec-eye { color:var(--red); }
+.t-red .sec-eye::before { background:var(--red); }
+.t-red .step-n { background:var(--red-dim); color:var(--red); border:1px solid rgba(248,113,113,0.3); }
+.t-red .card-bar { background:var(--red); }
+
+/* ── CONCEPT CARDS ── */
+.cards { display:grid; grid-template-columns:repeat(auto-fill, minmax(270px,1fr)); gap:12px; }
+.card {
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:6px;
+  padding:22px;
+  position:relative;
+  overflow:hidden;
+  transition:border-color 0.2s, transform 0.2s;
+}
+.card:hover { border-color:var(--border2); transform:translateY(-2px); }
+.card-bar { position:absolute; top:0; left:0; right:0; height:2px; }
+.card-icon { font-size:22px; margin-bottom:12px; display:block; }
+.card-title {
+  font-family:'Epilogue',sans-serif;
+  font-size:14px; font-weight:600;
+  margin-bottom:8px; color:var(--text);
+  line-height:1.3;
+}
+.card-body { font-size:12.5px; color:var(--muted2); line-height:1.72; }
+.card.full { grid-column:1/-1; }
+
+/* ── STEP LIST ── */
+.steps { display:flex; flex-direction:column; gap:0; }
+.step { display:flex; gap:0; }
+.step-left { display:flex; flex-direction:column; align-items:center; width:48px; flex-shrink:0; }
+.step-n {
+  width:32px; height:32px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:12px; font-weight:600;
+  flex-shrink:0; z-index:1; margin-top:2px;
+}
+.step-line { width:1px; flex:1; min-height:20px; background:var(--border); margin:4px 0; }
+.step:last-child .step-line { display:none; }
+.step-right { padding:0 0 28px 20px; flex:1; }
+.step-title {
+  font-family:'Epilogue',sans-serif;
+  font-size:15px; font-weight:600;
+  margin-bottom:6px; margin-top:4px;
+  color:var(--text); line-height:1.3;
+}
+.step-body { font-size:13px; color:var(--muted2); line-height:1.75; }
+
+/* ── CODE BLOCK ── */
+.code {
+  background:var(--bg3);
+  border:1px solid var(--border);
+  border-radius:6px;
+  overflow:hidden;
+  margin:14px 0;
+  font-family:'IBM Plex Mono',monospace;
+}
+.code-top {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:9px 16px;
+  border-bottom:1px solid var(--border);
+  background:rgba(255,255,255,0.02);
+}
+.code-label {
+  font-size:9px; letter-spacing:2px;
+  text-transform:uppercase; color:var(--muted);
+}
+.code-dots { display:flex; gap:5px; }
+.cd { width:9px; height:9px; border-radius:50%; }
+.cd.r{background:#ff5f57;} .cd.y{background:#febc2e;} .cd.g{background:#28c840;}
+.code-body {
+  padding:16px 18px;
+  font-size:12.5px; line-height:1.75;
+  color:#9bbcd4; overflow-x:auto;
+}
+.code-body pre { margin:0; white-space:pre; }
+.cm  { color:#3d5a70; font-style:italic; }
+.kw  { color:#c792ea; }
+.str { color:#a8ff78; }
+.num { color:var(--yellow); }
+.cmd { color:var(--cyan); }
+.flag{ color:var(--orange); }
+.val { color:var(--green); }
+
+/* ── INLINE CODE ── */
+code {
+  font-family:'IBM Plex Mono',monospace;
+  font-size:12px;
+  background:var(--bg3);
+  border:1px solid var(--border);
+  padding:1px 6px; border-radius:3px;
+  color:var(--cyan);
+}
+
+/* ── CALLOUT ── */
+.callout {
+  display:flex; gap:14px;
+  padding:16px 18px; border-radius:5px;
+  margin:16px 0; border:1px solid;
+  align-items:flex-start;
+}
+.callout.tip  { background:var(--cyan-dim);   border-color:var(--cyan-b); }
+.callout.warn { background:var(--yellow-dim); border-color:rgba(251,191,36,0.2); }
+.callout.info { background:var(--blue-dim);   border-color:rgba(59,130,246,0.2); }
+.callout.good { background:var(--green-dim);  border-color:var(--green-b); }
+.callout-icon { font-size:15px; flex-shrink:0; margin-top:1px; }
+.callout-title {
+  font-family:'Epilogue',sans-serif;
+  font-size:13px; font-weight:600; margin-bottom:4px;
+}
+.callout.tip  .callout-title { color:var(--cyan); }
+.callout.warn .callout-title { color:var(--yellow); }
+.callout.info .callout-title { color:var(--blue); }
+.callout.good .callout-title { color:var(--green); }
+.callout-body { font-size:12.5px; color:var(--muted2); line-height:1.7; }
+
+/* ── FOOTER ── */
+footer {
+  margin-left:0;
+  padding:32px 80px;
+  border-top:1px solid var(--border);
+  display:flex; justify-content:space-between; align-items:center;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:10px; letter-spacing:1.5px;
+  color:var(--muted); text-transform:uppercase;
+}
+footer span { color:var(--green); }
+
+@keyframes rise {
+  from { opacity:0; transform:translateY(14px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+@media (max-width:900px){
+  .content, footer{margin-left:0;}
+  .hero,.sec{padding-left:24px;padding-right:24px;}
+  .compare{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<button id="hamburger-btn" style="position: fixed; top: 20px; left: 20px; z-index: 100; background: var(--bg3); border: 1px solid var(--border); border-radius: 4px; padding: 8px; cursor: pointer; color: var(--text);">
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+</button>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="hero-dots"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-glow2"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow">High-Performance Developer Guide</div>
+    <h1><span class="d">Scale</span><br><span class="c">MongoDB</span><span class="d">.</span></h1>
+    <p class="hero-tagline">From schema design to execution plans — master the art of the Document Paradigm, the Aggregation Framework, and the ESR rule to build lightning-fast NoSQL architectures.</p>
+    <div class="hero-pills">
+      <span class="pill hi">Intermediate → Advanced</span>
+      <span class="pill">Document Paradigm</span>
+      <span class="pill">ESR Indexing</span>
+      <span class="pill">Aggregation</span>
+      <span class="pill">WiredTiger</span>
+    </div>
+    <div class="hero-stats">
+      <div class="stat"><div class="stat-val">6</div><div class="stat-lbl">Sections</div></div>
+      <div class="stat"><div class="stat-val">16</div><div class="stat-lbl">MB Limit</div></div>
+      <div class="stat"><div class="stat-val">0</div><div class="stat-lbl">Joins Required</div></div>
+    </div>
+  </div>
+</header>
+
+<!-- LAYOUT -->
+<div class="layout">
+
+<!-- SIDE NAV -->
+<aside id="sidebar" class="sidenav">
+  <button id="close-sidebar-btn" style="position: absolute; top: 16px; right: 16px; background: transparent; border: none; color: var(--text); font-size: 24px; cursor: pointer; padding: 4px; line-height: 1;">&times;</button>
+  <nav>
+  <div class="nav-brand">
+    <div class="nav-brand-name">MongoDB Guide</div>
+    <div class="nav-brand-sub">Performance Handbook</div>
+  </div>
+  <div class="nav-group-label">Foundations</div>
+  <a href="#paradigm" class="nav-link active"><span class="nav-pip"></span>Document Paradigm</a>
+  <a href="#crud"     class="nav-link"><span class="nav-pip"></span>CRUD Optimization</a>
+  <a href="#schema"   class="nav-link"><span class="nav-pip"></span>Schema Design</a>
+  <div class="nav-group-label">Performance</div>
+  <a href="#esr"      class="nav-link"><span class="nav-pip"></span>The ESR Rule</a>
+  <a href="#aggregation" class="nav-link"><span class="nav-pip"></span>Aggregation</a>
+  <a href="#monitoring" class="nav-link"><span class="nav-pip"></span>Monitoring & Caching</a>
+  </nav>
+</aside>
+
+<div class="content">
+
+<!-- ── SECTION 1: DOCUMENT PARADIGM ── -->
+<section class="sec t-cyan" id="paradigm">
+  <div class="sec-eye">Section 01</div>
+  <h2>The Document Paradigm</h2>
+  <p class="sec-desc">MongoDB doesn't store JSON; it stores BSON (Binary JSON). This fundamental difference powers its performance.</p>
+
+  <div class="cards">
+    <div class="card">
+      <div class="card-bar"></div>
+      <span class="card-icon">📦</span>
+      <div class="card-title">BSON Storage</div>
+      <div class="card-body">BSON is optimized for data locality and read speed. It allows MongoDB to traverse documents quickly and supports native data types like Dates, ObjectIDs, and decimals that pure JSON lacks.</div>
+    </div>
+    <div class="card">
+      <div class="card-bar"></div>
+      <span class="card-icon">⚡</span>
+      <div class="card-title">Data Locality</div>
+      <div class="card-body">Because related data is stored together in a single document, a single read operation retrieves everything. You avoid the costly JOINs required by relational databases.</div>
+    </div>
+    <div class="card">
+      <div class="card-bar"></div>
+      <span class="card-icon">🛡️</span>
+      <div class="card-title">Schema Validation</div>
+      <div class="card-body">MongoDB is "flexible," but not necessarily "schemaless." You can enforce JSON Schema validation at the collection level to ensure documents have required fields and proper data types.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SECTION 2: CRUD OPTIMIZATION ── -->
+<section class="sec t-blue" id="crud">
+  <div class="sec-eye">Section 02</div>
+  <h2>CRUD Optimization</h2>
+  <p class="sec-desc">Write code that respects the network. Optimization starts at the query level.</p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-left"><div class="step-n">1</div><div class="step-line"></div></div>
+      <div class="step-right">
+        <div class="step-title">Atomic Single-Document Operations</div>
+        <div class="step-body">In MongoDB, any operation on a single document is atomic. Whether you're updating one field or fifty, the document will always be in a consistent state. Use operators like <code>$inc</code> or <code>$push</code> instead of reading, modifying, and saving back.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-left"><div class="step-n">2</div><div class="step-line"></div></div>
+      <div class="step-right">
+        <div class="step-title">Use Projections</div>
+        <div class="step-body">Never use <code>find()</code> to fetch a 10MB document if you only need the user's name. Use projections to limit the fields returned. This reduces memory usage on the database, reduces network payload, and speeds up deserialization in your application.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-left"><div class="step-n">3</div><div class="step-line"></div></div>
+      <div class="step-right">
+        <div class="step-title">High-Throughput bulkWrite</div>
+        <div class="step-body">When inserting or updating hundreds of documents, use <code>bulkWrite()</code>. It groups operations together, drastically reducing the number of network round-trips compared to looping through individual <code>insertOne()</code> calls.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SECTION 3: SCHEMA DESIGN ── -->
+<section class="sec t-green" id="schema">
+  <div class="sec-eye">Section 03</div>
+  <h2>Schema Design: Embed vs. Reference</h2>
+  <p class="sec-desc">The most critical decision in NoSQL architecture. Make the wrong choice and you will hit hard system limits.</p>
+
+  <div class="callout tip">
+    <div class="callout-icon">💡</div>
+    <div>
+      <div class="callout-title">Embedding is the Default</div>
+      <div class="callout-body">For "one-to-few" relationships (like a user's shipping addresses or profile settings), <strong>embed</strong> the data as a sub-document or array. This maximizes data locality and read performance.</div>
+    </div>
+  </div>
+
+  <div class="callout warn">
+    <div class="callout-icon">⚠️</div>
+    <div>
+      <div class="callout-title">The 16MB Document Limit</div>
+      <div class="callout-body">MongoDB documents have a strict 16MB size limit. If a relationship involves unboundedly growing data (like thousands of reviews for a popular product, or logs for a system), you <strong>must reference</strong> the data in a separate collection. If you embed it, the document will eventually crash your application when it breaches 16MB.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SECTION 4: THE ESR INDEXING RULE ── -->
+<section class="sec t-yellow" id="esr">
+  <div class="sec-eye">Section 04</div>
+  <h2>The ESR Indexing Rule</h2>
+  <p class="sec-desc">The golden rule for compound indexes: <strong>Equality, Sort, Range</strong>. Following this rule eliminates expensive in-memory sorts.</p>
+
+  <div class="cards">
+    <div class="card">
+      <div class="card-bar"></div>
+      <span class="card-icon">1️⃣</span>
+      <div class="card-title">E - Equality</div>
+      <div class="card-body">First, index fields that your query tests for exact matches (e.g., <code>{ status: "active" }</code>). This narrows down the result set as quickly as possible.</div>
+    </div>
+    <div class="card">
+      <div class="card-bar"></div>
+      <span class="card-icon">2️⃣</span>
+      <div class="card-title">S - Sort</div>
+      <div class="card-body">Second, index the fields you use to order the results (e.g., <code>.sort({ createdAt: -1 })</code>). If the index matches the sort, MongoDB avoids a blocking, memory-intensive sorting operation.</div>
+    </div>
+    <div class="card">
+      <div class="card-bar"></div>
+      <span class="card-icon">3️⃣</span>
+      <div class="card-title">R - Range</div>
+      <div class="card-body">Finally, index fields used for range queries (like <code>$gt</code>, <code>$lt</code>, or <code>$in</code>). Once a range is evaluated, the index can no longer be used for sorting, which is why it must come last.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SECTION 5: AGGREGATION FRAMEWORK ── -->
+<section class="sec t-blue" id="aggregation">
+  <div class="sec-eye">Section 05</div>
+  <h2>The Aggregation Framework</h2>
+  <p class="sec-desc">A powerful pipeline for data transformation, but one that can easily overwhelm your database if used carelessly.</p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-left"><div class="step-n">1</div><div class="step-line"></div></div>
+      <div class="step-right">
+        <div class="step-title">Filter Early with $match</div>
+        <div class="step-body">Always place your <code>$match</code> stages as early in the pipeline as possible. If placed first, <code>$match</code> can use indexes. This drastically reduces the number of documents passed to expensive subsequent stages like <code>$group</code> or <code>$lookup</code>.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-left"><div class="step-n">2</div><div class="step-line"></div></div>
+      <div class="step-right">
+        <div class="step-title">The 100MB RAM Limit</div>
+        <div class="step-body">By default, a single aggregation pipeline stage is only allowed to consume 100MB of RAM. If your <code>$group</code> or <code>$sort</code> operation exceeds this, the query will fail.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-left"><div class="step-n">3</div><div class="step-line"></div></div>
+      <div class="step-right">
+        <div class="step-title">The allowDiskUse Safety Valve</div>
+        <div class="step-body">If you anticipate a stage will breach the 100MB limit, you can pass <code>{ allowDiskUse: true }</code> to the aggregation options. This allows MongoDB to write temporary files to disk. It's slower, but ensures the query succeeds.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SECTION 6: MONITORING & PERFORMANCE ── -->
+<section class="sec t-green" id="monitoring">
+  <div class="sec-eye">Section 06</div>
+  <h2>Monitoring & Performance</h2>
+  <p class="sec-desc">You can't optimize what you don't measure. Keep a close eye on the WiredTiger storage engine.</p>
+
+  <div class="callout info">
+    <div class="callout-icon">⚙️</div>
+    <div>
+      <div class="callout-title">The WiredTiger Cache</div>
+      <div class="callout-body">WiredTiger is the engine room of MongoDB. It utilizes an internal cache (typically 50% of available RAM minus 1GB). Watch your metrics for <strong>Application Thread Eviction</strong> — this indicates your cache is full and application threads are being paused to evict old data to disk. It's a prime sign of memory pressure.</div>
+    </div>
+  </div>
+
+  <div class="callout warn">
+    <div class="callout-icon">🔢</div>
+    <div>
+      <div class="callout-title">The Counting Trap</div>
+      <div class="callout-body">Do not use <code>countDocuments()</code> on large collections just to get a total row count! It performs a full index scan to guarantee accuracy, which is incredibly slow. If you just need a fast, approximate total, use <code>estimatedDocumentCount()</code>, which reads metadata instantly.</div>
+    </div>
+  </div>
+</section>
+
+</div><!-- end content -->
+</div><!-- end layout -->
+
+<footer>
+  <span>MongoDB</span> High-Performance Guide &nbsp;·&nbsp; Intermediate → Advanced
+  <span>mongodb.com/docs</span>
+</footer>
+
+<script>
+const secs = document.querySelectorAll('.sec');
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold:0.06 });
+secs.forEach(s => io.observe(s));
+
+const links = document.querySelectorAll('.nav-link');
+window.addEventListener('scroll', () => {
+  let cur='';
+  secs.forEach(s => { if(window.scrollY >= s.offsetTop - 120) cur = s.id; });
+  links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === `#${cur}`));
+});
+
+document.getElementById('hamburger-btn').addEventListener('click', () => {
+  document.getElementById('sidebar').classList.add('open');
+});
+document.getElementById('close-sidebar-btn').addEventListener('click', () => {
+  document.getElementById('sidebar').classList.remove('open');
+});
+</script>
+</body>
+</html>
