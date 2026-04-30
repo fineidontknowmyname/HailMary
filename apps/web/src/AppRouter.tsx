@@ -5,9 +5,10 @@ import App from './App';
 import ProfilePage from './pages/ProfilePage';
 import UpdatePasswordModal from './components/UpdatePasswordModal';
 import { AssessmentEngine } from './components/AssessmentEngine';
-import IdeaVault from './pages/IdeaVault';
+
 import TutorialsAndLabs from './pages/TutorialsAndLabs';
 import ContributeResource from './components/ContributeResource';
+import IncubatorPage from './pages/IncubatorPage';
 // ─── Placeholder pages for routes not yet built ────────────────────────────
 // Replace each with the real page component once built.
 
@@ -67,14 +68,7 @@ export function AppRouter() {
           />
 
           {/* ── Build section ──────────────────────────────────── */}
-          <Route
-            path="/idea-vault"
-            element={
-              <div className="-mx-4 sm:-mx-6 lg:-mx-8 -my-6 md:-my-8">
-                <IdeaVault />
-              </div>
-            }
-          />
+          <Route path="/incubator" element={<IncubatorPage />} />
           <Route
             path="/portfolio"
             element={<PlaceholderPage title="Portfolio Builder" />}

@@ -1,7 +1,7 @@
 import {
   LayoutDashboard,
   UserCircle2,
-  Lightbulb,
+  FolderKanban,
   Layers,
   FileText,
   ClipboardList,
@@ -56,11 +56,11 @@ export const NAV_GROUPS: NavGroup[] = [
     heading: 'Build',
     items: [
       {
-        key: 'idea-vault',
-        label: 'Idea Vault',
-        path: '/idea-vault',
-        icon: Lightbulb,
-        description: 'Project brainstorming and storage',
+        key: 'incubator',
+        label: 'Project Incubator',
+        path: '/incubator',
+        icon: FolderKanban,
+        description: 'Track projects, log metrics, build your resume',
       },
       {
         key: 'portfolio',
