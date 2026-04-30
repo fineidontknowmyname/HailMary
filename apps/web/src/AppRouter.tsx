@@ -9,6 +9,7 @@ import { AssessmentEngine } from './components/AssessmentEngine';
 import TutorialsAndLabs from './pages/TutorialsAndLabs';
 import ContributeResource from './components/ContributeResource';
 import IncubatorPage from './pages/IncubatorPage';
+import PortfolioPage from './pages/PortfolioPage';
 import ResumeBuilder from './pages/ResumeBuilder';
 // ─── Placeholder pages for routes not yet built ────────────────────────────
 // Replace each with the real page component once built.
@@ -70,10 +71,7 @@ export function AppRouter() {
 
           {/* ── Build section ──────────────────────────────────── */}
           <Route path="/incubator" element={<IncubatorPage />} />
-          <Route
-            path="/portfolio"
-            element={<PlaceholderPage title="Portfolio Builder" />}
-          />
+          <Route path="/portfolio" element={<PortfolioPage />} />
           <Route path="/resume" element={<ResumeBuilder />} />
 
           {/* ── Practice section ───────────────────────────────── */}
