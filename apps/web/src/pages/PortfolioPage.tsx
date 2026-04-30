@@ -54,7 +54,7 @@ function HeroSection({ profile }: { profile: Partial<UserProfile> }) {
 }
 
 function PublicProjectGrid({ projects }: { projects: HailMaryProject[] }) {
-  if (projects.length === 0) return null;
+  if (!projects || projects.length === 0) return null;
 
   return (
     <div className="mb-20">
@@ -62,7 +62,7 @@ function PublicProjectGrid({ projects }: { projects: HailMaryProject[] }) {
         <span className="text-[#4fffb0] font-mono text-sm uppercase tracking-widest bg-[#4fffb0]/10 px-3 py-1 rounded-full border border-[#4fffb0]/20">Featured Projects</span>
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {projects.map((project) => (
+        {(projects || []).map((project) => (
           <div key={project.id} className={`flex flex-col bg-[#1e222d] border rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 ${
             project.status === 'Ongoing' ? 'border-green-500/40 hover:shadow-[0_0_30px_rgba(34,197,94,0.15)]' :
             project.status === 'Finished' ? 'border-blue-500/40 hover:shadow-[0_0_30px_rgba(59,130,246,0.15)]' :
@@ -89,7 +89,7 @@ function PublicProjectGrid({ projects }: { projects: HailMaryProject[] }) {
             </p>
             
             <div className="flex flex-wrap gap-2 mt-auto">
-              {project.tech_stack.map(tech => (
+              {(project.tech_stack || []).map(tech => (
                 <span key={tech} className="px-2.5 py-1 text-[11px] font-mono font-medium text-white bg-[#13161e] border border-[#2a3040] rounded-md">
                   {tech}
                 </span>
@@ -103,13 +103,13 @@ function PublicProjectGrid({ projects }: { projects: HailMaryProject[] }) {
 }
 
 function ExperienceTimeline({ experience, education }: { experience: HailMaryExperience[], education: HailMaryEducation[] }) {
-  if (experience.length === 0 && education.length === 0) return null;
+  if ((experience || []).length === 0 && (education || []).length === 0) return null;
 
   // We map them to a unified timeline structure for simplicity, or render two separate timelines.
   // The instructions said "A vertical timeline layout combining both... or side-by-side". Combining is requested: "combining both"
   const timelineItems = [
-    ...experience.map(e => ({ type: 'exp', id: e.id, title: e.role, org: e.company, start: e.start_date, end: e.end_date, notes: e.raw_notes })),
-    ...education.map(e => ({ type: 'edu', id: e.id, title: e.degree, org: e.institution, start: e.start_date, end: e.end_date, notes: null }))
+    ...(experience || []).map(e => ({ type: 'exp', id: e.id, title: e.role, org: e.company, start: e.start_date, end: e.end_date, notes: e.raw_notes })),
+    ...(education || []).map(e => ({ type: 'edu', id: e.id, title: e.degree, org: e.institution, start: e.start_date, end: e.end_date, notes: null }))
   ].sort((a, b) => {
     // Sort descending by start date, assuming "YYYY-MM" format.
     const dateA = a.start || '0000-00';

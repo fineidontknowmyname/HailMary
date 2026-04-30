@@ -112,13 +112,13 @@ function TechStackInput({
       e.preventDefault();
       addTag(input);
     }
-    if (e.key === 'Backspace' && input === '' && tags.length > 0) {
-      onChange(tags.slice(0, -1));
+    if (e.key === 'Backspace' && input === '' && (tags || []).length > 0) {
+      onChange((tags || []).slice(0, -1));
     }
   }
 
   function removeTag(tag: string) {
-    onChange(tags.filter((t) => t !== tag));
+    onChange((tags || []).filter((t) => t !== tag));
   }
 
   return (
@@ -128,7 +128,7 @@ function TechStackInput({
         rounded-xl px-3 py-2 cursor-text transition-all duration-200
         focus-within:border-[#4fffb0] focus-within:ring-1 focus-within:ring-[#4fffb0]/20"
     >
-      {tags.map((tag) => (
+      {(tags || []).map((tag) => (
         <span
           key={tag}
           className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-mono
@@ -150,7 +150,7 @@ function TechStackInput({
         onChange={(e) => setInput(e.target.value)}
         onKeyDown={handleKeyDown}
         onBlur={() => input.trim() && addTag(input)}
-        placeholder={tags.length === 0 ? 'Type a tech, press Enter…' : ''}
+        placeholder={(tags || []).length === 0 ? 'Type a tech, press Enter…' : ''}
         className="flex-1 min-w-[120px] bg-transparent text-sm text-white placeholder-[#3d4558] outline-none"
       />
     </div>

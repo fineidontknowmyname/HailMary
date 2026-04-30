@@ -123,9 +123,9 @@ function ProjectCard({
       )}
 
       {/* Tech stack pills */}
-      {project.tech_stack.length > 0 && (
+      {(project.tech_stack || []).length > 0 && (
         <div className="px-5 pb-3 flex flex-wrap gap-1.5">
-          {project.tech_stack.slice(0, 5).map((tech) => (
+          {(project.tech_stack || []).slice(0, 5).map((tech) => (
             <span
               key={tech}
               className="px-2 py-0.5 rounded-md text-[10px] font-mono font-medium
@@ -134,9 +134,9 @@ function ProjectCard({
               {tech}
             </span>
           ))}
-          {project.tech_stack.length > 5 && (
+          {(project.tech_stack || []).length > 5 && (
             <span className="px-2 py-0.5 rounded-md text-[10px] font-mono text-[#3d4558] border border-[#252b3b]">
-              +{project.tech_stack.length - 5}
+              +{(project.tech_stack || []).length - 5}
             </span>
           )}
         </div>
@@ -295,7 +295,7 @@ export default function IncubatorPage() {
 
   // ── Filter + Search ────────────────────────────────────────────────────────
   const visibleProjects = useMemo(() => {
-    let list = projects;
+    let list = projects || [];
     if (activeFilter !== 'All') {
       list = list.filter((p) => p.status === activeFilter);
     }
@@ -303,9 +303,9 @@ export default function IncubatorPage() {
       const q = searchQuery.toLowerCase();
       list = list.filter(
         (p) =>
-          p.title.toLowerCase().includes(q) ||
+          p.title?.toLowerCase().includes(q) ||
           p.raw_notes?.toLowerCase().includes(q) ||
-          p.tech_stack.some((t) => t.toLowerCase().includes(q))
+          (p.tech_stack || []).some((t) => t.toLowerCase().includes(q))
       );
     }
     return list;
@@ -370,10 +370,10 @@ export default function IncubatorPage() {
 
   // ── Counts for filter badges ───────────────────────────────────────────────
   const counts: Record<FilterTab, number> = {
-    All:           projects.length,
-    Ongoing:       projects.filter((p) => p.status === 'Ongoing').length,
-    Finished:      projects.filter((p) => p.status === 'Finished').length,
-    'Not Started': projects.filter((p) => p.status === 'Not Started').length,
+    All:           (projects || []).length,
+    Ongoing:       (projects || []).filter((p) => p.status === 'Ongoing').length,
+    Finished:      (projects || []).filter((p) => p.status === 'Finished').length,
+    'Not Started': (projects || []).filter((p) => p.status === 'Not Started').length,
   };
 
   return (
@@ -390,9 +390,9 @@ export default function IncubatorPage() {
               Your Projects
             </h1>
             <p className="text-sm font-mono text-[#7a849a] mt-1">
-              {projects.length} project{projects.length !== 1 ? 's' : ''} tracked
-              {projects.filter((p) => p.sync_to_resume).length > 0 &&
-                ` · ${projects.filter((p) => p.sync_to_resume).length} synced to resume`}
+              {(projects || []).length} project{(projects || []).length !== 1 ? 's' : ''} tracked
+              {(projects || []).filter((p) => p.sync_to_resume).length > 0 &&
+                ` · ${(projects || []).filter((p) => p.sync_to_resume).length} synced to resume`}
             </p>
           </div>
           <button
