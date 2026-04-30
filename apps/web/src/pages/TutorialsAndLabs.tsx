@@ -15,7 +15,7 @@ const TUTORIALS = [
   {
     title: 'MongoDB',
     desc: 'Edge cases for aggregation pipelines and indexing',
-    href: '/tutorials/mongodb.html',
+    href: '/tutorials/mongodb-guide.html',
   },
   {
     title: 'Postman',
