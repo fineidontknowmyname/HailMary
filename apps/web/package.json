@@ -10,16 +10,17 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@hailmary/types": "workspace:*",
+    "@react-pdf/renderer": "^4.5.1",
     "@supabase/supabase-js": "^2.101.1",
     "@tanstack/react-query": "^5.96.2",
     "axios": "^1.14.0",
     "fuse.js": "^7.2.0",
+    "lucide-react": "^0.303.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-router-dom": "^7.14.0",
-    "zustand": "^5.0.12",
-    "lucide-react": "^0.303.0",
-    "@hailmary/types": "workspace:*"
+    "zustand": "^5.0.12"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
