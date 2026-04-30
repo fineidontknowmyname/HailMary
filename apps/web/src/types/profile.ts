@@ -7,7 +7,7 @@ export interface UserProfile {
   github_url: string | null
   linkedin_url: string | null
   x_url: string | null
-  bluesky_url: string | null
+  reddit_url: string | null
   personal_website: string | null
   leetcode_username: string | null
   hackerrank_username: string | null

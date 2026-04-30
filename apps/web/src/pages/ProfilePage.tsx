@@ -4,6 +4,34 @@ import { useAuth } from '../auth/useAuth'
 import { fetchProfile, upsertProfile } from '../lib/profile'
 import type { UserProfile } from '../types/profile'
 
+const SOCIAL_DRAFT_KEY = 'socialLinksDraft'
+
+type SocialDraft = {
+  github_url: string
+  linkedin_url: string
+  x_url: string
+  reddit_url: string
+  personal_website: string
+}
+
+const DEFAULT_DRAFT: SocialDraft = {
+  github_url: '',
+  linkedin_url: '',
+  x_url: '',
+  reddit_url: '',
+  personal_website: '',
+}
+
+function readDraftFromStorage(): SocialDraft {
+  if (typeof window === 'undefined') return DEFAULT_DRAFT
+  try {
+    const raw = localStorage.getItem(SOCIAL_DRAFT_KEY)
+    return raw ? (JSON.parse(raw) as SocialDraft) : DEFAULT_DRAFT
+  } catch {
+    return DEFAULT_DRAFT
+  }
+}
+
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="bg-[#111520] border border-[#1e2535] rounded-2xl p-6 space-y-4">
@@ -63,6 +91,15 @@ export default function ProfilePage({ onBack }: { onBack: () => void }) {
   const [saving, setSaving]   = useState<Record<string, boolean>>({})
   const [saved,  setSaved]    = useState<Record<string, boolean>>({})
 
+  // Social Links draft — persisted in localStorage so mobile tab-switches don't wipe inputs
+  const [socialDraft, setSocialDraft] = useState<SocialDraft>(readDraftFromStorage)
+
+  // Persist social draft to localStorage on every keystroke
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    localStorage.setItem(SOCIAL_DRAFT_KEY, JSON.stringify(socialDraft))
+  }, [socialDraft])
+
   useEffect(() => {
     if (authLoading) return;
     if (!user) {
@@ -70,6 +107,19 @@ export default function ProfilePage({ onBack }: { onBack: () => void }) {
       return;
     }
     fetchProfile(user.id).then(p => {
+      if (p) {
+        // Seed draft from DB only when localStorage has no in-progress edits
+        const storedRaw = typeof window !== 'undefined' ? localStorage.getItem(SOCIAL_DRAFT_KEY) : null
+        if (!storedRaw) {
+          setSocialDraft({
+            github_url:       p.github_url       ?? '',
+            linkedin_url:     p.linkedin_url     ?? '',
+            x_url:            p.x_url            ?? '',
+            reddit_url:       p.reddit_url       ?? '',
+            personal_website: p.personal_website ?? '',
+          })
+        }
+      }
       setProfile(p ?? { user_id: user.id })
       setLoading(false)
     })
@@ -87,6 +137,9 @@ export default function ProfilePage({ onBack }: { onBack: () => void }) {
     await upsertProfile(user.id, fields)
     setSaving(s => ({ ...s, [section]: false }))
     setSaved(s  => ({ ...s, [section]: true }))
+    if (section === 'social' && typeof window !== 'undefined') {
+      localStorage.removeItem(SOCIAL_DRAFT_KEY)
+    }
     setTimeout(() => setSaved(s => ({ ...s, [section]: false })), 2500)
   }
 
@@ -185,19 +238,49 @@ export default function ProfilePage({ onBack }: { onBack: () => void }) {
         </Section>
 
         <Section title="Social Links">
-          <Field label="GitHub"           value={profile.github_url       ?? ''} onChange={set('github_url')}       placeholder="https://github.com/username"           type="url" />
-          <Field label="LinkedIn"         value={profile.linkedin_url     ?? ''} onChange={set('linkedin_url')}     placeholder="https://linkedin.com/in/username"      type="url" />
-          <Field label="X (Twitter)"      value={profile.x_url            ?? ''} onChange={set('x_url')}            placeholder="https://x.com/username"               type="url" />
-          <Field label="Bluesky"          value={profile.bluesky_url      ?? ''} onChange={set('bluesky_url')}      placeholder="https://bsky.app/profile/username"     type="url" />
-          <Field label="Personal Website" value={profile.personal_website ?? ''} onChange={set('personal_website')} placeholder="https://yoursite.com"                  type="url" />
+          <Field
+            label="GitHub"
+            value={socialDraft.github_url}
+            onChange={v => setSocialDraft(d => ({ ...d, github_url: v }))}
+            placeholder="https://github.com/username"
+            type="url"
+          />
+          <Field
+            label="LinkedIn"
+            value={socialDraft.linkedin_url}
+            onChange={v => setSocialDraft(d => ({ ...d, linkedin_url: v }))}
+            placeholder="https://linkedin.com/in/username"
+            type="url"
+          />
+          <Field
+            label="X (Twitter)"
+            value={socialDraft.x_url}
+            onChange={v => setSocialDraft(d => ({ ...d, x_url: v }))}
+            placeholder="https://x.com/username"
+            type="url"
+          />
+          <Field
+            label="Reddit"
+            value={socialDraft.reddit_url}
+            onChange={v => setSocialDraft(d => ({ ...d, reddit_url: v }))}
+            placeholder="https://reddit.com/user/username"
+            type="url"
+          />
+          <Field
+            label="Personal Website"
+            value={socialDraft.personal_website}
+            onChange={v => setSocialDraft(d => ({ ...d, personal_website: v }))}
+            placeholder="https://yoursite.com"
+            type="url"
+          />
           <div className="flex justify-end pt-2">
             <SaveButton
               onClick={() => saveSection('social', {
-                github_url:       profile.github_url       ?? null,
-                linkedin_url:     profile.linkedin_url     ?? null,
-                x_url:            profile.x_url            ?? null,
-                bluesky_url:      profile.bluesky_url      ?? null,
-                personal_website: profile.personal_website ?? null,
+                github_url:       socialDraft.github_url       || null,
+                linkedin_url:     socialDraft.linkedin_url     || null,
+                x_url:            socialDraft.x_url            || null,
+                reddit_url:       socialDraft.reddit_url       || null,
+                personal_website: socialDraft.personal_website || null,
               })}
               saving={saving['social']} saved={saved['social']}
             />
