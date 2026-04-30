@@ -8,38 +8,43 @@ on:
 jobs:
   scrape-and-process:
     runs-on: ubuntu-latest
-    
+
     steps:
-      - uses: actions/checkout@v3
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
         with:
-          node-version: '18'
-          cache: 'npm'
-      
+          run_install: false
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
       - name: Install dependencies
-        run: npm ci
-      
+        run: pnpm install --frozen-lockfile
+
       - name: Run scraper
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
           GITHUB_API_TOKEN: ${{ secrets.GITHUB_API_TOKEN }}
-        run: npm run -w pipeline scrape
-      
+        run: pnpm run -C pipeline scrape
+
       - name: Run transformers
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        run: npm run -w pipeline transform
-      
+        run: pnpm run -C pipeline transform
+
       - name: Commit changes
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add .
           git diff --quiet && git diff --staged --quiet || git commit -m "Update resources and paths from pipeline"
-      
+
       - name: Push changes
         uses: ad-m/github-push-action@master
         with:
