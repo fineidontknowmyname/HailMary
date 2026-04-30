@@ -44,7 +44,7 @@ export default function App() {
         searchQuery === '' ||
         item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.tags.some((tag: string) => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+        (item.tags || []).some((tag: string) => tag.toLowerCase().includes(searchQuery.toLowerCase()));
 
       const matchesType = !selectedType || item.type === selectedType;
       const matchesDepth = !selectedDepth || item.depth === selectedDepth;
