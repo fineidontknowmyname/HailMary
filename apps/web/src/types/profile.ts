@@ -6,9 +6,9 @@ export interface UserProfile {
   bio: string | null
   github_url: string | null
   linkedin_url: string | null
-  x_url: string | null
+  twitter_url: string | null
   reddit_url: string | null
-  personal_website: string | null
+  website_url: string | null
   leetcode_username: string | null
   hackerrank_username: string | null
   weekly_goal_hours: number

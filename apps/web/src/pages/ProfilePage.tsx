@@ -9,17 +9,17 @@ const SOCIAL_DRAFT_KEY = 'socialLinksDraft'
 type SocialDraft = {
   github_url: string
   linkedin_url: string
-  x_url: string
+  twitter_url: string
   reddit_url: string
-  personal_website: string
+  website_url: string
 }
 
 const DEFAULT_DRAFT: SocialDraft = {
   github_url: '',
   linkedin_url: '',
-  x_url: '',
+  twitter_url: '',
   reddit_url: '',
-  personal_website: '',
+  website_url: '',
 }
 
 function readDraftFromStorage(): SocialDraft {
@@ -112,11 +112,11 @@ export default function ProfilePage({ onBack }: { onBack: () => void }) {
         const storedRaw = typeof window !== 'undefined' ? localStorage.getItem(SOCIAL_DRAFT_KEY) : null
         if (!storedRaw) {
           setSocialDraft({
-            github_url:       p.github_url       ?? '',
-            linkedin_url:     p.linkedin_url     ?? '',
-            x_url:            p.x_url            ?? '',
-            reddit_url:       p.reddit_url       ?? '',
-            personal_website: p.personal_website ?? '',
+            github_url:   p.github_url   ?? '',
+            linkedin_url: p.linkedin_url ?? '',
+            twitter_url:  p.twitter_url  ?? '',
+            reddit_url:   p.reddit_url   ?? '',
+            website_url:  p.website_url  ?? '',
           })
         }
       }
@@ -254,8 +254,8 @@ export default function ProfilePage({ onBack }: { onBack: () => void }) {
           />
           <Field
             label="X (Twitter)"
-            value={socialDraft.x_url}
-            onChange={v => setSocialDraft(d => ({ ...d, x_url: v }))}
+            value={socialDraft.twitter_url}
+            onChange={v => setSocialDraft(d => ({ ...d, twitter_url: v }))}
             placeholder="https://x.com/username"
             type="url"
           />
@@ -268,19 +268,19 @@ export default function ProfilePage({ onBack }: { onBack: () => void }) {
           />
           <Field
             label="Personal Website"
-            value={socialDraft.personal_website}
-            onChange={v => setSocialDraft(d => ({ ...d, personal_website: v }))}
+            value={socialDraft.website_url}
+            onChange={v => setSocialDraft(d => ({ ...d, website_url: v }))}
             placeholder="https://yoursite.com"
             type="url"
           />
           <div className="flex justify-end pt-2">
             <SaveButton
               onClick={() => saveSection('social', {
-                github_url:       socialDraft.github_url       || null,
-                linkedin_url:     socialDraft.linkedin_url     || null,
-                x_url:            socialDraft.x_url            || null,
-                reddit_url:       socialDraft.reddit_url       || null,
-                personal_website: socialDraft.personal_website || null,
+                github_url:   socialDraft.github_url   || null,
+                linkedin_url: socialDraft.linkedin_url || null,
+                twitter_url:  socialDraft.twitter_url  || null,
+                reddit_url:   socialDraft.reddit_url   || null,
+                website_url:  socialDraft.website_url  || null,
               })}
               saving={saving['social']} saved={saved['social']}
             />
