@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Outlet } from 'react-router-dom';
 import { AppLayout } from './navigation/AppLayout';
 import { useAuth } from './auth/useAuth';
 import App from './App';
@@ -10,7 +10,9 @@ import TutorialsAndLabs from './pages/TutorialsAndLabs';
 import ContributeResource from './components/ContributeResource';
 import IncubatorPage from './pages/IncubatorPage';
 import PortfolioPage from './pages/PortfolioPage';
+import PublicProfileView from './pages/PublicProfileView';
 import ResumeBuilder from './pages/ResumeBuilder';
+import './AppRouter.css';
 // ─── Placeholder pages for routes not yet built ────────────────────────────
 // Replace each with the real page component once built.
 
@@ -18,11 +20,7 @@ function PlaceholderPage({ title }: { title: string }) {
   return (
     <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 text-center">
       <div
-        className="flex h-16 w-16 items-center justify-center rounded-2xl"
-        style={{
-          background: 'linear-gradient(135deg, rgba(79,255,176,0.12) 0%, rgba(79,255,176,0.04) 100%)',
-          border: '1px solid rgba(79,255,176,0.2)',
-        }}
+        className="placeholder-icon-tile flex h-16 w-16 items-center justify-center rounded-2xl"
       >
         <span className="text-2xl">🚧</span>
       </div>
@@ -33,6 +31,14 @@ function PlaceholderPage({ title }: { title: string }) {
         Under active development
       </span>
     </div>
+  );
+}
+
+function DashboardLayout() {
+  return (
+    <AppLayout>
+      <Outlet />
+    </AppLayout>
   );
 }
 
@@ -51,8 +57,10 @@ export function AppRouter() {
       {/* ── Global password-recovery overlay ─────────────────────────── */}
       {passwordRecoveryPending && <UpdatePasswordModal />}
 
-      <AppLayout>
-        <Routes>
+      <Routes>
+        <Route path="/:username" element={<PublicProfileView />} />
+
+        <Route element={<DashboardLayout />}>
           {/* ── Dashboard (existing App component) ─────────────── */}
           <Route path="/" element={<App />} />
 
@@ -71,6 +79,7 @@ export function AppRouter() {
 
           {/* ── Build section ──────────────────────────────────── */}
           <Route path="/incubator" element={<IncubatorPage />} />
+          <Route path="/dashboard/portfolio" element={<PortfolioPage />} />
           <Route path="/portfolio" element={<PortfolioPage />} />
           <Route path="/resume" element={<ResumeBuilder />} />
 
@@ -106,8 +115,8 @@ export function AppRouter() {
             path="*"
             element={<PlaceholderPage title="404 — Page Not Found" />}
           />
-        </Routes>
-      </AppLayout>
+        </Route>
+      </Routes>
     </>
   );
 }

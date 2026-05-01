@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Loader2, AlertCircle } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../auth/useAuth';
 import { fetchProfile } from '../lib/profile';
@@ -8,14 +8,89 @@ import type { HailMaryProject } from '../types/project';
 import type { HailMaryEducation, HailMaryExperience } from '../types/resume';
 
 import { ResumeRenderer } from '../components/pdf-engine/ResumeRenderer';
-import { mockResumeData } from '../components/pdf-engine/mockData';
+import type { HailMaryResumeData } from '../components/pdf-engine/types';
 import { ResumeControlPanel } from '../components/ResumeControlPanel';
+
+type ProfileRow = Partial<UserProfile> & {
+  full_name?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  github_link?: string | null;
+  linkedin_link?: string | null;
+};
+
+type ExperienceRow = HailMaryExperience & {
+  bullets?: string[] | null;
+  company_name?: string | null;
+};
+
+type ProjectRow = HailMaryProject & {
+  bullets?: string[] | null;
+};
+
+function toBullets(bullets?: string[] | null, rawNotes?: string | null) {
+  if (bullets?.length) return bullets.filter(Boolean);
+  return rawNotes ? [rawNotes] : [];
+}
+
+function mapToResumeData(
+  profile: Partial<UserProfile>,
+  education: HailMaryEducation[],
+  experience: HailMaryExperience[],
+  projects: HailMaryProject[],
+  fallbackEmail?: string | null
+): HailMaryResumeData {
+  const profileRow = profile as ProfileRow;
+
+  return {
+    identity: {
+      fullName: profileRow.full_name || profile.name || profile.username || 'Unknown Developer',
+      email: profileRow.email || fallbackEmail || '',
+      phone: profileRow.phone || '',
+      githubUrl: profileRow.github_link || profile.github_url || '',
+      linkedinUrl: profileRow.linkedin_link || profile.linkedin_url || '',
+      websiteUrl: profile.website_url || '',
+    },
+    education: education.map((edu) => ({
+      institution: edu.institution,
+      degree: edu.degree,
+      cgpa: edu.cgpa || '',
+      startDate: edu.start_date || '',
+      endDate: edu.end_date || 'Present',
+    })),
+    experience: experience.map((exp) => {
+      const expRow = exp as ExperienceRow;
+
+      return {
+        company: expRow.company_name || exp.company,
+        role: exp.role,
+        startDate: exp.start_date || '',
+        endDate: exp.end_date || 'Present',
+        bullets: toBullets(expRow.bullets, exp.raw_notes),
+      };
+    }),
+    projects: projects
+      .filter((proj) => proj.sync_to_resume)
+      .map((proj) => {
+        const projRow = proj as ProjectRow;
+
+        return {
+          title: proj.title,
+          techStack: proj.tech_stack || [],
+          githubUrl: proj.github_url || '',
+          liveUrl: proj.live_url || '',
+          bullets: toBullets(projRow.bullets, proj.raw_notes),
+        };
+      }),
+  };
+}
 
 export default function ResumeBuilder() {
   const { user, isLoggedIn } = useAuth();
 
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [resumeState, setResumeState] = useState<HailMaryResumeData | null>(null);
 
   const [profile, setProfile] = useState<Partial<UserProfile>>({});
   const [education, setEducation] = useState<HailMaryEducation[]>([]);
@@ -24,12 +99,12 @@ export default function ResumeBuilder() {
 
   useEffect(() => {
     if (!isLoggedIn || !user) {
-      setLoading(false);
+      setIsLoading(false);
       return;
     }
 
-    async function loadData() {
-      setLoading(true);
+    async function fetchLiveResumeData() {
+      setIsLoading(true);
       setError(null);
 
       try {
@@ -44,19 +119,30 @@ export default function ResumeBuilder() {
         if (expRes.error) throw new Error(expRes.error.message);
         if (projRes.error) throw new Error(projRes.error.message);
 
-        setProfile(profData || { user_id: user!.id });
-        setEducation(eduRes.data as HailMaryEducation[]);
-        setExperience(expRes.data as HailMaryExperience[]);
-        setProjects(projRes.data as HailMaryProject[]);
+        const liveProfile = profData || { user_id: user!.id };
+        const liveEducation = (eduRes.data || []) as HailMaryEducation[];
+        const liveExperience = (expRes.data || []) as HailMaryExperience[];
+        const liveProjects = (projRes.data || []) as HailMaryProject[];
+
+        setProfile(liveProfile);
+        setEducation(liveEducation);
+        setExperience(liveExperience);
+        setProjects(liveProjects);
+        setResumeState(mapToResumeData(liveProfile, liveEducation, liveExperience, liveProjects, user!.email));
       } catch (err: any) {
         setError(err.message || 'Failed to load resume data');
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     }
 
-    loadData();
+    fetchLiveResumeData();
   }, [user, isLoggedIn]);
+
+  useEffect(() => {
+    if (!isLoggedIn || !user || isLoading) return;
+    setResumeState(mapToResumeData(profile, education, experience, projects, user.email));
+  }, [education, experience, isLoading, isLoggedIn, profile, projects, user]);
 
   if (!isLoggedIn) {
     return (
@@ -71,15 +157,6 @@ export default function ResumeBuilder() {
         >
           Initialize Session →
         </button>
-      </div>
-    );
-  }
-
-  if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-[#13161e] gap-4">
-        <Loader2 className="h-8 w-8 animate-spin text-[#4fffb0]" />
-        <p className="text-sm font-mono text-[#7a849a]">Loading resume engine...</p>
       </div>
     );
   }
@@ -120,7 +197,13 @@ export default function ResumeBuilder() {
           </div>
         </div>
         <div className="flex-1 bg-white rounded-lg overflow-hidden">
-          <ResumeRenderer data={mockResumeData} />
+          {isLoading || !resumeState ? (
+            <div className="flex h-full items-center justify-center text-slate-500 animate-pulse">
+              Fetching live profile data...
+            </div>
+          ) : (
+            <ResumeRenderer data={resumeState} />
+          )}
         </div>
       </div>
     </div>
