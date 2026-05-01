@@ -16,8 +16,10 @@ const app = express();
 const PORT = process.env.PORT || 4000;
 
 const allowedOrigins = [
-  'http://localhost:5173', // Default Vite port
   process.env.FRONTEND_URL,
+  'https://hail-mary-web-seven.vercel.app',
+  'http://localhost:5173', // Default Vite port
+  'http://localhost:4000',
   'https://hail-mary-m6srlv0hh-mavericks-projects-eb821167.vercel.app'
 ].filter((origin): origin is string => Boolean(origin));
 
