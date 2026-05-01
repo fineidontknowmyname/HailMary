@@ -17,6 +17,22 @@ const formatDateRange = (start: string | null, end: string | null): string => {
   return `${s} — ${e}`;
 };
 
+const calculateYearsXp = (experiences: any[]): string => {
+  const years = experiences
+    .map((exp) => Number.parseInt(safe(exp.start_date).slice(0, 4), 10))
+    .filter((year) => Number.isFinite(year));
+
+  if (years.length === 0) return '0';
+
+  const earliestYear = Math.min(...years);
+  return `${Math.max(new Date().getFullYear() - earliestYear, 0)}+`;
+};
+
+const formatNotes = (notes: string | null | undefined, fallback: string): string => {
+  const value = safe(notes, fallback).trim();
+  return value || fallback;
+};
+
 /** Build tech-stack tag HTML for a project.  Cycles through colour classes. */
 const buildTechTags = (stack: string[] | null): string => {
   if (!stack || stack.length === 0) return '';
@@ -24,6 +40,51 @@ const buildTechTags = (stack: string[] | null): string => {
   return stack
     .map((tech, i) => `<span class="project-tag ${colours[i % colours.length]}">${tech}</span>`)
     .join('\n            ');
+};
+
+const projectSkills = (projects: any[]): string[] =>
+  Array.from(
+    new Set(
+      projects
+        .flatMap((project) => Array.isArray(project.tech_stack) ? project.tech_stack : [])
+        .filter(Boolean)
+    )
+  );
+
+const buildSkillsMarquee = (projects: any[]): string => {
+  const skills = projectSkills(projects);
+  if (skills.length === 0) return '';
+
+  return `<div class="marquee-strip" aria-hidden="true">
+  <div class="marquee-track">
+    ${[...skills, ...skills].map((skill) => `<span class="marquee-item"><span class="m-dot"></span>${skill}</span>`).join('\n    ')}
+  </div>
+</div>`;
+};
+
+const buildSkillsSection = (projects: any[]): string => {
+  const skills = projectSkills(projects);
+  const tags = skills.length > 0
+    ? skills.map((skill) => `<span class="skill-tag">${skill}</span>`).join('\n          ')
+    : '<span class="skill-tag">Add project tech stacks to populate this section</span>';
+
+  return `<section id="skills">
+  <div class="container">
+    <div class="reveal">
+      <div class="section-label">Capabilities</div>
+      <h2 class="section-heading">What I <em>Build With</em></h2>
+    </div>
+    <div class="skills-grid reveal">
+      <div class="skill-cell">
+        <span class="skill-icon">*</span>
+        <div class="skill-name">${skills.length > 0 ? 'Project Tech Stack' : 'Skills'}</div>
+        <div class="skill-tags">
+          ${tags}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>`;
 };
 
 // ─── 404 / Error HTML builders ───────────────────────────────────────────────
@@ -101,8 +162,13 @@ export const PortfolioController = {
 
     const userId: string = profile.user_id;
 
-    // Fetch experience & portfolio-flagged projects concurrently.
-    const [expRes, projRes] = await Promise.all([
+    // Fetch resume data & portfolio-flagged projects concurrently.
+    const [eduRes, expRes, projRes] = await Promise.all([
+      supabase
+        .from('hailmary_education')
+        .select('*')
+        .eq('user_id', userId)
+        .order('start_date', { ascending: false }),
       supabase
         .from('hailmary_experience')
         .select('*')
@@ -116,6 +182,7 @@ export const PortfolioController = {
         .order('created_at', { ascending: false }),
     ]);
 
+    const education: any[] = eduRes.data || [];
     const experiences: any[] = expRes.data || [];
     const projects: any[] = projRes.data || [];
 
@@ -134,6 +201,10 @@ export const PortfolioController = {
     // Hero bullets — derived from experience count, project count, and skills.
     const bullet1 = `${experiences.length} professional experience${experiences.length !== 1 ? 's' : ''} and counting`;
     const bullet2 = `${projects.length} curated project${projects.length !== 1 ? 's' : ''} in portfolio`;
+    const totalProjects = String(projects.length);
+    const yearsXp = calculateYearsXp(experiences);
+    const skillsMarquee = buildSkillsMarquee(projects);
+    const skillsSection = buildSkillsSection(projects);
     const bullet3 = safe(profile.location, 'Remote') + ' · Open to opportunities';
 
     // Social links — fallback to '#' for null values.
@@ -162,6 +233,10 @@ export const PortfolioController = {
       .replace(/\{\{HERO_BULLET_1\}\}/g, bullet1)
       .replace(/\{\{HERO_BULLET_2\}\}/g, bullet2)
       .replace(/\{\{HERO_BULLET_3\}\}/g, bullet3)
+      .replace(/\{\{TOTAL_PROJECTS\}\}/g, totalProjects)
+      .replace(/\{\{YEARS_XP\}\}/g, yearsXp)
+      .replace(/\{\{SKILLS_MARQUEE\}\}/g, skillsMarquee)
+      .replace(/\{\{SKILLS_SECTION\}\}/g, skillsSection)
       .replace(/\{\{GITHUB_LINK\}\}/g, githubLink)
       .replace(/\{\{LINKEDIN_LINK\}\}/g, linkedinLink)
       .replace(/\{\{RESUME_LINK\}\}/g, resumeLink)
@@ -185,6 +260,7 @@ export const PortfolioController = {
           .replace(/\{\{EXP_INDEX\}\}/g, String(idx + 1).padStart(2, '0'))
           .replace(/\{\{EXP_ROLE\}\}/g, safe(exp.role, 'Role'))
           .replace(/\{\{EXP_COMPANY\}\}/g, safe(exp.company, 'Company'))
+          .replace(/\{\{EXP_BULLETS\}\}/g, formatNotes(exp.raw_notes, 'Impact details coming soon.'))
           .replace(/\{\{EXP_DATE\}\}/g, formatDateRange(exp.start_date, exp.end_date));
       });
 
@@ -196,6 +272,29 @@ export const PortfolioController = {
     }
 
     // ── 5. Compile — Projects Loop ────────────────────────────────────────────
+
+    const eduLoopRegex = /<!-- EDUCATION LOOP START -->([\s\S]*?)<!-- EDUCATION LOOP END -->/;
+    const eduMatch = html.match(eduLoopRegex);
+
+    if (eduMatch) {
+      const eduTemplate = eduMatch[1];
+
+      const compiledEducation = education.map((edu, idx) => {
+        const cgpa = safe(edu.cgpa);
+
+        return eduTemplate
+          .replace(/\{\{EDU_INDEX\}\}/g, String(idx + 1).padStart(2, '0'))
+          .replace(/\{\{EDU_INSTITUTION\}\}/g, safe(edu.institution, 'Institution'))
+          .replace(/\{\{EDU_DEGREE\}\}/g, safe(edu.degree, 'Degree'))
+          .replace(/\{\{EDU_CGPA\}\}/g, cgpa ? `GPA / CGPA: ${cgpa}` : '')
+          .replace(/\{\{EDU_DATE\}\}/g, formatDateRange(edu.start_date, edu.end_date));
+      });
+
+      html = html.replace(
+        /<!-- EDUCATION LOOP START -->[\s\S]*?<!-- EDUCATION LOOP END -->/,
+        compiledEducation.join('\n')
+      );
+    }
 
     const projLoopRegex = /<!-- PROJECTS LOOP START -->([\s\S]*?)<!-- PROJECTS LOOP END -->/;
     const projMatch = html.match(projLoopRegex);
