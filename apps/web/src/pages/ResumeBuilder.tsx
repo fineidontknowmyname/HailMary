@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { PDFViewer } from '@react-pdf/renderer';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../auth/useAuth';
@@ -8,7 +7,8 @@ import type { UserProfile } from '../types/profile';
 import type { HailMaryProject } from '../types/project';
 import type { HailMaryEducation, HailMaryExperience } from '../types/resume';
 
-import { ResumeDocument } from '../components/ResumeDocument';
+import { ResumeRenderer } from '../components/pdf-engine/ResumeRenderer';
+import { mockResumeData } from '../components/pdf-engine/mockData';
 import { ResumeControlPanel } from '../components/ResumeControlPanel';
 
 export default function ResumeBuilder() {
@@ -96,8 +96,6 @@ export default function ResumeBuilder() {
     );
   }
 
-  const includedProjects = projects.filter(p => p.sync_to_resume);
-
   return (
     <div className="h-screen w-full flex flex-col md:flex-row bg-[#13161e] overflow-hidden">
       {/* ── Left: Control Panel ── */}
@@ -121,14 +119,9 @@ export default function ResumeBuilder() {
             Live Preview
           </div>
         </div>
-        <PDFViewer width="100%" height="100%" className="border-none">
-          <ResumeDocument
-            profile={profile}
-            education={education}
-            experience={experience}
-            projects={includedProjects}
-          />
-        </PDFViewer>
+        <div className="flex-1 bg-white rounded-lg overflow-hidden">
+          <ResumeRenderer data={mockResumeData} />
+        </div>
       </div>
     </div>
   );
