@@ -90,6 +90,7 @@ export default function ProfilePage({ onBack }: { onBack: () => void }) {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving]   = useState<Record<string, boolean>>({})
   const [saved,  setSaved]    = useState<Record<string, boolean>>({})
+  const [error,  setError]    = useState<string | null>(null)
 
   // Social Links draft — persisted in localStorage so mobile tab-switches don't wipe inputs
   const [socialDraft, setSocialDraft] = useState<SocialDraft>(readDraftFromStorage)
@@ -134,13 +135,26 @@ export default function ProfilePage({ onBack }: { onBack: () => void }) {
     if (!user) return
     setSaving(s => ({ ...s, [section]: true }))
     setSaved(s  => ({ ...s, [section]: false }))
-    await upsertProfile(user.id, fields)
-    setSaving(s => ({ ...s, [section]: false }))
-    setSaved(s  => ({ ...s, [section]: true }))
-    if (section === 'social' && typeof window !== 'undefined') {
-      localStorage.removeItem(SOCIAL_DRAFT_KEY)
+    setError(null)
+    try {
+      const result = await upsertProfile(user.id, fields)
+      if (result.error) {
+        console.error(`[ProfilePage] Save failed for "${section}":`, result.error)
+        setError(`Failed to save ${section}: ${result.error}`)
+        setSaving(s => ({ ...s, [section]: false }))
+        return
+      }
+      setSaving(s => ({ ...s, [section]: false }))
+      setSaved(s  => ({ ...s, [section]: true }))
+      if (section === 'social' && typeof window !== 'undefined') {
+        localStorage.removeItem(SOCIAL_DRAFT_KEY)
+      }
+      setTimeout(() => setSaved(s => ({ ...s, [section]: false })), 2500)
+    } catch (err) {
+      console.error(`[ProfilePage] Unexpected error saving "${section}":`, err)
+      setError(`Unexpected error saving ${section}. Check console for details.`)
+      setSaving(s => ({ ...s, [section]: false }))
     }
-    setTimeout(() => setSaved(s => ({ ...s, [section]: false })), 2500)
   }
 
   if (loading || authLoading) {
@@ -210,6 +224,13 @@ export default function ProfilePage({ onBack }: { onBack: () => void }) {
           <h1 className="text-xl font-bold">Edit Profile</h1>
           <p className="text-[#7a849a] text-sm mt-1">{user?.email}</p>
         </div>
+
+        {error && (
+          <div className="flex items-center justify-between bg-red-500/10 border border-red-500/30 text-red-400 rounded-xl px-4 py-3 text-sm font-mono">
+            <span>{error}</span>
+            <button onClick={() => setError(null)} className="ml-4 text-red-400 hover:text-red-300 font-bold">✕</button>
+          </div>
+        )}
 
         <Section title="Basic Information">
           <Field label="Username"  value={profile.username ?? ''} onChange={set('username')}  placeholder="your-username" />

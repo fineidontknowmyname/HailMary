@@ -10,6 +10,28 @@ CREATE TABLE users (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- User profiles table
+CREATE TABLE user_profiles (
+  user_id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  username VARCHAR(100) UNIQUE,
+  name VARCHAR(255),
+  location VARCHAR(255),
+  bio TEXT,
+  github_url VARCHAR(2048),
+  linkedin_url VARCHAR(2048),
+  twitter_url VARCHAR(2048),
+  reddit_url VARCHAR(2048),
+  website_url VARCHAR(2048),
+  leetcode_username VARCHAR(100),
+  hackerrank_username VARCHAR(100),
+  weekly_goal_hours INTEGER DEFAULT 0,
+  comfort_zone_score INTEGER DEFAULT 0,
+  last_new_domain_at TIMESTAMP,
+  explored_languages TEXT[],
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Resources table
 CREATE TABLE resources (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
