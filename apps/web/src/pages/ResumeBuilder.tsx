@@ -86,7 +86,7 @@ function mapToResumeData(
 }
 
 export default function ResumeBuilder() {
-  const { user, isLoggedIn } = useAuth();
+  const { user, isLoggedIn, loading: authLoading } = useAuth();
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -98,6 +98,9 @@ export default function ResumeBuilder() {
   const [projects, setProjects] = useState<HailMaryProject[]>([]);
 
   useEffect(() => {
+    // Don't run until auth has finished initializing
+    if (authLoading) return;
+
     if (!isLoggedIn || !user) {
       setIsLoading(false);
       return;
@@ -119,6 +122,9 @@ export default function ResumeBuilder() {
         if (expRes.error) throw new Error(expRes.error.message);
         if (projRes.error) throw new Error(projRes.error.message);
 
+        // Debug: verify profile data reaches the component
+        console.log('[ResumeBuilder] Fetched Profile:', profData);
+
         const liveProfile = profData || { user_id: user!.id };
         const liveEducation = (eduRes.data || []) as HailMaryEducation[];
         const liveExperience = (expRes.data || []) as HailMaryExperience[];
@@ -137,7 +143,7 @@ export default function ResumeBuilder() {
     }
 
     fetchLiveResumeData();
-  }, [user, isLoggedIn]);
+  }, [user, isLoggedIn, authLoading]);
 
   useEffect(() => {
     if (!isLoggedIn || !user || isLoading) return;
@@ -177,16 +183,23 @@ export default function ResumeBuilder() {
     <div className="h-screen w-full flex flex-col md:flex-row bg-[#13161e] overflow-hidden">
       {/* ── Left: Control Panel ── */}
       <div className="w-full md:w-1/2 lg:w-[45%] xl:w-[40%] h-full overflow-y-auto border-r border-[#1e222d]">
-        <ResumeControlPanel
-          profile={profile}
-          setProfile={setProfile}
-          education={education}
-          setEducation={setEducation}
-          experience={experience}
-          setExperience={setExperience}
-          projects={projects}
-          setProjects={setProjects}
-        />
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center h-full gap-3">
+            <div className="h-8 w-8 border-2 border-[#4fffb0] border-t-transparent rounded-full animate-spin" />
+            <p className="text-xs font-mono text-[#7a849a] animate-pulse">Loading profile data…</p>
+          </div>
+        ) : (
+          <ResumeControlPanel
+            profile={profile}
+            setProfile={setProfile}
+            education={education}
+            setEducation={setEducation}
+            experience={experience}
+            setExperience={setExperience}
+            projects={projects}
+            setProjects={setProjects}
+          />
+        )}
       </div>
 
       {/* ── Right: Live PDF Preview ── */}
