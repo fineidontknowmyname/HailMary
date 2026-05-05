@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Sidebar } from './Sidebar';
+import { Menu } from 'lucide-react';
 import { useAuth } from '../auth/useAuth';
 import { MFAChallenge } from '../components/MFAChallenge';
 import { SignInModal } from '../components/SignInModal';
@@ -34,6 +35,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const { session } = useAuth();
   const [needsMFA, setNeedsMFA] = useState(false);
   const [showSignIn, setShowSignIn] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Listen for the global 'open-auth-modal' custom event dispatched by
   // child pages (ProfilePage, IncubatorPage, PortfolioPage, ResumeBuilder)
@@ -86,7 +88,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   }, [session]);
 
   return (
-    <div className="flex min-h-screen bg-[#0b0e14] text-white relative">
+    <div className="flex h-screen overflow-hidden bg-[#0b0e14] text-white">
       {/* ── Global Sign-In Modal ──────────────────────────────────── */}
       <SignInModal isOpen={showSignIn} onClose={() => setShowSignIn(false)} />
 
@@ -95,35 +97,53 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         <MFAChallenge onSuccess={() => setNeedsMFA(false)} />
       )}
 
+      {/* ── Mobile Sidebar Overlay ──────────────────────────────────── */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 z-40 bg-black/70 backdrop-blur-sm md:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
       {/* ── Sidebar ─────────────────────────────────────────────────── */}
-      <Sidebar />
+      <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
 
       {/* ── Main content area ───────────────────────────────────────── */}
-      <main
-        id="main-content"
-        tabIndex={-1}
-        className={[
-          'flex-1 min-w-0',
-          'md:pl-[240px]',   // offset for fixed desktop sidebar
-          'pb-16 md:pb-0',   // offset for mobile bottom tab bar
-          'overflow-y-auto',
-          'min-h-screen',
-        ].join(' ')}
-      >
-        {/* Inner wrapper — constrains max width and adds consistent padding */}
-        <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-6 md:py-8">
-          {/* Block main children if MFA is required */}
-          {needsMFA ? (
-            <div className="flex h-full min-h-[50vh] flex-col items-center justify-center opacity-50">
-              <p className="text-sm font-mono text-[#7a849a]">
-                Awaiting Two-Factor Authentication...
-              </p>
-            </div>
-          ) : (
-            children
-          )}
-        </div>
-      </main>
+      <div className="flex flex-1 flex-col overflow-hidden min-w-0">
+        
+        {/* ── Mobile Hamburger Header ───────────────────────────────── */}
+        <header className="flex h-14 shrink-0 items-center gap-x-4 border-b border-[#1e222d] bg-[#0b0e14] px-4 md:hidden">
+          <button
+            type="button"
+            className="-m-2.5 p-2.5 text-[#7a849a] hover:text-white transition-colors"
+            onClick={() => setIsSidebarOpen(true)}
+            aria-label="Open sidebar"
+          >
+            <Menu className="h-6 w-6" aria-hidden="true" />
+          </button>
+        </header>
+
+        <main
+          id="main-content"
+          tabIndex={-1}
+          className="flex-1 overflow-y-auto"
+        >
+          {/* Inner wrapper — constrains max width and adds consistent padding */}
+          <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-6 md:py-8">
+            {/* Block main children if MFA is required */}
+            {needsMFA ? (
+              <div className="flex h-full min-h-[50vh] flex-col items-center justify-center opacity-50">
+                <p className="text-sm font-mono text-[#7a849a]">
+                  Awaiting Two-Factor Authentication...
+                </p>
+              </div>
+            ) : (
+              children
+            )}
+          </div>
+        </main>
+      </div>
     </div>
   );
 };
