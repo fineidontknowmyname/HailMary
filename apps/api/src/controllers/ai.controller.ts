@@ -1,11 +1,14 @@
 import { Request, Response } from 'express';
 import { aiService } from '../services/aiService';
+import type { AiMode } from '../services/aiService';
 import { catchAsync } from '../middleware/errorHandler';
 import { supabase } from '../lib/supabase';
 
+const VALID_MODES: AiMode[] = ['tutor', 'feynman', 'debugger'];
+
 export const AIController = {
   askDoubt: catchAsync(async (req: Request, res: Response) => {
-    const { intelId, question, context } = req.body;
+    const { intelId, question, context, mode } = req.body;
 
     if (!intelId || !question || !context) {
       return res.status(400).json({ 
@@ -14,7 +17,10 @@ export const AIController = {
       });
     }
 
-    const answer = await aiService.resolveDoubt(intelId, question, context);
+    // Validate mode if provided, default to 'tutor'
+    const resolvedMode: AiMode = VALID_MODES.includes(mode) ? mode : 'tutor';
+
+    const answer = await aiService.resolveDoubt(intelId, question, context, resolvedMode);
 
     res.status(200).json({ success: true, data: answer });
   }),

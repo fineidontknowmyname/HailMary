@@ -1,6 +1,7 @@
 import Groq from 'groq-sdk';
 import crypto from 'crypto';
 import { cacheService } from '../lib/redis';
+import { SYSTEM_PROMPTS } from '../utils/prompts';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -20,8 +21,15 @@ interface IntelContext {
   tags: string[];
 }
 
+export type AiMode = 'tutor' | 'feynman' | 'debugger';
+
 export const aiService = {
-  resolveDoubt: async (intelId: string, question: string, context: IntelContext): Promise<string> => {
+  resolveDoubt: async (
+    intelId: string,
+    question: string,
+    context: IntelContext,
+    mode: AiMode = 'tutor'
+  ): Promise<string> => {
     const cacheKey = generateCacheKey(intelId, question);
     
     const cachedResponse = await cacheService.get(cacheKey);
@@ -29,15 +37,34 @@ export const aiService = {
       return cachedResponse;
     }
 
-    const systemPrompt = `You are an expert technical tutor. Answer the user's question directly and concisely based ONLY on the following context. If the answer is not in the context or requires external code compilation, provide a conceptually accurate explanation. Do not use markdown headers.
-    
-Context:
-Title: ${context.title}
-Description: ${context.description}
-Tags: ${context.tags.join(', ')}`;
+    // Build the system prompt based on the requested mode
+    const topic = `${context.title} (${context.tags.join(', ')})`;
+    let modePrompt: string;
+
+    switch (mode) {
+      case 'feynman':
+        modePrompt = SYSTEM_PROMPTS.FEYNMAN_EVALUATOR(topic);
+        break;
+      case 'debugger':
+        // Infer language from tags, fallback to the resource title
+        const language = context.tags[0] || context.title;
+        modePrompt = SYSTEM_PROMPTS.CODE_DEBUGGER(language);
+        break;
+      case 'tutor':
+      default:
+        modePrompt = SYSTEM_PROMPTS.ULTIMATE_TUTOR(topic);
+        break;
+    }
+
+    const systemPrompt = `${modePrompt.trim()}
+
+Resource context:
+- Title: ${context.title}
+- Description: ${context.description}
+- Tags: ${context.tags.join(', ')}`;
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 5000);
+    const timeout = setTimeout(() => controller.abort(), 10000);
 
     try {
       const completion = await groq.chat.completions.create({
@@ -46,8 +73,8 @@ Tags: ${context.tags.join(', ')}`;
           { role: 'user', content: question }
         ],
         model: 'llama-3.1-8b-instant',
-        temperature: 0.3,
-        max_tokens: 250,
+        temperature: 0.4,
+        max_tokens: 600,
       }, { signal: controller.signal });
 
       clearTimeout(timeout);
@@ -137,8 +164,25 @@ Do not include any text outside of the JSON object.`;
     }
   },
 
-  tutorSession: async (resourceTitle: string, userMessage: string): Promise<string> => {
-    const systemPrompt = `You are an elite Technical Tutor helping a user with: ${resourceTitle}. DO NOT give the final answer. Ask leading questions. Keep it under 3 short paragraphs. Use markdown for code.`;
+  tutorSession: async (resourceTitle: string, userMessage: string, mode: AiMode = 'tutor'): Promise<string> => {
+    let modePrompt: string;
+
+    switch (mode) {
+      case 'feynman':
+        modePrompt = SYSTEM_PROMPTS.FEYNMAN_EVALUATOR(resourceTitle);
+        break;
+      case 'debugger':
+        modePrompt = SYSTEM_PROMPTS.CODE_DEBUGGER(resourceTitle);
+        break;
+      case 'tutor':
+      default:
+        modePrompt = SYSTEM_PROMPTS.ULTIMATE_TUTOR(resourceTitle);
+        break;
+    }
+
+    const systemPrompt = `${modePrompt.trim()}
+
+Keep responses under 3 short paragraphs. Use markdown for code snippets.`;
 
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 10000);
