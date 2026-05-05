@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
   ChevronDown, ChevronRight, Plus, Trash2, 
-  User, GraduationCap, Briefcase, FolderKanban, Sparkles, Loader2
+  User, GraduationCap, Briefcase, FolderKanban, Sparkles, Loader2, RefreshCw
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../auth/useAuth';
@@ -100,12 +100,31 @@ export function ResumeControlPanel({
 
   // Profile Save State
   const [savingProfile, setSavingProfile] = useState(false);
+  const [savedProfile, setSavedProfile] = useState(false);
+  const [profileError, setProfileError] = useState<string | null>(null);
 
   async function handleSaveProfile() {
     if (!user) return;
     setSavingProfile(true);
-    await upsertProfile(user.id, profile);
-    setSavingProfile(false);
+    setProfileError(null);
+    setSavedProfile(false);
+
+    try {
+      const result = await upsertProfile(user.id, profile);
+      if (result.error) {
+        console.error('[ResumeControlPanel] Profile sync failed:', result.error);
+        setProfileError(result.error);
+      } else {
+        setSavedProfile(true);
+        setTimeout(() => setSavedProfile(false), 3000);
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Unexpected error saving profile.';
+      console.error('[ResumeControlPanel] Profile sync exception:', msg);
+      setProfileError(msg);
+    } finally {
+      setSavingProfile(false);
+    }
   }
 
   // --- Education Handlers ---
@@ -227,6 +246,14 @@ export function ResumeControlPanel({
 
       {/* ── IDENTITY ── */}
       <SectionCard title="Identity & Links" icon={<User className="h-5 w-5" />} defaultOpen>
+        {/* Sync indicator */}
+        <div className="flex items-center gap-1.5 mb-4 px-2 py-1.5 rounded-lg bg-[#4fffb0]/[0.06] border border-[#4fffb0]/15 w-fit">
+          <RefreshCw className="h-3 w-3 text-[#4fffb0]" />
+          <span className="text-[10px] font-mono text-[#4fffb0] tracking-wide">Synced from Profile</span>
+        </div>
+
+        {profileError && <InlineError message={profileError} onDismiss={() => setProfileError(null)} />}
+
         <TextInput label="Full Name" value={profile.name || ''} onChange={(v) => setProfile({ ...profile, name: v })} />
         <TextInput label="Location" value={profile.location || ''} onChange={(v) => setProfile({ ...profile, location: v })} />
         <TextArea label="Tagline / Short Bio" value={profile.bio || ''} onChange={(v) => setProfile({ ...profile, bio: v })} />
@@ -239,11 +266,19 @@ export function ResumeControlPanel({
         <button
           onClick={handleSaveProfile}
           disabled={savingProfile}
-          className="mt-2 w-full py-2.5 bg-[#4fffb0]/10 text-[#4fffb0] hover:bg-[#4fffb0]/20 font-bold rounded-lg transition-colors text-sm flex items-center justify-center gap-2"
+          className={`mt-2 w-full py-2.5 font-bold rounded-lg transition-all text-sm flex items-center justify-center gap-2 ${
+            savedProfile
+              ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/25'
+              : 'bg-[#4fffb0]/10 text-[#4fffb0] hover:bg-[#4fffb0]/20'
+          }`}
         >
           {savingProfile && <Loader2 className="h-4 w-4 animate-spin" />}
-          {savingProfile ? 'Saving...' : 'Save Identity'}
+          {savingProfile ? 'Syncing...' : savedProfile ? '✓ Synced to Profile' : 'Save Identity'}
         </button>
+
+        {savedProfile && (
+          <p className="text-[10px] font-mono text-[#7a849a] text-center mt-2">Changes saved to your global profile — visible everywhere.</p>
+        )}
       </SectionCard>
 
       {/* ── EDUCATION ── */}
