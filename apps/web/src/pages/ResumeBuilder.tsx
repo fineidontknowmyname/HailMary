@@ -55,8 +55,8 @@ function mapToResumeData(
       institution: edu.institution,
       degree: edu.degree,
       cgpa: edu.cgpa || '',
-      startDate: edu.start_date || '',
-      endDate: edu.end_date || 'Present',
+      startDate: edu.start_year || '',
+      endDate: edu.end_year || 'Present',
     })),
     experience: experience.map((exp) => {
       const expRow = exp as ExperienceRow;
@@ -110,7 +110,7 @@ export default function ResumeBuilder() {
       try {
         const [profData, eduRes, expRes, projRes] = await Promise.all([
           fetchProfile(user!.id),
-          supabase.from('hailmary_education').select('*').eq('user_id', user!.id).order('start_date', { ascending: false }),
+          supabase.from('hailmary_education').select('*').eq('user_id', user!.id).order('start_year', { ascending: false }),
           supabase.from('hailmary_experience').select('*').eq('user_id', user!.id).order('start_date', { ascending: false }),
           supabase.from('hailmary_projects').select('*').eq('user_id', user!.id).order('created_at', { ascending: false }),
         ]);

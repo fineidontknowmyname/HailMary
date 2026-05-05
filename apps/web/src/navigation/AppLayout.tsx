@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Sidebar } from './Sidebar';
 import { useAuth } from '../auth/useAuth';
 import { MFAChallenge } from '../components/MFAChallenge';
+import { SignInModal } from '../components/SignInModal';
 import { supabase } from '../lib/supabase';
 
 interface AppLayoutProps {
@@ -32,6 +33,16 @@ interface AppLayoutProps {
 export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const { session } = useAuth();
   const [needsMFA, setNeedsMFA] = useState(false);
+  const [showSignIn, setShowSignIn] = useState(false);
+
+  // Listen for the global 'open-auth-modal' custom event dispatched by
+  // child pages (ProfilePage, IncubatorPage, PortfolioPage, ResumeBuilder)
+  const openModal = useCallback(() => setShowSignIn(true), []);
+
+  useEffect(() => {
+    window.addEventListener('open-auth-modal', openModal);
+    return () => window.removeEventListener('open-auth-modal', openModal);
+  }, [openModal]);
 
   useEffect(() => {
     let isMounted = true;
@@ -76,6 +87,9 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
 
   return (
     <div className="flex min-h-screen bg-[#0b0e14] text-white relative">
+      {/* ── Global Sign-In Modal ──────────────────────────────────── */}
+      <SignInModal isOpen={showSignIn} onClose={() => setShowSignIn(false)} />
+
       {/* ── MFA Overlay ─────────────────────────────────────────────── */}
       {needsMFA && (
         <MFAChallenge onSuccess={() => setNeedsMFA(false)} />

@@ -7,8 +7,8 @@ export interface HailMaryEducation {
   institution: string;
   degree: string;
   cgpa: string | null;
-  start_date: string | null; // ISO date string e.g. "2020-08"
-  end_date: string | null;   // ISO date string or "Present"
+  start_year: string | null; // e.g. "2020"
+  end_year: string | null;   // e.g. "2024" or "Present"
 }
 
 export interface HailMaryExperience {
@@ -28,8 +28,8 @@ export const EMPTY_EDUCATION: EducationFormData = {
   institution: '',
   degree: '',
   cgpa: '',
-  start_date: '',
-  end_date: '',
+  start_year: '',
+  end_year: '',
 };
 
 export const EMPTY_EXPERIENCE: ExperienceFormData = {
@@ -48,8 +48,8 @@ CREATE TABLE public.hailmary_education (
   institution TEXT NOT NULL,
   degree      TEXT NOT NULL,
   cgpa        TEXT,
-  start_date  TEXT,
-  end_date    TEXT,
+  start_year  TEXT,
+  end_year    TEXT,
   created_at  TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
 ALTER TABLE public.hailmary_education ENABLE ROW LEVEL SECURITY;

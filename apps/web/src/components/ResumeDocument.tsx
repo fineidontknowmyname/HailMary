@@ -205,7 +205,7 @@ export function ResumeDocument({
               <View key={edu.id} style={S.eduEntry}>
                 <View style={S.entryHead}>
                   <Text style={S.eduTitle}>{edu.degree}</Text>
-                  <Text style={S.entryDate}>{dateRange(edu.start_date, edu.end_date)}</Text>
+                  <Text style={S.entryDate}>{dateRange(edu.start_year, edu.end_year)}</Text>
                 </View>
                 <Text style={S.eduSub}>{edu.institution}</Text>
                 {edu.cgpa && <Text style={S.eduGrade}>GPA / CGPA: {edu.cgpa}</Text>}

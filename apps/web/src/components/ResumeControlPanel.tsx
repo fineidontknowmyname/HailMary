@@ -77,6 +77,19 @@ function TextArea({ label, value, onChange, placeholder = '' }: { label: string,
   );
 }
 
+function InlineError({ message, onDismiss }: { message: string, onDismiss: () => void }) {
+  return (
+    <div className="flex items-start gap-2 bg-red-500/10 border border-red-500/25 rounded-lg px-3 py-2.5 mb-3">
+      <svg className="mt-0.5 h-3.5 w-3.5 shrink-0 text-red-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10" />
+        <path strokeLinecap="round" d="M12 8v4m0 4h.01" />
+      </svg>
+      <p className="flex-1 text-xs text-red-300 leading-relaxed">{message}</p>
+      <button onClick={onDismiss} className="text-red-400 hover:text-red-300 text-xs font-bold leading-none">✕</button>
+    </div>
+  );
+}
+
 export function ResumeControlPanel({
   profile, setProfile,
   education, setEducation,
@@ -97,13 +110,47 @@ export function ResumeControlPanel({
 
   // --- Education Handlers ---
   const [eduForm, setEduForm] = useState<EducationFormData | null>(null);
+  const [savingEdu, setSavingEdu] = useState(false);
+  const [eduError, setEduError] = useState<string | null>(null);
   
   async function saveEdu() {
     if (!user || !eduForm) return;
-    const { data, error } = await supabase.from('hailmary_education').insert({ ...eduForm, user_id: user.id }).select().single();
-    if (!error && data) {
-      setEducation([data as HailMaryEducation, ...education]);
-      setEduForm(null);
+    if (!eduForm.institution.trim() || !eduForm.degree.trim()) {
+      setEduError('Institution and Degree are required.');
+      return;
+    }
+
+    setSavingEdu(true);
+    setEduError(null);
+
+    try {
+      const { data, error } = await supabase
+        .from('hailmary_education')
+        .insert({
+          user_id: user.id,
+          institution: eduForm.institution,
+          degree: eduForm.degree,
+          cgpa: eduForm.cgpa || null,
+          start_year: eduForm.start_year || null,
+          end_year: eduForm.end_year || null,
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('[ResumeControlPanel] Education save failed:', error.message);
+        setEduError(error.message);
+      } else if (data) {
+        setEducation([data as HailMaryEducation, ...education]);
+        setEduForm(null);
+        setEduError(null);
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Unexpected error saving education.';
+      console.error('[ResumeControlPanel] Education save exception:', msg);
+      setEduError(msg);
+    } finally {
+      setSavingEdu(false);
     }
   }
 
@@ -114,13 +161,47 @@ export function ResumeControlPanel({
 
   // --- Experience Handlers ---
   const [expForm, setExpForm] = useState<ExperienceFormData | null>(null);
+  const [savingExp, setSavingExp] = useState(false);
+  const [expError, setExpError] = useState<string | null>(null);
 
   async function saveExp() {
     if (!user || !expForm) return;
-    const { data, error } = await supabase.from('hailmary_experience').insert({ ...expForm, user_id: user.id }).select().single();
-    if (!error && data) {
-      setExperience([data as HailMaryExperience, ...experience]);
-      setExpForm(null);
+    if (!expForm.company.trim() || !expForm.role.trim()) {
+      setExpError('Company and Role are required.');
+      return;
+    }
+
+    setSavingExp(true);
+    setExpError(null);
+
+    try {
+      const { data, error } = await supabase
+        .from('hailmary_experience')
+        .insert({
+          user_id: user.id,
+          company: expForm.company,
+          role: expForm.role,
+          raw_notes: expForm.raw_notes || null,
+          start_date: expForm.start_date || null,
+          end_date: expForm.end_date || null,
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('[ResumeControlPanel] Experience save failed:', error.message);
+        setExpError(error.message);
+      } else if (data) {
+        setExperience([data as HailMaryExperience, ...experience]);
+        setExpForm(null);
+        setExpError(null);
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Unexpected error saving experience.';
+      console.error('[ResumeControlPanel] Experience save exception:', msg);
+      setExpError(msg);
+    } finally {
+      setSavingExp(false);
     }
   }
 
@@ -172,7 +253,7 @@ export function ResumeControlPanel({
             <div>
               <div className="font-bold text-sm text-white">{edu.degree}</div>
               <div className="text-xs text-[#7a849a]">{edu.institution}</div>
-              <div className="text-[10px] font-mono text-[#4fffb0] mt-1">{edu.start_date || '?'} - {edu.end_date || 'Present'}</div>
+              <div className="text-[10px] font-mono text-[#4fffb0] mt-1">{edu.start_year || '?'} - {edu.end_year || 'Present'}</div>
             </div>
             <button onClick={() => deleteEdu(edu.id)} className="text-[#7a849a] hover:text-red-400 p-1"><Trash2 className="h-4 w-4" /></button>
           </div>
@@ -180,17 +261,21 @@ export function ResumeControlPanel({
         
         {eduForm ? (
           <div className="bg-[#13161e] border border-[#4fffb0]/30 rounded-lg p-4 mt-4">
+            {eduError && <InlineError message={eduError} onDismiss={() => setEduError(null)} />}
             <TextInput label="Institution" value={eduForm.institution} onChange={(v) => setEduForm({ ...eduForm, institution: v })} placeholder="University of..." />
             <TextInput label="Degree" value={eduForm.degree} onChange={(v) => setEduForm({ ...eduForm, degree: v })} placeholder="B.S. Computer Science" />
             <div className="grid grid-cols-2 gap-3">
-              <TextInput label="Start Date" value={eduForm.start_date || ''} onChange={(v) => setEduForm({ ...eduForm, start_date: v })} placeholder="2018-08" />
-              <TextInput label="End Date" value={eduForm.end_date || ''} onChange={(v) => setEduForm({ ...eduForm, end_date: v })} placeholder="2022-05 or Present" />
+              <TextInput label="Start Year" value={eduForm.start_year || ''} onChange={(v) => setEduForm({ ...eduForm, start_year: v })} placeholder="2018" />
+              <TextInput label="End Year" value={eduForm.end_year || ''} onChange={(v) => setEduForm({ ...eduForm, end_year: v })} placeholder="2022 or Present" />
             </div>
             <TextInput label="GPA / CGPA (Optional)" value={eduForm.cgpa || ''} onChange={(v) => setEduForm({ ...eduForm, cgpa: v })} placeholder="3.8/4.0" />
             
             <div className="flex gap-2 mt-4">
-              <button onClick={() => setEduForm(null)} className="flex-1 py-2 text-xs font-bold text-[#7a849a] border border-[#2a3040] rounded-lg hover:text-white">Cancel</button>
-              <button onClick={saveEdu} className="flex-1 py-2 text-xs font-bold text-[#0b0e14] bg-[#4fffb0] rounded-lg hover:bg-[#3de89e]">Add</button>
+              <button onClick={() => { setEduForm(null); setEduError(null); }} className="flex-1 py-2 text-xs font-bold text-[#7a849a] border border-[#2a3040] rounded-lg hover:text-white">Cancel</button>
+              <button onClick={saveEdu} disabled={savingEdu} className="flex-1 py-2 text-xs font-bold text-[#0b0e14] bg-[#4fffb0] rounded-lg hover:bg-[#3de89e] disabled:opacity-50 flex items-center justify-center gap-1.5">
+                {savingEdu && <Loader2 className="h-3 w-3 animate-spin" />}
+                {savingEdu ? 'Saving...' : 'Add'}
+              </button>
             </div>
           </div>
         ) : (
@@ -215,17 +300,21 @@ export function ResumeControlPanel({
         
         {expForm ? (
           <div className="bg-[#13161e] border border-[#4fffb0]/30 rounded-lg p-4 mt-4">
+            {expError && <InlineError message={expError} onDismiss={() => setExpError(null)} />}
             <TextInput label="Company" value={expForm.company} onChange={(v) => setExpForm({ ...expForm, company: v })} placeholder="Acme Corp" />
             <TextInput label="Role" value={expForm.role} onChange={(v) => setExpForm({ ...expForm, role: v })} placeholder="Software Engineer" />
             <div className="grid grid-cols-2 gap-3">
               <TextInput label="Start Date" value={expForm.start_date || ''} onChange={(v) => setExpForm({ ...expForm, start_date: v })} placeholder="2020-01" />
               <TextInput label="End Date" value={expForm.end_date || ''} onChange={(v) => setExpForm({ ...expForm, end_date: v })} placeholder="Present" />
             </div>
-            <TextArea label="Bullet Points (Raw Notes)" value={expForm.raw_notes || ''} onChange={(v) => setExpForm({ ...expForm, raw_notes: v })} placeholder="• Developed feature X using Y...&#10;• Reduced latency by 20%..." />
+            <TextArea label="Bullet Points (Raw Notes)" value={expForm.raw_notes || ''} onChange={(v) => setExpForm({ ...expForm, raw_notes: v })} placeholder={"• Developed feature X using Y...\n• Reduced latency by 20%..."} />
             
             <div className="flex gap-2 mt-4">
-              <button onClick={() => setExpForm(null)} className="flex-1 py-2 text-xs font-bold text-[#7a849a] border border-[#2a3040] rounded-lg hover:text-white">Cancel</button>
-              <button onClick={saveExp} className="flex-1 py-2 text-xs font-bold text-[#0b0e14] bg-[#4fffb0] rounded-lg hover:bg-[#3de89e]">Add</button>
+              <button onClick={() => { setExpForm(null); setExpError(null); }} className="flex-1 py-2 text-xs font-bold text-[#7a849a] border border-[#2a3040] rounded-lg hover:text-white">Cancel</button>
+              <button onClick={saveExp} disabled={savingExp} className="flex-1 py-2 text-xs font-bold text-[#0b0e14] bg-[#4fffb0] rounded-lg hover:bg-[#3de89e] disabled:opacity-50 flex items-center justify-center gap-1.5">
+                {savingExp && <Loader2 className="h-3 w-3 animate-spin" />}
+                {savingExp ? 'Saving...' : 'Add'}
+              </button>
             </div>
           </div>
         ) : (
