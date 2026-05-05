@@ -17,6 +17,8 @@
 
 *,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+.d-none { display: none !important; }
+
 html { scroll-behavior: smooth; }
 
 body {
@@ -125,7 +127,6 @@ nav {
   overflow: hidden;
 }
 
-/* subtle grid bg */
 #hero::before {
   content: '';
   position: absolute;
@@ -137,7 +138,6 @@ nav {
   pointer-events: none;
 }
 
-/* radial glow blobs */
 .glow-blob {
   position: absolute;
   border-radius: 50%;
@@ -202,7 +202,11 @@ nav {
   border-radius: 50%;
   animation: pulse 1.8s ease infinite;
 }
-@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.7)} }
+
+@keyframes pulse {
+  0%,100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: .4; transform: scale(.7); }
+}
 
 .hero-greeting {
   font-family: var(--mono);
@@ -417,7 +421,6 @@ nav {
   opacity: .3;
 }
 
-/* floating stat cards */
 .stat-float {
   position: absolute;
   background: rgba(13,15,20,.88);
@@ -569,8 +572,7 @@ section {
 }
 
 /* ─── EXPERIENCE ─── */
-#experience,
-#education {
+#experience {
   border-top: 1px solid var(--border);
   background: var(--surface);
 }
@@ -651,12 +653,6 @@ section {
   color: var(--muted);
   letter-spacing: .04em;
 }
-.exp-details .exp-bullets {
-  margin-top: .55rem;
-  line-height: 1.7;
-  letter-spacing: 0;
-  text-transform: none;
-}
 
 .exp-duration {
   font-size: .65rem;
@@ -664,7 +660,6 @@ section {
   letter-spacing: .08em;
   text-transform: uppercase;
   white-space: nowrap;
-  padding-top: .3rem;
   border: 1px solid var(--border);
   border-radius: 999px;
   padding: .3rem .8rem;
@@ -715,7 +710,7 @@ section {
   box-shadow: 0 20px 60px rgba(91,143,255,.12), 0 0 0 1px rgba(91,143,255,.15);
 }
 
-.project-card:nth-child(3n+1):hover { border-color: var(--accent); box-shadow: 0 20px 60px rgba(232,201,125,.1); }
+.project-card:nth-child(3n+1):hover { border-color: var(--accent);  box-shadow: 0 20px 60px rgba(232,201,125,.1); }
 .project-card:nth-child(3n+2):hover { border-color: var(--accent2); box-shadow: 0 20px 60px rgba(91,143,255,.1); }
 .project-card:nth-child(3n):hover   { border-color: var(--success); box-shadow: 0 20px 60px rgba(82,209,138,.1); }
 
@@ -746,7 +741,6 @@ section {
   background: linear-gradient(135deg, var(--surface2) 0%, var(--bg) 100%);
 }
 
-/* decorative corner lines on placeholder */
 .project-img-placeholder::before,
 .project-img-placeholder::after {
   content: '';

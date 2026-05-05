@@ -10,7 +10,7 @@ import profileRoutes from './routes/profile.routes';
 import aiRoutes from './routes/ai.routes';
 import resourceRoutes from './routes/resource.routes';
 import sessionsRoutes from './routes/sessions.routes';
-import portfolioRoutes from './routes/portfolio.routes';
+
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -39,7 +39,7 @@ app.use('/api/profile', profileRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/resources', resourceRoutes);
 app.use('/api/sessions', sessionsRoutes);
-app.use('/api/portfolio', portfolioRoutes);
+
 app.use(globalErrorHandler);
 
 app.listen(PORT, () => {
