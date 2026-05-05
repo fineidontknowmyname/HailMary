@@ -17,8 +17,8 @@ export interface HailMaryExperience {
   company: string;
   role: string;
   raw_notes: string | null;  // bullet-point notes, mined for ATS keywords
-  start_date: string | null;
-  end_date: string | null;
+  start_year: string | null;
+  end_year: string | null;
 }
 
 export type EducationFormData = Omit<HailMaryEducation, 'id' | 'user_id'>;
@@ -36,8 +36,8 @@ export const EMPTY_EXPERIENCE: ExperienceFormData = {
   company: '',
   role: '',
   raw_notes: '',
-  start_date: '',
-  end_date: '',
+  start_year: '',
+  end_year: '',
 };
 
 // ─── SQL to create the two tables (run in Supabase SQL Editor) ────────────────
@@ -62,8 +62,8 @@ CREATE TABLE public.hailmary_experience (
   company    TEXT NOT NULL,
   role       TEXT NOT NULL,
   raw_notes  TEXT,
-  start_date TEXT,
-  end_date   TEXT,
+  start_year TEXT,
+  end_year   TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
 ALTER TABLE public.hailmary_experience ENABLE ROW LEVEL SECURITY;

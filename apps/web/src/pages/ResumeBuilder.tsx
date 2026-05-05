@@ -64,8 +64,8 @@ function mapToResumeData(
       return {
         company: expRow.company_name || exp.company,
         role: exp.role,
-        startDate: exp.start_date || '',
-        endDate: exp.end_date || 'Present',
+        startDate: exp.start_year || '',
+        endDate: exp.end_year || 'Present',
         bullets: toBullets(expRow.bullets, exp.raw_notes),
       };
     }),
@@ -114,7 +114,7 @@ export default function ResumeBuilder() {
         const [profData, eduRes, expRes, projRes] = await Promise.all([
           fetchProfile(user!.id),
           supabase.from('hailmary_education').select('*').eq('user_id', user!.id).order('start_year', { ascending: false }),
-          supabase.from('hailmary_experience').select('*').eq('user_id', user!.id).order('start_date', { ascending: false }),
+          supabase.from('hailmary_experience').select('*').eq('user_id', user!.id).order('start_year', { ascending: false }),
           supabase.from('hailmary_projects').select('*').eq('user_id', user!.id).order('created_at', { ascending: false }),
         ]);
 

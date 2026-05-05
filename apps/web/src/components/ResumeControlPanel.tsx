@@ -201,8 +201,8 @@ export function ResumeControlPanel({
           company: expForm.company,
           role: expForm.role,
           raw_notes: expForm.raw_notes || null,
-          start_date: expForm.start_date || null,
-          end_date: expForm.end_date || null,
+          start_year: expForm.start_year || null,
+          end_year: expForm.end_year || null,
         })
         .select()
         .single();
@@ -327,7 +327,7 @@ export function ResumeControlPanel({
             <div>
               <div className="font-bold text-sm text-white">{exp.role}</div>
               <div className="text-xs text-[#7a849a]">{exp.company}</div>
-              <div className="text-[10px] font-mono text-[#4fffb0] mt-1">{exp.start_date || '?'} - {exp.end_date || 'Present'}</div>
+              <div className="text-[10px] font-mono text-[#4fffb0] mt-1">{exp.start_year || '?'} - {exp.end_year || 'Present'}</div>
             </div>
             <button onClick={() => deleteExp(exp.id)} className="text-[#7a849a] hover:text-red-400 p-1"><Trash2 className="h-4 w-4" /></button>
           </div>
@@ -339,8 +339,8 @@ export function ResumeControlPanel({
             <TextInput label="Company" value={expForm.company} onChange={(v) => setExpForm({ ...expForm, company: v })} placeholder="Acme Corp" />
             <TextInput label="Role" value={expForm.role} onChange={(v) => setExpForm({ ...expForm, role: v })} placeholder="Software Engineer" />
             <div className="grid grid-cols-2 gap-3">
-              <TextInput label="Start Date" value={expForm.start_date || ''} onChange={(v) => setExpForm({ ...expForm, start_date: v })} placeholder="2020-01" />
-              <TextInput label="End Date" value={expForm.end_date || ''} onChange={(v) => setExpForm({ ...expForm, end_date: v })} placeholder="Present" />
+              <TextInput label="Start Year" value={expForm.start_year || ''} onChange={(v) => setExpForm({ ...expForm, start_year: v })} placeholder="2020" />
+              <TextInput label="End Year" value={expForm.end_year || ''} onChange={(v) => setExpForm({ ...expForm, end_year: v })} placeholder="2023 or Present" />
             </div>
             <TextArea label="Bullet Points (Raw Notes)" value={expForm.raw_notes || ''} onChange={(v) => setExpForm({ ...expForm, raw_notes: v })} placeholder={"• Developed feature X using Y...\n• Reduced latency by 20%..."} />
             

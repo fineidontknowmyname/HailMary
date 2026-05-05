@@ -221,7 +221,7 @@ export function ResumeDocument({
               <View key={exp.id} style={S.entry}>
                 <View style={S.entryHead}>
                   <Text style={S.entryTitle}>{exp.role}</Text>
-                  <Text style={S.entryDate}>{dateRange(exp.start_date, exp.end_date)}</Text>
+                  <Text style={S.entryDate}>{dateRange(exp.start_year, exp.end_year)}</Text>
                 </View>
                 <Text style={S.entryOrg}>{exp.company}</Text>
                 <BulletList notes={exp.raw_notes} />

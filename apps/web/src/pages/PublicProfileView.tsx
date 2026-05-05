@@ -56,7 +56,7 @@ export default function PublicProfileView() {
         // 2. Fetch education, experience, and projects by the resolved user_id
         const [eduRes, expRes, projRes] = await Promise.all([
           supabase.from('hailmary_education').select('*').eq('user_id', userId).order('start_year', { ascending: false }),
-          supabase.from('hailmary_experience').select('*').eq('user_id', userId).order('start_date', { ascending: false }),
+          supabase.from('hailmary_experience').select('*').eq('user_id', userId).order('start_year', { ascending: false }),
           supabase.from('hailmary_projects').select('*').eq('user_id', userId).eq('sync_to_resume', true).order('created_at', { ascending: false }),
         ]);
 
@@ -173,7 +173,7 @@ export default function PublicProfileView() {
                   <div className="flex justify-between items-start flex-wrap gap-2 mb-1">
                     <h3 className="font-bold text-white">{exp.role}</h3>
                     <span className="text-xs font-mono text-[#4fffb0]">
-                      {exp.start_date || '?'} – {exp.end_date || 'Present'}
+                      {exp.start_year || '?'} – {exp.end_year || 'Present'}
                     </span>
                   </div>
                   <p className="text-sm text-[#7a849a] mb-2">{exp.company}</p>
