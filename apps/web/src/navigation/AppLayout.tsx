@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Sidebar } from './Sidebar';
+import { Menu } from 'lucide-react';
 import { useAuth } from '../auth/useAuth';
 import { MFAChallenge } from '../components/MFAChallenge';
 import { SignInModal } from '../components/SignInModal';
@@ -34,6 +35,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const { session } = useAuth();
   const [needsMFA, setNeedsMFA] = useState(false);
   const [showSignIn, setShowSignIn] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Listen for the global 'open-auth-modal' custom event dispatched by
   // child pages (ProfilePage, IncubatorPage, PortfolioPage, ResumeBuilder)
@@ -95,8 +97,26 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         <MFAChallenge onSuccess={() => setNeedsMFA(false)} />
       )}
 
+      {/* Dark Overlay */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-30 md:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
+      {/* Hamburger Button */}
+      <button
+        className="fixed top-4 left-4 z-50 p-2 bg-[#0b0e14] border border-[#1e222d] rounded-md text-[#7a849a] hover:text-white transition-colors md:hidden"
+        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+      >
+        <Menu className="h-6 w-6" />
+      </button>
+
       {/* ── Sidebar ─────────────────────────────────────────────────── */}
-      <Sidebar />
+      <div className={`fixed inset-y-0 left-0 z-40 transform transition-transform duration-300 md:relative md:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
+      </div>
 
       {/* ── Main content area ───────────────────────────────────────── */}
       <main
