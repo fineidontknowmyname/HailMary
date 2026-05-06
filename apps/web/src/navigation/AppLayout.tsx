@@ -114,7 +114,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       </button>
 
       {/* Sidebar Wrapper */}
-      <div className={`transform transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <div className={`w-64 fixed top-0 left-0 h-full z-40 transform transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
       </div>
 
