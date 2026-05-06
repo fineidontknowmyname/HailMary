@@ -42,8 +42,14 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const openModal = useCallback(() => setShowSignIn(true), []);
 
   useEffect(() => {
+    const toggleSidebar = () => setIsSidebarOpen(prev => !prev);
     window.addEventListener('open-auth-modal', openModal);
-    return () => window.removeEventListener('open-auth-modal', openModal);
+    window.addEventListener('toggle-sidebar', toggleSidebar);
+    
+    return () => {
+      window.removeEventListener('open-auth-modal', openModal);
+      window.removeEventListener('toggle-sidebar', toggleSidebar);
+    };
   }, [openModal]);
 
   useEffect(() => {
@@ -114,7 +120,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       </button>
 
       {/* ── Sidebar ─────────────────────────────────────────────────── */}
-      <div className={`fixed inset-y-0 left-0 z-40 transform transition-transform duration-300 md:relative md:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <div className={`fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 md:relative md:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
       </div>
 
