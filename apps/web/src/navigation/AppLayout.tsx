@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Sidebar } from './Sidebar';
-import { Menu } from 'lucide-react';
 import { useAuth } from '../auth/useAuth';
 import { MFAChallenge } from '../components/MFAChallenge';
 import { SignInModal } from '../components/SignInModal';
