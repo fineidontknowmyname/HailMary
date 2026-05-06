@@ -97,27 +97,24 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         <MFAChallenge onSuccess={() => setNeedsMFA(false)} />
       )}
 
-      {/* ── Mobile Sidebar Overlay ──────────────────────────────────── */}
+      {/* Dark Overlay */}
       {isSidebarOpen && (
         <div 
-          className="fixed inset-0 z-40 bg-black/70 backdrop-blur-sm md:hidden"
+          className="fixed inset-0 bg-black/50 z-30"
           onClick={() => setIsSidebarOpen(false)}
-          aria-hidden="true"
         />
       )}
 
-      {/* ── Fixed Hamburger Button ──────────────────────────────────── */}
+      {/* Hamburger Button */}
       <button
-        type="button"
-        className="fixed top-4 left-4 z-30 p-2.5 bg-[#0b0e14] border border-[#1e222d] rounded-md text-[#7a849a] hover:text-white transition-colors md:hidden"
+        className="fixed top-4 left-4 z-50 p-2 bg-[#0b0e14] border border-[#1e222d] rounded-md text-[#7a849a] hover:text-white transition-colors"
         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-        aria-label="Toggle sidebar"
       >
-        <Menu className="h-6 w-6" aria-hidden="true" />
+        <Menu className="h-6 w-6" />
       </button>
 
-      {/* ── Sidebar Wrapper ─────────────────────────────────────────── */}
-      <div className={`fixed inset-y-0 left-0 z-50 md:relative transform transition-transform duration-300 ease-in-out md:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      {/* Sidebar Wrapper */}
+      <div className={`transform transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
       </div>
 
