@@ -106,24 +106,24 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         />
       )}
 
-      {/* ── Sidebar ─────────────────────────────────────────────────── */}
-      <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
+      {/* ── Fixed Hamburger Button ──────────────────────────────────── */}
+      <button
+        type="button"
+        className="fixed top-4 left-4 z-30 p-2.5 bg-[#0b0e14] border border-[#1e222d] rounded-md text-[#7a849a] hover:text-white transition-colors md:hidden"
+        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+        aria-label="Toggle sidebar"
+      >
+        <Menu className="h-6 w-6" aria-hidden="true" />
+      </button>
+
+      {/* ── Sidebar Wrapper ─────────────────────────────────────────── */}
+      <div className={`fixed inset-y-0 left-0 z-50 md:relative transform transition-transform duration-300 ease-in-out md:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
+      </div>
 
       {/* ── Main content area ───────────────────────────────────────── */}
       <div className="flex flex-1 flex-col overflow-hidden min-w-0">
         
-        {/* ── Mobile Hamburger Header ───────────────────────────────── */}
-        <header className="flex h-14 shrink-0 items-center gap-x-4 border-b border-[#1e222d] bg-[#0b0e14] px-4 md:hidden">
-          <button
-            type="button"
-            className="-m-2.5 p-2.5 text-[#7a849a] hover:text-white transition-colors"
-            onClick={() => setIsSidebarOpen(true)}
-            aria-label="Open sidebar"
-          >
-            <Menu className="h-6 w-6" aria-hidden="true" />
-          </button>
-        </header>
-
         <main
           id="main-content"
           tabIndex={-1}
