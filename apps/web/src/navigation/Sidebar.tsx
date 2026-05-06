@@ -161,13 +161,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
     <aside
       id="unified-sidebar"
       aria-label="Navigation menu"
-      className={[
-        'fixed inset-y-0 left-0 z-50 flex flex-col',
-        'w-64 border-r border-zinc-800/80 bg-[#090c12]',
-        'transform transition-transform duration-300 ease-in-out',
-        'md:relative md:translate-x-0',
-        isOpen ? 'translate-x-0' : '-translate-x-full',
-      ].join(' ')}
+      className={`
+        fixed inset-y-0 left-0 z-50 w-64 bg-[#0d1117] border-r border-slate-800 flex-shrink-0 flex flex-col
+        transform transition-transform duration-300 ease-in-out
+        md:relative md:translate-x-0
+        ${isOpen ? "translate-x-0" : "-translate-x-full"}
+      `}
     >
       {/* Mobile close button wrapper overlaying the logo area */}
       <div className="relative">

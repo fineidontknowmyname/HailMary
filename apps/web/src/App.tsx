@@ -75,7 +75,7 @@ export default function App() {
 
       <SignInModal isOpen={showSignIn} onClose={() => setShowSignIn(false)} />
 
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0b0e14]/80 backdrop-blur-md border-b border-[#1e2535]">
+      <nav className="sticky top-0 z-40 bg-[#0b0e14]/80 backdrop-blur-md border-b border-[#1e2535]">
         <div className="w-full px-6 py-4 flex items-center justify-between">
           
           {/* Left Section (Hamburger + Logo) */}

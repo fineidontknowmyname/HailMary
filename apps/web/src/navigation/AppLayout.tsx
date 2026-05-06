@@ -94,7 +94,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   }, [session]);
 
   return (
-    <div className="flex min-h-screen bg-[#0b0e14] text-white relative">
+    <div className="flex h-screen w-full bg-[#0d1117] text-white overflow-hidden">
       {/* ── Global Sign-In Modal ──────────────────────────────────── */}
       <SignInModal isOpen={showSignIn} onClose={() => setShowSignIn(false)} />
 
@@ -103,53 +103,40 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         <MFAChallenge onSuccess={() => setNeedsMFA(false)} />
       )}
 
-      {/* Dark Overlay */}
+      {/* ── Sidebar ─────────────────────────────────────────────────── */}
+      <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
+
+      {/* Mobile Overlay */}
       {isSidebarOpen && (
         <div 
-          className="fixed inset-0 bg-black/50 z-30 md:hidden"
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
           onClick={() => setIsSidebarOpen(false)}
         />
       )}
 
-      {/* Hamburger Button */}
-      <button
-        className="fixed top-4 left-4 z-50 p-2 bg-[#0b0e14] border border-[#1e222d] rounded-md text-[#7a849a] hover:text-white transition-colors md:hidden"
-        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-      >
-        <Menu className="h-6 w-6" />
-      </button>
-
-      {/* ── Sidebar ─────────────────────────────────────────────────── */}
-      <div className={`fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 md:relative md:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
+      {/* ── Main content area (Right Column) ────────────────────────── */}
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        {/* Step 5: The Actual Page Content */}
+        <main
+          id="main-content"
+          tabIndex={-1}
+          className="flex-1 overflow-y-auto"
+        >
+          {/* Inner wrapper — constrains max width and adds consistent padding */}
+          <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-6 md:py-8">
+            {/* Block main children if MFA is required */}
+            {needsMFA ? (
+              <div className="flex h-full min-h-[50vh] flex-col items-center justify-center opacity-50">
+                <p className="text-sm font-mono text-[#7a849a]">
+                  Awaiting Two-Factor Authentication...
+                </p>
+              </div>
+            ) : (
+              children
+            )}
+          </div>
+        </main>
       </div>
-
-      {/* ── Main content area ───────────────────────────────────────── */}
-      <main
-        id="main-content"
-        tabIndex={-1}
-        className={[
-          'flex-1 min-w-0',
-          'md:pl-[240px]',   // offset for fixed desktop sidebar
-          'pb-16 md:pb-0',   // offset for mobile bottom tab bar
-          'overflow-y-auto',
-          'min-h-screen',
-        ].join(' ')}
-      >
-        {/* Inner wrapper — constrains max width and adds consistent padding */}
-        <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-6 md:py-8">
-          {/* Block main children if MFA is required */}
-          {needsMFA ? (
-            <div className="flex h-full min-h-[50vh] flex-col items-center justify-center opacity-50">
-              <p className="text-sm font-mono text-[#7a849a]">
-                Awaiting Two-Factor Authentication...
-              </p>
-            </div>
-          ) : (
-            children
-          )}
-        </div>
-      </main>
     </div>
   );
 };
