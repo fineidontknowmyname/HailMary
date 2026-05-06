@@ -32,7 +32,7 @@ export default function PublicProfileView() {
       const { data: expData } = await supabase
         .from('hailmary_experience')
         .select('*')
-        .eq('user_id', userProfile.user_id)
+        .eq('user_id', userProfile.id)
         .order('start_year', { ascending: false });
       if (expData) setExperiences(expData);
 
@@ -40,7 +40,7 @@ export default function PublicProfileView() {
       const { data: projData } = await supabase
         .from('hailmary_projects')
         .select('*')
-        .eq('user_id', userProfile.user_id);
+        .eq('user_id', userProfile.id);
       if (projData) setProjects(projData);
 
       setIsLoading(false);
