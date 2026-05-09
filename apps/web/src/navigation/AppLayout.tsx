@@ -108,7 +108,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       {/* ── Mobile overlay — fades in/out with CSS transition ──────── */}
       <div
         className={`
-          fixed inset-0 z-40 bg-black/60 backdrop-blur-[2px] md:hidden
+          fixed inset-0 z-40 bg-black/60 backdrop-blur-[2px]
           transition-opacity duration-300 ease-in-out
           ${isSidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}
         `}
@@ -123,7 +123,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           {/* Left Side */}
           <div className="flex items-center gap-4">
             <button
-              className="md:hidden block cursor-pointer p-2 -ml-2 text-emerald-400 hover:text-emerald-300 transition-colors"
+              className="cursor-pointer p-2 -ml-2 text-emerald-400 hover:text-emerald-300 transition-colors"
               onClick={() => setIsSidebarOpen(true)}
               aria-label="Open navigation menu"
             >

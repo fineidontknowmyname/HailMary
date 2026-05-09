@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { X, Rocket } from 'lucide-react';
+import { X } from 'lucide-react';
 import { NAV_GROUPS, type NavItem } from './navConfig';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -28,57 +28,18 @@ const NavLinkItem: React.FC<NavLinkItemProps> = ({ item, onClick }) => {
       to={path}
       onClick={onClick}
       aria-current={isActive ? 'page' : undefined}
-      className={[
-        'group relative flex items-center gap-3 rounded-xl px-3 py-2.5',
-        'text-sm font-medium transition-all duration-150 outline-none',
-        'focus-visible:ring-2 focus-visible:ring-[#4fffb0]/50',
+      className={`flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-[#4fffb0]/50 ${
         isActive
-          ? 'text-[#4fffb0]'
-          : 'text-[#7a849a] hover:text-white',
-      ].join(' ')}
+          ? 'text-white bg-white/10'
+          : 'text-slate-400 hover:text-white hover:bg-white/5'
+      }`}
     >
-      {/* Active background glow */}
-      {isActive && (
-        <span
-          className="absolute inset-0 rounded-xl"
-          style={{
-            background:
-              'linear-gradient(135deg, rgba(79,255,176,0.10) 0%, rgba(79,255,176,0.04) 100%)',
-            boxShadow: `inset 0 0 0 1px rgba(79,255,176,0.15)`,
-          }}
-          aria-hidden="true"
-        />
-      )}
-
-      {/* Hover background (non-active) */}
-      {!isActive && (
-        <span
-          className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-150"
-          style={{ background: 'rgba(255,255,255,0.04)' }}
-          aria-hidden="true"
-        />
-      )}
-
-      {/* Icon */}
-      <span className="relative z-10 shrink-0">
-        <Icon
-          className="h-[18px] w-[18px] transition-transform duration-150 group-hover:scale-110"
-          style={{ color: isActive ? ACCENT : undefined }}
-          strokeWidth={isActive ? 2.2 : 1.8}
-        />
-      </span>
-
-      {/* Label */}
-      <span className="relative z-10 truncate">{label}</span>
-
-      {/* Active left indicator bar */}
-      {isActive && (
-        <span
-          className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-[3px] rounded-full"
-          style={{ background: ACCENT }}
-          aria-hidden="true"
-        />
-      )}
+      <Icon
+        className="h-[18px] w-[18px]"
+        style={{ color: isActive ? ACCENT : undefined }}
+        strokeWidth={isActive ? 2.2 : 1.8}
+      />
+      <span className="truncate">{label}</span>
     </NavLink>
   );
 };
@@ -94,7 +55,7 @@ const SidebarNavContent: React.FC<SidebarNavContentProps> = ({ onItemClick }) =>
     {NAV_GROUPS.map((group, gi) => (
       <div key={gi} className="flex flex-col gap-0.5">
         {group.heading && (
-          <p className="mb-1.5 px-3 text-[10px] font-bold uppercase tracking-[0.12em] text-[#3d4760] select-none">
+          <p className="text-[10px] uppercase tracking-widest font-semibold text-slate-500 mb-3 mt-8 px-4 select-none">
             {group.heading}
           </p>
         )}
@@ -106,29 +67,6 @@ const SidebarNavContent: React.FC<SidebarNavContentProps> = ({ onItemClick }) =>
   </nav>
 );
 
-// ─── Logo / Wordmark ──────────────────────────────────────────────────────────
-
-const SidebarLogo: React.FC = () => (
-  <div className="flex items-center gap-2.5 px-5 py-5 border-b border-zinc-800/70">
-    <span
-      className="flex h-8 w-8 items-center justify-center rounded-lg shrink-0"
-      style={{
-        background: 'linear-gradient(135deg, rgba(79,255,176,0.2) 0%, rgba(79,255,176,0.05) 100%)',
-        border: '1px solid rgba(79,255,176,0.25)',
-      }}
-    >
-      <Rocket className="h-4 w-4" style={{ color: ACCENT }} strokeWidth={2} />
-    </span>
-    <div className="flex flex-col leading-none">
-      <span className="text-[13px] font-black tracking-tight text-white">
-        Hail<span style={{ color: ACCENT }}>Mary</span>
-      </span>
-      <span className="text-[9px] font-mono uppercase tracking-widest text-[#3d4760] mt-0.5">
-        Launch Platform
-      </span>
-    </div>
-  </div>
-);
 
 // ─── Bottom user strip ────────────────────────────────────────────────────────
 
@@ -159,41 +97,29 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
   return (
     <aside
-      id="unified-sidebar"
-      aria-label="Navigation menu"
       className={`
-        fixed inset-y-0 left-0 z-50 w-64 h-screen
-        bg-[#0a0d14] border-r border-slate-800
-        flex-shrink-0 flex flex-col
+        fixed inset-y-0 left-0 z-50 w-64
+        bg-[#0b0f19] border-r border-white/10 shadow-2xl
+        flex flex-col
         transform transition-transform duration-300 ease-in-out
-        md:relative md:translate-x-0
         ${isOpen ? "translate-x-0" : "-translate-x-full"}
       `}
     >
-      {/* ── Mobile-only header row: "Menu" + X close ──────────────── */}
-      <div className="flex items-center justify-between p-4 border-b border-slate-800 md:hidden">
-        <span className="text-sm font-bold uppercase tracking-wider text-[#4fffb0]">Menu</span>
+      <div className="flex items-center justify-between px-6 py-5 border-b border-white/5">
+        <span className="text-sm font-bold uppercase tracking-wider text-white">Menu</span>
         <button
           onClick={() => setIsOpen(false)}
           aria-label="Close navigation menu"
-          className="flex items-center justify-center h-8 w-8 rounded-lg bg-white/5 hover:bg-white/10 text-[#7a849a] hover:text-white transition-all duration-150 active:scale-90"
+          className="flex items-center justify-center h-8 w-8 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-all duration-150 active:scale-90"
         >
           <X className="h-5 w-5" />
         </button>
       </div>
-
-      {/* ── Desktop-only logo (hidden on mobile since we show "Menu" row) ── */}
-      <div className="hidden md:block">
-        <SidebarLogo />
-      </div>
-
       <div className="flex-1 overflow-y-auto overflow-x-hidden">
         <SidebarNavContent onItemClick={() => setIsOpen(false)} />
       </div>
-      
       <SidebarFooter />
     </aside>
   );
 };
-
 export default Sidebar;
