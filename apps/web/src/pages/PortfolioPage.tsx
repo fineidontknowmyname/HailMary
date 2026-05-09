@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { AlertCircle, Copy, ExternalLink, Loader2 } from 'lucide-react';
+import { AlertCircle, Copy, ExternalLink, Loader2, User, Briefcase, Folder } from 'lucide-react';
 import { useAuth } from '../auth/useAuth';
 import { supabase } from '../lib/supabase';
 import type { UserProfile } from '../types/profile';
@@ -54,7 +54,7 @@ export default function PortfolioPage() {
 
   const backendUrl = import.meta.env.VITE_API_URL;
   const liveUrl = username ? `${backendUrl}/api/portfolio/${username}` : '';
-  const shareableLink = `${import.meta.env.VITE_APP_URL}/${username}`;
+  const shareableLink = `${window.location.origin}/${username}`;
 
   async function copyShareableLink() {
     await navigator.clipboard.writeText(shareableLink);
@@ -103,7 +103,7 @@ export default function PortfolioPage() {
     <div className="min-h-screen bg-[#0d0f14] p-8 text-slate-200">
       <div className="max-w-3xl">
         <h1 className="text-3xl font-bold text-white mb-2">Portfolio Control Center</h1>
-        <p className="text-slate-400 mb-8">Manage your backend-compiled portfolio engine.</p>
+        <p className="text-slate-400 mb-8">Live-synced with your Global Profile, Resume, and Project Incubator data.</p>
 
         <div className="bg-[#13161e] border border-[#252b3b] p-6 rounded-xl space-y-6">
           <div>
@@ -120,7 +120,49 @@ export default function PortfolioPage() {
             </div>
           </div>
 
-          <div className="pt-4 border-t border-slate-800">
+          <div className="pt-6 border-t border-slate-800">
+            <h3 className="text-sm font-semibold text-white mb-4">Data Sources</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-[#0d1117] border border-slate-800 p-4 rounded-xl flex items-start gap-3">
+                <div className="p-2 bg-emerald-500/10 rounded-lg shrink-0">
+                  <User className="h-5 w-5 text-emerald-400" />
+                </div>
+                <div>
+                  <div className="text-sm font-medium text-white">Global Profile</div>
+                  <div className="text-xs font-mono text-emerald-400 mt-1 flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                    Synced
+                  </div>
+                </div>
+              </div>
+              <div className="bg-[#0d1117] border border-slate-800 p-4 rounded-xl flex items-start gap-3">
+                <div className="p-2 bg-emerald-500/10 rounded-lg shrink-0">
+                  <Briefcase className="h-5 w-5 text-emerald-400" />
+                </div>
+                <div>
+                  <div className="text-sm font-medium text-white">Experience & Education</div>
+                  <div className="text-xs font-mono text-emerald-400 mt-1 flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                    Synced
+                  </div>
+                </div>
+              </div>
+              <div className="bg-[#0d1117] border border-slate-800 p-4 rounded-xl flex items-start gap-3">
+                <div className="p-2 bg-emerald-500/10 rounded-lg shrink-0">
+                  <Folder className="h-5 w-5 text-emerald-400" />
+                </div>
+                <div>
+                  <div className="text-sm font-medium text-white">Project Incubator</div>
+                  <div className="text-xs font-mono text-emerald-400 mt-1 flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                    Synced
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="pt-6 border-t border-slate-800 flex justify-end">
             <a
               href={liveUrl}
               target="_blank"
