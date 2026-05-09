@@ -58,7 +58,7 @@ export function AppRouter() {
       {passwordRecoveryPending && <UpdatePasswordModal />}
 
       <Routes>
-        <Route path="/:username" element={<PublicProfileView />} />
+
 
         <Route element={<DashboardLayout />}>
           {/* ── Dashboard (existing App component) ─────────────── */}
@@ -110,12 +110,13 @@ export function AppRouter() {
           />
           <Route path="/contribute" element={<ContributeResource />} />
 
-          {/* ── 404 fallback ───────────────────────────────────── */}
-          <Route
-            path="*"
-            element={<PlaceholderPage title="404 — Page Not Found" />}
-          />
         </Route>
+
+        {/* ── Public Dynamic Route ────────────────────────────── */}
+        <Route path="/:username" element={<PublicProfileView />} />
+        
+        {/* ── Global 404 fallback ─────────────────────────────── */}
+        <Route path="*" element={<PlaceholderPage title="404 — Page Not Found" />} />
       </Routes>
     </>
   );
