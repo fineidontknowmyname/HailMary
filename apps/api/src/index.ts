@@ -16,11 +16,8 @@ const app = express();
 const PORT = process.env.PORT || 4000;
 
 const allowedOrigins = [
-  'http://localhost:5173', // Default Vite port
-  'http://localhost:4000',
-  process.env.FRONTEND_URL,
-  /^https:\/\/hail-mary.*\.vercel\.app$/
-].filter((origin): origin is string | RegExp => Boolean(origin));
+  process.env.FRONTEND_URL || 'http://localhost:5173',
+].filter((origin): origin is string => Boolean(origin));
 
 app.use(cors({
   origin: true,
@@ -43,7 +40,7 @@ app.use('/api/sessions', sessionsRoutes);
 app.use(globalErrorHandler);
 
 app.listen(PORT, () => {
-  console.log(` Project Hail Mary API running → http://localhost:${PORT}`);
+  console.log(` Project Hail Mary API running → ${process.env.API_URL || `http://localhost:${PORT}`}`);
 
   if (process.env.NODE_ENV === 'production' && process.env.RENDER_EXTERNAL_URL) {
     setInterval(async () => {

@@ -420,7 +420,7 @@ export function ProjectModal({ project, onClose, onSaved }: ProjectModalProps) {
                   <ModalInput
                     value={form.live_url ?? ''}
                     onChange={patch('live_url') as (v: string) => void}
-                    placeholder="https://yourproject.vercel.app"
+                    placeholder="https://yourproject.example.com"
                     type="url"
                     className="pl-10"
                   />

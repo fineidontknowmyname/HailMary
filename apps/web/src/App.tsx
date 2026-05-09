@@ -137,7 +137,7 @@ export default function App() {
         {error ? (
           <div className="text-center py-24 text-red-400 font-mono text-sm border border-red-900/50 rounded-xl bg-red-900/10">
             <div className="text-4xl mb-4">⚠️</div>
-            Could not connect to API. Is the server running at localhost:4000?<br />
+            Could not connect to API. Is the server running?<br />
             <span className="text-xs text-red-500/70 mt-2 block">{error}</span>
           </div>
         ) : isLoading ? (

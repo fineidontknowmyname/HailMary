@@ -4,7 +4,8 @@
   "packageManager": "pnpm@10.28.1",
   "scripts": {
     "dev": "concurrently --names \"API,WEB\" --prefix-colors \"magenta,cyan\" \"pnpm --filter @hailmary/api dev\" \"pnpm --filter @hailmary/web dev\"",
-    "build": "turbo run build",
+    "check-env": "node -e \"const fs = require('fs'); if (!fs.existsSync('apps/web/.env') || !fs.existsSync('apps/api/.env')) { console.error('Error: Missing .env files in apps/web or apps/api.'); process.exit(1); }\"",
+    "build": "pnpm run check-env && turbo run build",
     "deploy": "git add . && git commit -m 'chore: automated deployment' && git push origin main",
     "deploy:ask": "read -p 'Commit message: ' msg && git add . && git commit -m \"$msg\" && git push origin main"
   },

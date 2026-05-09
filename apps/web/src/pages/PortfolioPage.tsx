@@ -52,9 +52,9 @@ export default function PortfolioPage() {
     );
   }, [profile?.username, user]);
 
-  const backendUrl = import.meta.env.VITE_API_BASE_URL || 'https://hailmary.onrender.com';
+  const backendUrl = import.meta.env.VITE_API_URL;
   const liveUrl = username ? `${backendUrl}/api/portfolio/${username}` : '';
-  const shareableLink = `https://hail-mary.vercel.app/${username}`;
+  const shareableLink = `${import.meta.env.VITE_APP_URL}/${username}`;
 
   async function copyShareableLink() {
     await navigator.clipboard.writeText(shareableLink);
