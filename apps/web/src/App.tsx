@@ -27,7 +27,7 @@ export default function App() {
 
   const initialize = useAuthStore(s => s.initialize);
   const initialized = useAuthStore(s => s.initialized);
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   const isLoggedIn = !!user;
 
   const { intel, isLoading, error, fetchIntel } = useBoundStore();
