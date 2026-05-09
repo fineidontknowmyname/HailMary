@@ -77,8 +77,18 @@ export default function App() {
       <nav className="sticky top-0 z-40 bg-[#0b0e14]/80 backdrop-blur-md border-b border-[#1e2535]">
         <div className="w-full px-6 py-4 flex items-center justify-between">
           
-          {/* Left Section (Logo) */}
+          {/* Left Section (Hamburger + Logo) */}
           <div className="flex items-center gap-4">
+            {/* Hamburger — mobile only */}
+            <button
+              className="md:hidden block cursor-pointer p-2 -ml-2 text-emerald-400 hover:text-emerald-300 transition-colors"
+              onClick={() => window.dispatchEvent(new CustomEvent('toggle-sidebar'))}
+              aria-label="Open navigation menu"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
             <div className="font-black text-xl tracking-tight uppercase">
               Project <span className="text-[#4fffb0]">Hail Mary</span>
             </div>

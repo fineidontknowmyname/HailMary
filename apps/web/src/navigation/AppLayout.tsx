@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Sidebar } from './Sidebar';
-import { TopNav } from './TopNav';
 import { useAuth } from '../auth/useAuth';
 import { MFAChallenge } from '../components/MFAChallenge';
 import { SignInModal } from '../components/SignInModal';
@@ -45,10 +44,12 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
 
   useEffect(() => {
     window.addEventListener('open-auth-modal', openModal);
+    window.addEventListener('toggle-sidebar', toggleSidebar);
     return () => {
       window.removeEventListener('open-auth-modal', openModal);
+      window.removeEventListener('toggle-sidebar', toggleSidebar);
     };
-  }, [openModal]);
+  }, [openModal, toggleSidebar]);
 
   useEffect(() => {
     let isMounted = true;
@@ -117,8 +118,6 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
 
       {/* ── Main content area (Right Column) ────────────────────────── */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* Global Top Navigation Bar — hamburger visible on mobile */}
-        <TopNav onToggleSidebar={toggleSidebar} />
 
         {/* Page Content */}
         <main

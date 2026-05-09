@@ -162,22 +162,29 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
       id="unified-sidebar"
       aria-label="Navigation menu"
       className={`
-        fixed inset-y-0 left-0 z-50 w-64 bg-[#0d1117] border-r border-slate-800 flex-shrink-0 flex flex-col
+        fixed inset-y-0 left-0 z-50 w-64 h-screen
+        bg-[#0a0d14] border-r border-slate-800
+        flex-shrink-0 flex flex-col
         transform transition-transform duration-300 ease-in-out
         md:relative md:translate-x-0
         ${isOpen ? "translate-x-0" : "-translate-x-full"}
       `}
     >
-      {/* Mobile close button wrapper overlaying the logo area */}
-      <div className="relative">
-        <SidebarLogo />
+      {/* ── Mobile-only header row: "Menu" + X close ──────────────── */}
+      <div className="flex items-center justify-between p-4 border-b border-slate-800 md:hidden">
+        <span className="text-sm font-bold uppercase tracking-wider text-[#4fffb0]">Menu</span>
         <button
           onClick={() => setIsOpen(false)}
           aria-label="Close navigation menu"
-          className="absolute right-4 top-5 text-[#7a849a] hover:text-white transition-colors p-1 md:hidden"
+          className="flex items-center justify-center h-8 w-8 rounded-lg bg-white/5 hover:bg-white/10 text-[#7a849a] hover:text-white transition-all duration-150 active:scale-90"
         >
           <X className="h-5 w-5" />
         </button>
+      </div>
+
+      {/* ── Desktop-only logo (hidden on mobile since we show "Menu" row) ── */}
+      <div className="hidden md:block">
+        <SidebarLogo />
       </div>
 
       <div className="flex-1 overflow-y-auto overflow-x-hidden">
