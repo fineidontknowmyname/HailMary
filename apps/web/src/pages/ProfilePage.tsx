@@ -350,20 +350,7 @@ export default function ProfilePage({ onBack }: { onBack: () => void }) {
           </div>
         </Section>
 
-        <Section title="Portfolio">
-          <div className="border-2 border-dashed border-[#1e2535] rounded-xl p-8 text-center">
-            <div className="text-2xl mb-2">🔨</div>
-            <div className="text-sm text-[#7a849a] font-mono">Portfolio projects — coming in Phase 3</div>
-            <div className="text-xs text-[#4fffb0] mt-1 font-mono">Complete missions to unlock</div>
-          </div>
-        </Section>
 
-        <Section title="Experience">
-          <div className="border-2 border-dashed border-[#1e2535] rounded-xl p-8 text-center">
-            <div className="text-2xl mb-2">💼</div>
-            <div className="text-sm text-[#7a849a] font-mono">Experience section — coming soon</div>
-          </div>
-        </Section>
 
       </div>
     </div>
