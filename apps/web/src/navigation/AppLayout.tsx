@@ -118,6 +118,46 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
 
       {/* ── Main content area (Right Column) ────────────────────────── */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        {/* Global Shell Header */}
+        <header className="h-16 px-6 border-b border-slate-800 flex items-center justify-between shrink-0">
+          {/* Left Side */}
+          <div className="flex items-center gap-4">
+            <button
+              className="md:hidden block cursor-pointer p-2 -ml-2 text-emerald-400 hover:text-emerald-300 transition-colors"
+              onClick={() => setIsSidebarOpen(true)}
+              aria-label="Open navigation menu"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+            <div className="font-black text-xl tracking-tight uppercase text-white">
+              Project <span className="text-[#4fffb0]">Hail Mary</span>
+            </div>
+          </div>
+
+          {/* Right Side */}
+          <div className="flex items-center gap-4">
+            <span className="text-xs font-mono text-[#7a849a] hidden sm:block">
+              49 of 49 intel
+            </span>
+            {session?.user ? (
+              <button
+                onClick={() => window.dispatchEvent(new CustomEvent('open-profile'))}
+                className="text-xs font-mono px-4 py-2 bg-[#1e2535] border border-[#2a3145] text-white rounded-xl hover:border-[#4fffb0]/50 transition-all"
+              >
+                Mission Control
+              </button>
+            ) : (
+              <button
+                onClick={() => setShowSignIn(true)}
+                className="text-xs font-mono px-4 py-2 bg-[#4fffb0] text-[#0b0e14] font-bold rounded-xl hover:bg-[#3de89e] transition-colors"
+              >
+                Sign In
+              </button>
+            )}
+          </div>
+        </header>
 
         {/* Page Content */}
         <main

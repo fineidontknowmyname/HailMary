@@ -70,68 +70,10 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0b0e14] text-white selection:bg-[#4fffb0] selection:text-black">
+    <div className="h-full bg-[#0b0e14] text-white selection:bg-[#4fffb0] selection:text-black">
 
       <SignInModal isOpen={showSignIn} onClose={() => setShowSignIn(false)} />
 
-      <nav className="sticky top-0 z-40 bg-[#0b0e14]/80 backdrop-blur-md border-b border-[#1e2535]">
-        <div className="w-full px-6 py-4 flex items-center justify-between">
-          
-          {/* Left Section (Hamburger + Logo) */}
-          <div className="flex items-center gap-4">
-            {/* Hamburger — mobile only */}
-            <button
-              className="md:hidden block cursor-pointer p-2 -ml-2 text-emerald-400 hover:text-emerald-300 transition-colors"
-              onClick={() => window.dispatchEvent(new CustomEvent('toggle-sidebar'))}
-              aria-label="Open navigation menu"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
-            <div className="font-black text-xl tracking-tight uppercase">
-              Project <span className="text-[#4fffb0]">Hail Mary</span>
-            </div>
-          </div>
-
-          {/* Right Section (Stats + Auth) */}
-          <div className="flex items-center gap-4">
-            <span className="text-xs font-mono text-[#7a849a] hidden sm:block">
-              {filteredIntel.length} of {intel.length} intel
-            </span>
-
-            {isLoggedIn ? (
-              <div className="flex items-center gap-2">
-                {completed.size > 0 && (
-                  <div className="hidden sm:flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-3 py-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                    <span className="text-xs font-mono text-emerald-400">{completed.size} done</span>
-                  </div>
-                )}
-                <button
-                  onClick={() => setShowProfile(true)}
-                  className="text-xs font-mono px-4 py-2 bg-[#1e2535] border border-[#2a3145] text-white rounded-xl hover:border-[#4fffb0]/50 transition-all"
-                >
-                  Mission Control
-                </button>
-                <button
-                  onClick={signOut}
-                  className="text-xs font-mono text-[#7a849a] hover:text-white transition-colors"
-                >
-                  Disconnect
-                </button>
-              </div>
-            ) : (
-              <button
-                onClick={() => setShowSignIn(true)}
-                className="text-xs font-mono px-4 py-2 bg-[#4fffb0] text-[#0b0e14] font-bold rounded-xl hover:bg-[#3de89e] transition-colors"
-              >
-                Sign In
-              </button>
-            )}
-          </div>
-        </div>
-      </nav>
 
       <div className="max-w-3xl mx-auto px-6 pt-16 pb-10 text-center">
         <div className="inline-flex items-center gap-2 bg-[#111520] border border-[#1e2535] rounded-full px-4 py-2 text-xs font-mono text-[#4fffb0] mb-8">
