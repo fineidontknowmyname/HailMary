@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Sidebar } from './Sidebar';
+import { TopNav } from './TopNav';
 import { useAuth } from '../auth/useAuth';
 import { MFAChallenge } from '../components/MFAChallenge';
 import { SignInModal } from '../components/SignInModal';
@@ -40,14 +41,12 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   // child pages (ProfilePage, IncubatorPage, PortfolioPage, ResumeBuilder)
   const openModal = useCallback(() => setShowSignIn(true), []);
 
+  const toggleSidebar = useCallback(() => setIsSidebarOpen(prev => !prev), []);
+
   useEffect(() => {
-    const toggleSidebar = () => setIsSidebarOpen(prev => !prev);
     window.addEventListener('open-auth-modal', openModal);
-    window.addEventListener('toggle-sidebar', toggleSidebar);
-    
     return () => {
       window.removeEventListener('open-auth-modal', openModal);
-      window.removeEventListener('toggle-sidebar', toggleSidebar);
     };
   }, [openModal]);
 
@@ -105,17 +104,23 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       {/* ── Sidebar ─────────────────────────────────────────────────── */}
       <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
 
-      {/* Mobile Overlay */}
-      {isSidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 z-40 md:hidden"
-          onClick={() => setIsSidebarOpen(false)}
-        />
-      )}
+      {/* ── Mobile overlay — fades in/out with CSS transition ──────── */}
+      <div
+        className={`
+          fixed inset-0 z-40 bg-black/60 backdrop-blur-[2px] md:hidden
+          transition-opacity duration-300 ease-in-out
+          ${isSidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}
+        `}
+        onClick={() => setIsSidebarOpen(false)}
+        aria-hidden={!isSidebarOpen}
+      />
 
       {/* ── Main content area (Right Column) ────────────────────────── */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* Step 5: The Actual Page Content */}
+        {/* Global Top Navigation Bar — hamburger visible on mobile */}
+        <TopNav onToggleSidebar={toggleSidebar} />
+
+        {/* Page Content */}
         <main
           id="main-content"
           tabIndex={-1}

@@ -3,7 +3,6 @@ import { FilterBar } from './components/FilterBar';
 import { IntelCard } from './components/IntelCard';
 import { SkeletonCard } from './components/SkeletonCard';
 import { SignInModal } from './components/SignInModal';
-import { Menu } from 'lucide-react';
 import { DoubtSolverModal } from './components/DoubtSolverModal';
 import { ChallengeModal } from './components/ChallengeModal';
 import ProfilePage from './pages/ProfilePage';
@@ -78,15 +77,8 @@ export default function App() {
       <nav className="sticky top-0 z-40 bg-[#0b0e14]/80 backdrop-blur-md border-b border-[#1e2535]">
         <div className="w-full px-6 py-4 flex items-center justify-between">
           
-          {/* Left Section (Hamburger + Logo) */}
+          {/* Left Section (Logo) */}
           <div className="flex items-center gap-4">
-            <button 
-              className="md:hidden p-2 -ml-2 text-[#7a849a] hover:text-white transition-colors" 
-              onClick={() => window.dispatchEvent(new CustomEvent('toggle-sidebar'))}
-              aria-label="Toggle sidebar"
-            >
-              <Menu className="w-6 h-6" />
-            </button>
             <div className="font-black text-xl tracking-tight uppercase">
               Project <span className="text-[#4fffb0]">Hail Mary</span>
             </div>
