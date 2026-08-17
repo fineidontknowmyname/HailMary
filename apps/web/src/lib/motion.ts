@@ -1,3 +1,5 @@
+import type { Variants } from 'motion/react';
+
 /**
  * Shared Motion animation variants & transition presets.
  * Import from here so all animations stay consistent app-wide.
@@ -18,40 +20,43 @@ export const springSnappy = {
   damping: 38,
 };
 
+const BEZIER = [0.25, 0.46, 0.45, 0.94] as [number, number, number, number];
+
 export const ease = {
   duration: 0.22,
-  ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number],
+  ease: BEZIER,
 };
 
 // ─── Page Transition Variants ─────────────────────────────────────────────────
 
-export const pageVariants = {
+export const pageVariants: Variants = {
   initial: { opacity: 0, y: 14 },
   animate: { opacity: 1, y: 0 },
   exit:    { opacity: 0, y: -8 },
 };
 
-export const pageTransition = { duration: 0.28, ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number] };
+export const pageTransition = { duration: 0.28, ease: BEZIER };
 
 // ─── Modal Variants ───────────────────────────────────────────────────────────
 
-export const backdropVariants = {
+export const backdropVariants: Variants = {
   initial: { opacity: 0 },
   animate: { opacity: 1 },
   exit:    { opacity: 0 },
 };
 
-export const modalVariants = {
+export const modalVariants: Variants = {
   initial: { opacity: 0, scale: 0.96, y: 12 },
   animate: { opacity: 1, scale: 1,    y: 0  },
   exit:    { opacity: 0, scale: 0.97, y: 8  },
 };
 
-export const modalTransition = { duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number] };
+export const modalTransition = { duration: 0.22, ease: BEZIER };
 
 // ─── Stagger Container Variants ───────────────────────────────────────────────
 
-export const staggerContainer = {
+export const staggerContainer: Variants = {
+  initial: {},
   animate: {
     transition: {
       staggerChildren: 0.06,
@@ -60,22 +65,22 @@ export const staggerContainer = {
   },
 };
 
-export const staggerItem = {
+export const staggerItem: Variants = {
   initial: { opacity: 0, y: 18 },
   animate: { opacity: 1, y: 0, transition: ease },
 };
 
 // ─── Fade-up (generic reveal) ─────────────────────────────────────────────────
 
-export const fadeUp = {
+export const fadeUp: Variants = {
   initial: { opacity: 0, y: 20 },
-  animate: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] } },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.4, ease: BEZIER } },
 };
 
 // ─── Sidebar Variants ─────────────────────────────────────────────────────────
 
-export const sidebarVariants = {
-  open:   { x: 0     },
+export const sidebarVariants: Variants = {
+  open:   { x: 0       },
   closed: { x: '-100%' },
 };
 
