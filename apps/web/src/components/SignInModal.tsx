@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
+import { motion } from 'motion/react';
 import { supabase } from '../lib/supabase';
 import { useAuthStore } from '../auth/authStore';
+import { backdropVariants, modalVariants, modalTransition } from '../lib/motion';
 
 interface SignInModalProps {
   isOpen: boolean;
@@ -120,16 +122,25 @@ export function SignInModal({ isOpen, onClose }: SignInModalProps) {
   const isSignUp = mode === 'signup';
 
   return (
-    <div
+    <motion.div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
       onClick={handleBackdropClick}
       role="dialog"
       aria-modal="true"
       aria-labelledby="auth-modal-title"
+      variants={backdropVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      transition={{ duration: 0.18 }}
     >
-      <div
+      <motion.div
         className="relative w-full max-w-[420px] mx-4 overflow-hidden rounded-2xl border border-[#1e2535] bg-[#13161e] shadow-[0_24px_80px_-12px_rgba(0,0,0,0.8)]"
-        style={{ animation: 'modal-enter 0.25s ease-out' }}
+        variants={modalVariants}
+        initial="initial"
+        animate="animate"
+        exit="exit"
+        transition={modalTransition}
       >
         {/* ── Decorative gradient glow ── */}
         <div className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 h-48 w-72 rounded-full bg-[#4fffb0]/[0.07] blur-[80px]" />
@@ -318,21 +329,7 @@ export function SignInModal({ isOpen, onClose }: SignInModalProps) {
             By continuing, you agree to HailMary's Terms of Service.
           </p>
         </div>
-      </div>
-
-      {/* ── Keyframe for entrance animation ── */}
-      <style>{`
-        @keyframes modal-enter {
-          from {
-            opacity: 0;
-            transform: scale(0.95) translateY(8px);
-          }
-          to {
-            opacity: 1;
-            transform: scale(1) translateY(0);
-          }
-        }
-      `}</style>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

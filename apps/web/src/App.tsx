@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { FilterBar } from './components/FilterBar';
 import { IntelCard } from './components/IntelCard';
 import { SkeletonCard } from './components/SkeletonCard';
@@ -14,6 +15,7 @@ import { useAuth } from './auth/useAuth';
 
 import { useAuthStore } from './auth/authStore';
 import type { Intel } from '@hailmary/types';
+import { staggerContainer, staggerItem, fadeUp } from './lib/motion';
 
 export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -109,19 +111,28 @@ export default function App() {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 pb-6">
-        <div className="flex gap-4 justify-center flex-wrap mb-8">
+        <motion.div
+          className="flex gap-4 justify-center flex-wrap mb-8"
+          variants={staggerContainer}
+          initial="initial"
+          animate="animate"
+        >
           {[
             { n: `${intel.length}+`, l: 'Intel Pieces' },
             { n: '100%', l: 'Free' },
             { n: 'ZPD', l: 'Optimized' },
             ...(isLoggedIn ? [{ n: String(completed.size), l: 'Missions Done' }] : []),
           ].map(s => (
-            <div key={s.l} className="bg-[#111520] border border-[#1e2535] rounded-xl px-5 py-3 text-center">
+            <motion.div
+              key={s.l}
+              className="bg-[#111520] border border-[#1e2535] rounded-xl px-5 py-3 text-center"
+              variants={staggerItem}
+            >
               <div className="text-xl font-black text-[#4fffb0]">{s.n}</div>
               <div className="text-xs font-mono text-[#7a849a] uppercase tracking-wider">{s.l}</div>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
 
         <FilterBar
           searchQuery={searchQuery}
@@ -134,33 +145,59 @@ export default function App() {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 pb-24">
-        {error ? (
-          <div className="text-center py-24 text-red-400 font-mono text-sm border border-red-900/50 rounded-xl bg-red-900/10">
-            <div className="text-4xl mb-4">⚠️</div>
-            Could not connect to API. Is the server running?<br />
-            <span className="text-xs text-red-500/70 mt-2 block">{error}</span>
-          </div>
-        ) : isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
-          </div>
-        ) : filteredIntel.length === 0 ? (
-          <div className="text-center py-24 text-[#7a849a] font-mono text-sm border border-[#1e2535] rounded-xl bg-[#111520]">
-            <div className="text-4xl mb-4">🔍</div>
-            No intel matches your current parameters.
-          </div>
-
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {filteredIntel.map((item: Intel) => (
-              <IntelCard
-                key={item.id}
-                intel={item}
-                onStartSession={() => setActiveResource(item)}
-              />
-            ))}
-          </div>
-        )}
+        <AnimatePresence mode="wait">
+          {error ? (
+            <motion.div
+              key="error"
+              className="text-center py-24 text-red-400 font-mono text-sm border border-red-900/50 rounded-xl bg-red-900/10"
+              variants={fadeUp} initial="initial" animate="animate"
+            >
+              <div className="text-4xl mb-4">⚠️</div>
+              Could not connect to API. Is the server running?<br />
+              <span className="text-xs text-red-500/70 mt-2 block">{error}</span>
+            </motion.div>
+          ) : isLoading ? (
+            <motion.div
+              key="loading"
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
+              variants={staggerContainer}
+              initial="initial"
+              animate="animate"
+            >
+              {Array.from({ length: 6 }).map((_, i) => (
+                <motion.div key={i} variants={staggerItem}>
+                  <SkeletonCard />
+                </motion.div>
+              ))}
+            </motion.div>
+          ) : filteredIntel.length === 0 ? (
+            <motion.div
+              key="empty"
+              className="text-center py-24 text-[#7a849a] font-mono text-sm border border-[#1e2535] rounded-xl bg-[#111520]"
+              variants={fadeUp} initial="initial" animate="animate"
+            >
+              <div className="text-4xl mb-4">🔍</div>
+              No intel matches your current parameters.
+            </motion.div>
+          ) : (
+            <motion.div
+              key="grid"
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
+              variants={staggerContainer}
+              initial="initial"
+              animate="animate"
+            >
+              {filteredIntel.map((item: Intel) => (
+                <motion.div key={item.id} variants={staggerItem}>
+                  <IntelCard
+                    intel={item}
+                    onStartSession={() => setActiveResource(item)}
+                  />
+                </motion.div>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       <footer className="border-t border-[#1e2535] py-8 text-center text-xs font-mono text-[#7a849a]">

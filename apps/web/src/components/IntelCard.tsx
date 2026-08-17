@@ -1,5 +1,6 @@
 import type { Intel } from '@hailmary/types';
 import { PlayCircle, FileText, Code, ExternalLink } from 'lucide-react';
+import { motion } from 'motion/react';
 
 interface IntelCardProps {
   intel: Intel;
@@ -18,8 +19,15 @@ export function IntelCard({ intel, onStartSession }: IntelCardProps) {
   };
 
   return (
-    <div 
-      className="flex flex-col justify-between p-5 bg-gray-900 border border-gray-800 rounded-xl hover:border-green-500 transition relative h-full"
+    <motion.div
+      className="flex flex-col justify-between p-5 bg-gray-900 border border-gray-800 rounded-xl relative h-full cursor-default"
+      whileHover={{
+        y: -5,
+        borderColor: 'rgba(79, 255, 176, 0.5)',
+        boxShadow: '0 12px 36px rgba(79, 255, 176, 0.08)',
+        transition: { type: 'spring', stiffness: 400, damping: 28 },
+      }}
+      whileTap={{ scale: 0.985 }}
     >
       <div>
         <div className="flex items-start gap-4">
@@ -44,13 +52,16 @@ export function IntelCard({ intel, onStartSession }: IntelCardProps) {
 
       {/* ACTION BAR: Link and Tracking Button */}
       <div className="mt-6 pt-4 border-t border-gray-800/50">
-        <button 
+        <motion.button
           onClick={onStartSession}
-          className="w-full px-4 py-2 bg-green-600 hover:bg-green-500 text-white font-bold rounded-lg transition-colors"
+          className="w-full px-4 py-2 bg-green-600 text-white font-bold rounded-lg transition-colors"
+          whileHover={{ backgroundColor: '#22c55e' }}
+          whileTap={{ scale: 0.97 }}
         >
           Start Study Session
-        </button>
+        </motion.button>
       </div>
-    </div>
+    </motion.div>
   );
-}
+}
+

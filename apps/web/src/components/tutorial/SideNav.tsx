@@ -51,6 +51,11 @@ export const SideNav: React.FC<SideNavProps> = ({
 
   const NavContent = () => (
     <nav className="flex flex-col gap-1">
+      <style>{`
+        .sidenav-text-active { color: ${themeColor}; }
+        .sidenav-icon-active { color: ${themeColor}; transform: rotate(0deg); }
+        .sidenav-icon-inactive { color: transparent; transform: rotate(-90deg); }
+      `}</style>
       {sections.map((section) => {
         const isActive = activeId === section.id;
         return (
@@ -59,17 +64,14 @@ export const SideNav: React.FC<SideNavProps> = ({
               onClick={() => scrollTo(section.id)}
               className={`group flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium transition-all duration-150 ${
                 isActive
-                  ? 'bg-[#161b27] font-semibold'
+                  ? 'bg-[#161b27] font-semibold sidenav-text-active'
                   : 'text-[#7a849a] hover:bg-[#161b27] hover:text-white'
               }`}
-              style={isActive ? { color: themeColor } : undefined}
             >
               <ChevronRight
-                className="h-3.5 w-3.5 shrink-0 transition-transform duration-150"
-                style={{
-                  color: isActive ? themeColor : 'transparent',
-                  transform: isActive ? 'rotate(0deg)' : 'rotate(-90deg)',
-                }}
+                className={`h-3.5 w-3.5 shrink-0 transition-transform duration-150 ${
+                  isActive ? 'sidenav-icon-active' : 'sidenav-icon-inactive'
+                }`}
               />
               {section.label}
             </button>
@@ -84,10 +86,9 @@ export const SideNav: React.FC<SideNavProps> = ({
                       onClick={() => scrollTo(sub.id)}
                       className={`w-full rounded px-2 py-1.5 text-left text-xs transition-colors duration-150 ${
                         subActive
-                          ? 'font-semibold'
+                          ? 'font-semibold sidenav-text-active'
                           : 'text-[#7a849a] hover:text-white'
                       }`}
-                      style={subActive ? { color: themeColor } : undefined}
                     >
                       {sub.label}
                     </button>

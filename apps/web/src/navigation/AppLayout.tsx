@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { Sidebar } from './Sidebar';
 import { useAuth } from '../auth/useAuth';
 import { MFAChallenge } from '../components/MFAChallenge';
@@ -105,16 +106,21 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       {/* ── Sidebar ─────────────────────────────────────────────────── */}
       <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
 
-      {/* ── Mobile overlay — fades in/out with CSS transition ──────── */}
-      <div
-        className={`
-          fixed inset-0 z-40 bg-black/60 backdrop-blur-[2px]
-          transition-opacity duration-300 ease-in-out
-          ${isSidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}
-        `}
-        onClick={() => setIsSidebarOpen(false)}
-        aria-hidden={!isSidebarOpen}
-      />
+      {/* ── Mobile overlay — animated with AnimatePresence ─────────── */}
+      <AnimatePresence>
+        {isSidebarOpen && (
+          <motion.div
+            key="overlay"
+            className="fixed inset-0 z-40 bg-black/60 backdrop-blur-[2px]"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.22 }}
+            onClick={() => setIsSidebarOpen(false)}
+            aria-hidden
+          />
+        )}
+      </AnimatePresence>
 
       {/* ── Main content area (Right Column) ────────────────────────── */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">

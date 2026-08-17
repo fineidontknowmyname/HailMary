@@ -1,4 +1,5 @@
-import { Routes, Route, Outlet } from 'react-router-dom';
+import { Routes, Route, Outlet, useLocation } from 'react-router-dom';
+import { AnimatePresence, motion } from 'motion/react';
 import { AppLayout } from './navigation/AppLayout';
 import { useAuth } from './auth/useAuth';
 import App from './App';
@@ -12,7 +13,24 @@ import IncubatorPage from './pages/IncubatorPage';
 import PortfolioPage from './pages/PortfolioPage';
 import PublicProfileView from './pages/PublicProfileView';
 import ResumeBuilder from './pages/ResumeBuilder';
+import { pageVariants, pageTransition } from './lib/motion';
 import './AppRouter.css';
+
+/** Wraps a page in the shared page-transition motion.div */
+function PageWrapper({ children }: { children: React.ReactNode }) {
+  return (
+    <motion.div
+      variants={pageVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      transition={pageTransition}
+      style={{ width: '100%', height: '100%' }}
+    >
+      {children}
+    </motion.div>
+  );
+}
 // ─── Placeholder pages for routes not yet built ────────────────────────────
 // Replace each with the real page component once built.
 
@@ -51,73 +69,76 @@ function DashboardLayout() {
  */
 export function AppRouter() {
   const { passwordRecoveryPending } = useAuth();
+  const location = useLocation();
 
   return (
     <>
       {/* ── Global password-recovery overlay ─────────────────────────── */}
       {passwordRecoveryPending && <UpdatePasswordModal />}
 
-      <Routes>
+      <AnimatePresence mode="wait">
+        <Routes location={location} key={location.pathname}>
 
+          <Route element={<DashboardLayout />}>
+            {/* ── Dashboard (existing App component) ─────────────── */}
+            <Route path="/" element={<PageWrapper><App /></PageWrapper>} />
 
-        <Route element={<DashboardLayout />}>
-          {/* ── Dashboard (existing App component) ─────────────── */}
-          <Route path="/" element={<App />} />
+            {/* ── Profile ────────────────────────────────────────── */}
+            <Route
+              path="/profile"
+              element={<PageWrapper><ProfilePage onBack={() => window.history.back()} /></PageWrapper>}
+            />
 
-          {/* ── Profile ────────────────────────────────────────── */}
-          <Route
-            path="/profile"
-            element={<ProfilePage onBack={() => window.history.back()} />}
-          />
+            {/* ── Dedicated password-reset landing route ──────────── */}
+            <Route
+              path="/update-password"
+              element={<UpdatePasswordModal />}
+            />
 
-          {/* ── Dedicated password-reset landing route ──────────── */}
-          {/* Used when Supabase redirect URL is set to /update-password */}
-          <Route
-            path="/update-password"
-            element={<UpdatePasswordModal />}
-          />
+            {/* ── Build section ──────────────────────────────────── */}
+            <Route path="/incubator" element={<PageWrapper><IncubatorPage /></PageWrapper>} />
+            <Route path="/dashboard/portfolio" element={<PageWrapper><PortfolioPage /></PageWrapper>} />
+            <Route path="/portfolio" element={<PageWrapper><PortfolioPage /></PageWrapper>} />
+            <Route path="/resume" element={<PageWrapper><ResumeBuilder /></PageWrapper>} />
 
-          {/* ── Build section ──────────────────────────────────── */}
-          <Route path="/incubator" element={<IncubatorPage />} />
-          <Route path="/dashboard/portfolio" element={<PortfolioPage />} />
-          <Route path="/portfolio" element={<PortfolioPage />} />
-          <Route path="/resume" element={<ResumeBuilder />} />
+            {/* ── Practice section ───────────────────────────────── */}
+            <Route
+              path="/mock-tests/*"
+              element={
+                <PageWrapper>
+                  <div className="-mx-4 sm:-mx-6 lg:-mx-8 -my-6 md:-my-8">
+                    <AssessmentEngine variant="mock" />
+                  </div>
+                </PageWrapper>
+              }
+            />
+            <Route
+              path="/aptitude"
+              element={
+                <PageWrapper>
+                  <div className="-mx-4 sm:-mx-6 lg:-mx-8 -my-6 md:-my-8">
+                    <AssessmentEngine variant="codevita" />
+                  </div>
+                </PageWrapper>
+              }
+            />
 
-          {/* ── Practice section ───────────────────────────────── */}
-          <Route
-            path="/mock-tests/*"
-            element={
-              /* Break out of AppLayout's padding so the quiz header + sidebar
-                 can span the full viewport width and height. */
-              <div className="-mx-4 sm:-mx-6 lg:-mx-8 -my-6 md:-my-8">
-                <AssessmentEngine variant="mock" />
-              </div>
-            }
-          />
-          <Route
-            path="/aptitude"
-            element={
-              <div className="-mx-4 sm:-mx-6 lg:-mx-8 -my-6 md:-my-8">
-                <AssessmentEngine variant="codevita" />
-              </div>
-            }
-          />
+            {/* ── Learn section ──────────────────────────────────── */}
+            <Route
+              path="/tutorials/*"
+              element={<PageWrapper><TutorialsAndLabs /></PageWrapper>}
+            />
+            <Route path="/contribute" element={<PageWrapper><ContributeResource /></PageWrapper>} />
 
-          {/* ── Learn section ──────────────────────────────────── */}
-          <Route
-            path="/tutorials/*"
-            element={<TutorialsAndLabs />}
-          />
-          <Route path="/contribute" element={<ContributeResource />} />
+          </Route>
 
-        </Route>
+          {/* ── Public Dynamic Route ────────────────────────────── */}
+          <Route path="/:username" element={<PageWrapper><PublicProfileView /></PageWrapper>} />
 
-        {/* ── Public Dynamic Route ────────────────────────────── */}
-        <Route path="/:username" element={<PublicProfileView />} />
-        
-        {/* ── Global 404 fallback ─────────────────────────────── */}
-        <Route path="*" element={<PlaceholderPage title="404 — Page Not Found" />} />
-      </Routes>
+          {/* ── Global 404 fallback ─────────────────────────────── */}
+          <Route path="*" element={<PageWrapper><PlaceholderPage title="404 — Page Not Found" /></PageWrapper>} />
+        </Routes>
+      </AnimatePresence>
     </>
   );
 }

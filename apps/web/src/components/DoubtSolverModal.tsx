@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { X, Send, Bot, AlertCircle, Loader2 } from 'lucide-react';
+import { motion } from 'motion/react';
 import { api } from '../lib/api';
 import type { Intel } from '@hailmary/types';
+import { backdropVariants, modalVariants, modalTransition } from '../lib/motion';
 
 interface DoubtSolverModalProps {
   intel: Intel;
@@ -42,8 +44,23 @@ export function DoubtSolverModal({ intel, onClose }: DoubtSolverModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-      <div className="bg-[#111520] border border-[#1e2535] rounded-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[85vh] shadow-2xl shadow-[#4fffb0]/5">
+    <motion.div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+      variants={backdropVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      transition={{ duration: 0.18 }}
+    >
+      <motion.div
+        className="bg-[#111520] border border-[#1e2535] rounded-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[85vh] shadow-2xl shadow-[#4fffb0]/5"
+        variants={modalVariants}
+        initial="initial"
+        animate="animate"
+        exit="exit"
+        transition={modalTransition}
+      >
+
         
         <div className="flex items-center justify-between p-5 border-b border-[#1e2535] bg-[#0b0e14]">
           <div className="flex items-center gap-3">
@@ -114,7 +131,7 @@ export function DoubtSolverModal({ intel, onClose }: DoubtSolverModalProps) {
           </form>
         </div>
 
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
-}
+}

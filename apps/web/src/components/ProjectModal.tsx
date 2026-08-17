@@ -3,10 +3,12 @@ import {
   X, Github, Globe, Loader2,
   BookOpen, Zap, Trophy, Layers, ToggleLeft, ToggleRight,
 } from 'lucide-react';
+import { motion } from 'motion/react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../auth/useAuth';
 import type { HailMaryProject, ProjectFormData, ProjectStatus } from '../types/project';
 import { EMPTY_FORM } from '../types/project';
+import { backdropVariants, modalVariants, modalTransition } from '../lib/motion';
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
@@ -278,16 +280,26 @@ export function ProjectModal({ project, onClose, onSaved }: ProjectModalProps) {
 
   return (
     /* Backdrop */
-    <div
+    <motion.div
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
       style={{ background: 'rgba(8, 10, 16, 0.85)', backdropFilter: 'blur(6px)' }}
+      variants={backdropVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      transition={{ duration: 0.18 }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       {/* Modal panel */}
-      <div
+      <motion.div
         className="relative w-full max-w-2xl max-h-[92vh] overflow-y-auto rounded-2xl
           border border-[#252b3b] flex flex-col"
         style={{ background: '#161a24', boxShadow: '0 0 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(79,255,176,0.05)' }}
+        variants={modalVariants}
+        initial="initial"
+        animate="animate"
+        exit="exit"
+        transition={modalTransition}
       >
         {/* Header */}
         <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-4
@@ -459,27 +471,29 @@ export function ProjectModal({ project, onClose, onSaved }: ProjectModalProps) {
           {!error && <div className="flex-1" />}
 
           <div className="flex items-center gap-3">
-            <button
+            <motion.button
               onClick={onClose}
               className="px-5 py-2.5 rounded-xl text-sm font-mono text-[#7a849a]
                 border border-[#252b3b] hover:text-white hover:border-[#3d4558] transition-all"
+              whileTap={{ scale: 0.96 }}
             >
               Cancel
-            </button>
-            <button
+            </motion.button>
+            <motion.button
               onClick={handleSubmit}
               disabled={saving}
               className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold
                 bg-[#4fffb0] text-[#0b0e14] hover:bg-[#3de89e] disabled:opacity-60
                 disabled:cursor-not-allowed transition-all duration-200"
+              whileTap={{ scale: 0.97 }}
             >
               {saving && <Loader2 className="h-4 w-4 animate-spin" />}
               {saving ? 'Saving…' : isEdit ? 'Save Changes' : 'Create Project'}
-            </button>
+            </motion.button>
           </div>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }
 

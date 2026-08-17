@@ -107,7 +107,7 @@ export default function ProfilePage({ onBack }: { onBack: () => void }) {
       setLoading(false);
       return;
     }
-    fetchProfile(user.id).then(p => {
+    fetchProfile().then(p => {
       if (p) {
         // Seed draft from DB only when localStorage has no in-progress edits
         const storedRaw = typeof window !== 'undefined' ? localStorage.getItem(SOCIAL_DRAFT_KEY) : null
@@ -310,7 +310,7 @@ export default function ProfilePage({ onBack }: { onBack: () => void }) {
 
         <Section title="Connected Platforms">
           <p className="text-xs text-[#7a849a] font-mono">
-            Enter your usernames to sync progress across platforms (Phase 4)
+            Enter your usernames to sync progress across platforms (e.g., LeetCode, HackerRank). This will allow us to track your coding activity and display it on your profile.
           </p>
           <Field label="LeetCode Username"   value={profile.leetcode_username   ?? ''} onChange={set('leetcode_username')}   placeholder="your-leetcode-username" />
           <Field label="HackerRank Username" value={profile.hackerrank_username ?? ''} onChange={set('hackerrank_username')} placeholder="your-hackerrank-username" />

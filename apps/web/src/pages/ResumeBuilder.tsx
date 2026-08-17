@@ -112,7 +112,7 @@ export default function ResumeBuilder() {
 
       try {
         const [profData, eduRes, expRes, projRes] = await Promise.all([
-          fetchProfile(user!.id),
+          fetchProfile(),
           supabase.from('hailmary_education').select('*').eq('user_id', user!.id).order('start_year', { ascending: false }),
           supabase.from('hailmary_experience').select('*').eq('user_id', user!.id).order('start_year', { ascending: false }),
           supabase.from('hailmary_projects').select('*').eq('user_id', user!.id).order('created_at', { ascending: false }),

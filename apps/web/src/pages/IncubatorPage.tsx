@@ -3,10 +3,12 @@ import {
   Plus, Search, Github, Globe, FileText, Layers,
   Loader2, FolderOpen, AlertCircle, Pencil, Trash2,
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../auth/useAuth';
 import type { HailMaryProject, ProjectStatus } from '../types/project';
 import { ProjectModal } from '../components/ProjectModal';
+import { staggerContainer, staggerItem } from '../lib/motion';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -474,23 +476,39 @@ export default function IncubatorPage() {
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <AnimatePresence mode="popLayout">
           {visibleProjects.length === 0 ? (
             <EmptyState
               filtered={activeFilter !== 'All' || searchQuery.trim() !== ''}
               onNew={openNew}
             />
           ) : (
-            visibleProjects.map((project) => (
-              <ProjectCard
-                key={project.id}
-                project={project}
-                onEdit={() => openEdit(project)}
-                onDelete={() => handleDeleted(project.id)}
-              />
-            ))
+            <motion.div
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"
+              variants={staggerContainer}
+              initial="initial"
+              animate="animate"
+            >
+              <AnimatePresence>
+                {visibleProjects.map((project) => (
+                  <motion.div
+                    key={project.id}
+                    variants={staggerItem}
+                    exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.18 } }}
+                    layout
+                  >
+                    <ProjectCard
+                      project={project}
+                      onEdit={() => openEdit(project)}
+                      onDelete={() => handleDeleted(project.id)}
+                    />
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </motion.div>
           )}
-        </div>
+        </AnimatePresence>
+
       )}
 
       {/* ── Modal ────────────────────────────────────────────────────────────── */}
