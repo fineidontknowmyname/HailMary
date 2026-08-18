@@ -53,7 +53,7 @@ export default function PortfolioPage() {
     );
   }, [profile?.username, user]);
 
-  const backendUrl = import.meta.env.VITE_API_URL;
+  const backendUrl = import.meta.env.VITE_API_BASE_URL;
   const liveUrl = username ? `${backendUrl}/api/portfolio/${username}` : '';
   const shareableLink = `${window.location.origin}/${username}`;
 
