@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { X, Send, BrainCircuit, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import { api } from '../lib/api';
 import type { Intel } from '@hailmary/types';
+import { backdropVariants, modalVariants, modalTransition } from '../lib/motion';
 
 interface ChallengeModalProps {
   intel: Intel;
@@ -70,9 +72,22 @@ export function ChallengeModal({ intel, onClose, onSuccess }: ChallengeModalProp
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-      <div className="bg-[#111520] border border-[#1e2535] rounded-2xl w-full max-w-2xl overflow-hidden flex flex-col shadow-2xl">
-        
+    <motion.div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+      variants={backdropVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      transition={{ duration: 0.18 }}
+    >
+      <motion.div
+        className="bg-[#111520] border border-[#1e2535] rounded-2xl w-full max-w-2xl overflow-hidden flex flex-col shadow-2xl"
+        variants={modalVariants}
+        initial="initial"
+        animate="animate"
+        exit="exit"
+        transition={modalTransition}
+      >
         <div className="flex items-center justify-between p-5 border-b border-[#1e2535] bg-[#0b0e14]">
           <div className="flex items-center gap-3">
             <BrainCircuit className="w-5 h-5 text-[#7c6aff]" />
@@ -86,8 +101,17 @@ export function ChallengeModal({ intel, onClose, onSuccess }: ChallengeModalProp
           </button>
         </div>
 
-        <div className="p-6">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={step}
+            className="p-6"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.18 }}
+          >
           {step === 'loading_challenge' && (
+
             <div className="flex flex-col items-center justify-center py-12 text-[#7c6aff]">
               <Loader2 className="w-8 h-8 animate-spin mb-4" />
               <span className="font-mono text-sm animate-pulse">Analyzing material & generating challenge...</span>
@@ -164,8 +188,9 @@ export function ChallengeModal({ intel, onClose, onSuccess }: ChallengeModalProp
               </div>
             </div>
           )}
-        </div>
-      </div>
-    </div>
+          </motion.div>
+        </AnimatePresence>
+      </motion.div>
+    </motion.div>
   );
 }

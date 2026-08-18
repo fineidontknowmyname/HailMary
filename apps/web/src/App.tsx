@@ -8,6 +8,8 @@ import { DoubtSolverModal } from './components/DoubtSolverModal';
 import { ChallengeModal } from './components/ChallengeModal';
 import ProfilePage from './pages/ProfilePage';
 import SessionManager from './components/SessionManager';
+import { AnimatedNumber } from './components/ui/AnimatedNumber';
+import { TextReveal } from './components/ui/TextReveal';
 
 import { useBoundStore } from './store/useBoundStore';
 import { useProgress } from './hooks/useProgress';
@@ -87,7 +89,9 @@ export default function App() {
 
         <h1 className="text-4xl sm:text-5xl font-black tracking-tight leading-tight mb-4">
           Every free dev resource.<br/>
-          <span className="text-[#4fffb0]">One place.</span>
+          <span className="text-[#4fffb0]">
+            <TextReveal text="One place." delay={0.3} />
+          </span>
         </h1>
 
         <p className="text-[#7a849a] text-lg leading-relaxed mb-8 max-w-xl mx-auto">
@@ -117,21 +121,44 @@ export default function App() {
           initial="initial"
           animate="animate"
         >
-          {[
-            { n: `${intel.length}+`, l: 'Intel Pieces' },
-            { n: '100%', l: 'Free' },
-            { n: 'ZPD', l: 'Optimized' },
-            ...(isLoggedIn ? [{ n: String(completed.size), l: 'Missions Done' }] : []),
-          ].map(s => (
+          {/* Numeric stats use AnimatedNumber for count-up; text stats render plain */}
+          <motion.div
+            className="bg-[#111520] border border-[#1e2535] rounded-xl px-5 py-3 text-center"
+            variants={staggerItem}
+          >
+            <div className="text-xl font-black text-[#4fffb0]">
+              <AnimatedNumber value={intel.length} suffix="+" />
+            </div>
+            <div className="text-xs font-mono text-[#7a849a] uppercase tracking-wider">Intel Pieces</div>
+          </motion.div>
+
+          <motion.div
+            className="bg-[#111520] border border-[#1e2535] rounded-xl px-5 py-3 text-center"
+            variants={staggerItem}
+          >
+            <div className="text-xl font-black text-[#4fffb0]">100%</div>
+            <div className="text-xs font-mono text-[#7a849a] uppercase tracking-wider">Free</div>
+          </motion.div>
+
+          <motion.div
+            className="bg-[#111520] border border-[#1e2535] rounded-xl px-5 py-3 text-center"
+            variants={staggerItem}
+          >
+            <div className="text-xl font-black text-[#4fffb0]">ZPD</div>
+            <div className="text-xs font-mono text-[#7a849a] uppercase tracking-wider">Optimized</div>
+          </motion.div>
+
+          {isLoggedIn && (
             <motion.div
-              key={s.l}
               className="bg-[#111520] border border-[#1e2535] rounded-xl px-5 py-3 text-center"
               variants={staggerItem}
             >
-              <div className="text-xl font-black text-[#4fffb0]">{s.n}</div>
-              <div className="text-xs font-mono text-[#7a849a] uppercase tracking-wider">{s.l}</div>
+              <div className="text-xl font-black text-[#4fffb0]">
+                <AnimatedNumber value={completed.size} />
+              </div>
+              <div className="text-xs font-mono text-[#7a849a] uppercase tracking-wider">Missions Done</div>
             </motion.div>
-          ))}
+          )}
         </motion.div>
 
         <FilterBar
@@ -205,28 +232,34 @@ export default function App() {
         <span className="text-[#4fffb0]">Built for serious developers</span>
       </footer>
 
-      {intelForDoubt && (
-        <DoubtSolverModal
-          intel={intelForDoubt}
-          onClose={() => setIntelForDoubt(null)}
-        />
-      )}
+      <AnimatePresence>
+        {intelForDoubt && (
+          <DoubtSolverModal
+            intel={intelForDoubt}
+            onClose={() => setIntelForDoubt(null)}
+          />
+        )}
+      </AnimatePresence>
 
-      {intelForChallenge && (
-        <ChallengeModal
-          intel={intelForChallenge}
-          onClose={() => setIntelForChallenge(null)}
-          onSuccess={() => toggleComplete(intelForChallenge.id)}
-        />
-      )}
+      <AnimatePresence>
+        {intelForChallenge && (
+          <ChallengeModal
+            intel={intelForChallenge}
+            onClose={() => setIntelForChallenge(null)}
+            onSuccess={() => toggleComplete(intelForChallenge.id)}
+          />
+        )}
+      </AnimatePresence>
 
-      {activeResource && (
-        <SessionManager 
-          resource={activeResource} 
-          user={user}
-          onClose={() => setActiveResource(null)} 
-        />
-      )}
+      <AnimatePresence>
+        {activeResource && (
+          <SessionManager 
+            resource={activeResource} 
+            user={user}
+            onClose={() => setActiveResource(null)} 
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

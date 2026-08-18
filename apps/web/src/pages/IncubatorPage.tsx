@@ -512,13 +512,15 @@ export default function IncubatorPage() {
       )}
 
       {/* ── Modal ────────────────────────────────────────────────────────────── */}
-      {modalOpen && (
-        <ProjectModal
-          project={editTarget}
-          onClose={() => { setModalOpen(false); setEditTarget(null); }}
-          onSaved={handleSaved}
-        />
-      )}
+      <AnimatePresence>
+        {modalOpen && (
+          <ProjectModal
+            project={editTarget}
+            onClose={() => { setModalOpen(false); setEditTarget(null); }}
+            onSaved={handleSaved}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

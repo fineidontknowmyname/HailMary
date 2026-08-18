@@ -1,4 +1,4 @@
-import type { Variants } from 'motion/react';
+import type { Variants, Transition } from 'motion/react';
 
 /**
  * Shared Motion animation variants & transition presets.
@@ -7,22 +7,23 @@ import type { Variants } from 'motion/react';
 
 // ─── Transition Presets ────────────────────────────────────────────────────────
 
-export const spring = {
-  type: 'spring' as const,
+export const spring: Transition = {
+  type: 'spring',
   stiffness: 340,
   damping: 30,
   mass: 0.8,
 };
 
-export const springSnappy = {
-  type: 'spring' as const,
+export const springSnappy: Transition = {
+  type: 'spring',
   stiffness: 500,
   damping: 38,
 };
 
-const BEZIER = [0.25, 0.46, 0.45, 0.94] as [number, number, number, number];
+// Explicitly typed as a cubic-bezier tuple so Framer Motion's Easing type is satisfied.
+const BEZIER: [number, number, number, number] = [0.25, 0.46, 0.45, 0.94];
 
-export const ease = {
+export const ease: Transition = {
   duration: 0.22,
   ease: BEZIER,
 };
@@ -35,7 +36,7 @@ export const pageVariants: Variants = {
   exit:    { opacity: 0, y: -8 },
 };
 
-export const pageTransition = { duration: 0.28, ease: BEZIER };
+export const pageTransition: Transition = { duration: 0.28, ease: BEZIER };
 
 // ─── Modal Variants ───────────────────────────────────────────────────────────
 
@@ -51,7 +52,7 @@ export const modalVariants: Variants = {
   exit:    { opacity: 0, scale: 0.97, y: 8  },
 };
 
-export const modalTransition = { duration: 0.22, ease: BEZIER };
+export const modalTransition: Transition = { duration: 0.22, ease: BEZIER };
 
 // ─── Stagger Container Variants ───────────────────────────────────────────────
 
@@ -72,9 +73,13 @@ export const staggerItem: Variants = {
 
 // ─── Fade-up (generic reveal) ─────────────────────────────────────────────────
 
+// Use the pre-typed `ease` transition constant to avoid Vercel's strict TS
+// widening `number[]` → incompatible with Framer Motion's Easing union type.
+const fadeUpTransition: Transition = { duration: 0.4, ease: BEZIER };
+
 export const fadeUp: Variants = {
   initial: { opacity: 0, y: 20 },
-  animate: { opacity: 1, y: 0, transition: { duration: 0.4, ease: BEZIER } },
+  animate: { opacity: 1, y: 0, transition: fadeUpTransition },
 };
 
 // ─── Sidebar Variants ─────────────────────────────────────────────────────────
@@ -84,8 +89,8 @@ export const sidebarVariants: Variants = {
   closed: { x: '-100%' },
 };
 
-export const sidebarTransition = {
-  type: 'spring' as const,
+export const sidebarTransition: Transition = {
+  type: 'spring',
   stiffness: 320,
   damping: 32,
   mass: 0.9,

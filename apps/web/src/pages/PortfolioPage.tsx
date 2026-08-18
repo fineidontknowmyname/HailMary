@@ -3,6 +3,7 @@ import { AlertCircle, Copy, ExternalLink, Loader2, User, Briefcase, Folder } fro
 import { useAuth } from '../auth/useAuth';
 import { supabase } from '../lib/supabase';
 import type { UserProfile } from '../types/profile';
+import { InViewFade } from '../components/ui/InViewFade';
 
 export default function PortfolioPage() {
   const { user, isLoggedIn } = useAuth();
@@ -123,42 +124,48 @@ export default function PortfolioPage() {
           <div className="pt-6 border-t border-slate-800">
             <h3 className="text-sm font-semibold text-white mb-4">Data Sources</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-[#0d1117] border border-slate-800 p-4 rounded-xl flex items-start gap-3">
-                <div className="p-2 bg-emerald-500/10 rounded-lg shrink-0">
-                  <User className="h-5 w-5 text-emerald-400" />
-                </div>
-                <div>
-                  <div className="text-sm font-medium text-white">Global Profile</div>
-                  <div className="text-xs font-mono text-emerald-400 mt-1 flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                    Synced
+              <InViewFade delay={0}>
+                <div className="bg-[#0d1117] border border-slate-800 p-4 rounded-xl flex items-start gap-3">
+                  <div className="p-2 bg-emerald-500/10 rounded-lg shrink-0">
+                    <User className="h-5 w-5 text-emerald-400" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-medium text-white">Global Profile</div>
+                    <div className="text-xs font-mono text-emerald-400 mt-1 flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                      Synced
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div className="bg-[#0d1117] border border-slate-800 p-4 rounded-xl flex items-start gap-3">
-                <div className="p-2 bg-emerald-500/10 rounded-lg shrink-0">
-                  <Briefcase className="h-5 w-5 text-emerald-400" />
-                </div>
-                <div>
-                  <div className="text-sm font-medium text-white">Experience & Education</div>
-                  <div className="text-xs font-mono text-emerald-400 mt-1 flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                    Synced
+              </InViewFade>
+              <InViewFade delay={0.1}>
+                <div className="bg-[#0d1117] border border-slate-800 p-4 rounded-xl flex items-start gap-3">
+                  <div className="p-2 bg-emerald-500/10 rounded-lg shrink-0">
+                    <Briefcase className="h-5 w-5 text-emerald-400" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-medium text-white">Experience & Education</div>
+                    <div className="text-xs font-mono text-emerald-400 mt-1 flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                      Synced
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div className="bg-[#0d1117] border border-slate-800 p-4 rounded-xl flex items-start gap-3">
-                <div className="p-2 bg-emerald-500/10 rounded-lg shrink-0">
-                  <Folder className="h-5 w-5 text-emerald-400" />
-                </div>
-                <div>
-                  <div className="text-sm font-medium text-white">Project Incubator</div>
-                  <div className="text-xs font-mono text-emerald-400 mt-1 flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                    Synced
+              </InViewFade>
+              <InViewFade delay={0.2}>
+                <div className="bg-[#0d1117] border border-slate-800 p-4 rounded-xl flex items-start gap-3">
+                  <div className="p-2 bg-emerald-500/10 rounded-lg shrink-0">
+                    <Folder className="h-5 w-5 text-emerald-400" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-medium text-white">Project Incubator</div>
+                    <div className="text-xs font-mono text-emerald-400 mt-1 flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                      Synced
+                    </div>
                   </div>
                 </div>
-              </div>
+              </InViewFade>
             </div>
           </div>
 

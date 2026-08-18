@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { backdropVariants, modalVariants, modalTransition } from '../lib/motion';
 import type { Intel } from '@hailmary/types';
 import AITutorPanel from './AITutorPanel';
 
@@ -79,113 +81,163 @@ export default function SessionManager({ resource, onClose, user }: SessionManag
 
   if (!user) {
     return (
-      <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-        <div className="bg-[#13161e] border border-gray-800 rounded-2xl w-full max-w-md p-6 shadow-2xl relative text-center">
-          <button onClick={onClose} className="absolute top-4 right-4 text-gray-500 hover:text-white">✕</button>
+      <motion.div
+        className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4"
+        variants={backdropVariants}
+        initial="initial"
+        animate="animate"
+        exit="exit"
+        transition={{ duration: 0.18 }}
+      >
+        <motion.div
+          className="bg-[#13161e] border border-[#1e2535] rounded-2xl w-full max-w-md p-6 shadow-2xl relative text-center"
+          variants={modalVariants}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+          transition={modalTransition}
+        >
+          <button onClick={onClose} className="absolute top-4 right-4 text-[#7a849a] hover:text-white transition-colors">✕</button>
           <h2 className="text-xl font-bold text-white mb-4">Authentication Required</h2>
-          <p className="text-gray-400 text-sm mb-6">Please sign in to track study sessions.</p>
-          <button onClick={onClose} className="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-xl transition-colors">Okay</button>
-        </div>
-      </div>
+          <p className="text-[#7a849a] text-sm mb-6">Please sign in to track study sessions.</p>
+          <button onClick={onClose} className="w-full bg-[#4fffb0] hover:bg-[#3de89e] text-[#0b0e14] font-bold py-3 rounded-xl transition-colors">Okay</button>
+        </motion.div>
+      </motion.div>
     );
   }
 
   return (
-    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-      <div className="bg-[#13161e] border border-gray-800 rounded-2xl w-full max-w-md p-6 shadow-2xl relative">
+    <motion.div
+      className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4"
+      variants={backdropVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      transition={{ duration: 0.18 }}
+    >
+      <motion.div
+        className="bg-[#13161e] border border-[#1e2535] rounded-2xl w-full max-w-md p-6 shadow-2xl relative"
+        variants={modalVariants}
+        initial="initial"
+        animate="animate"
+        exit="exit"
+        transition={modalTransition}
+      >
         
         {/* CLOSE BUTTON */}
         {step !== 'active' && (
-          <button onClick={onClose} className="absolute top-4 right-4 text-gray-500 hover:text-white">
+          <button onClick={onClose} className="absolute top-4 right-4 text-[#7a849a] hover:text-white transition-colors">
             ✕
           </button>
         )}
 
-        {/* STEP 1: LAUNCH MODAL */}
-        {step === 'launch' && (
-          <div className="text-center">
-            <h2 className="text-2xl font-bold text-white mb-2">Set your intent.</h2>
-            <p className="text-gray-400 text-sm mb-6">
-              How long are you committing to <strong>{resource.title}</strong> right now?
-            </p>
-            
-            <div className="grid grid-cols-3 gap-3 mb-6">
-              {[30, 60, 120].map((mins) => (
-                <button
-                  key={mins}
-                  onClick={() => setPlannedMinutes(mins)}
-                  className={`py-3 rounded-xl border font-bold transition-all ${
-                    plannedMinutes === mins 
-                      ? 'bg-green-500/10 border-green-500 text-green-400' 
-                      : 'bg-gray-900 border-gray-700 text-gray-300 hover:border-gray-500'
-                  }`}
+        {/* Steps with smooth transitions */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={step}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+          >
+            {/* STEP 1: LAUNCH MODAL */}
+            {step === 'launch' && (
+              <div className="text-center">
+                <h2 className="text-2xl font-bold text-white mb-2">Set your intent.</h2>
+                <p className="text-[#7a849a] text-sm mb-6">
+                  How long are you committing to <strong className="text-white">{resource.title}</strong> right now?
+                </p>
+
+                <div className="grid grid-cols-3 gap-3 mb-6">
+                  {[30, 60, 120].map((mins) => (
+                    <motion.button
+                      key={mins}
+                      onClick={() => setPlannedMinutes(mins)}
+                      className={`py-3 rounded-xl border font-bold transition-all ${
+                        plannedMinutes === mins
+                          ? 'bg-[#4fffb0]/10 border-[#4fffb0] text-[#4fffb0]'
+                          : 'bg-[#1e2535] border-[#2a3145] text-[#7a849a] hover:border-[#4a5568]'
+                      }`}
+                      whileTap={{ scale: 0.96 }}
+                    >
+                      {mins / 60 >= 1 ? `${mins / 60} hr` : `${mins} min`}
+                    </motion.button>
+                  ))}
+                </div>
+
+                <motion.button
+                  onClick={handleStartSession}
+                  disabled={loading}
+                  className="w-full bg-[#4fffb0] hover:bg-[#3de89e] text-[#0b0e14] font-bold py-3 rounded-xl transition-colors disabled:opacity-60"
+                  whileTap={{ scale: 0.98 }}
                 >
-                  {mins / 60 >= 1 ? `${mins / 60} hr` : `${mins} min`}
+                  {loading ? 'Launching...' : 'Launch Session'}
+                </motion.button>
+              </div>
+            )}
+
+            {/* STEP 2: ACTIVE SESSION BANNER */}
+            {step === 'active' && (
+              <div className="text-center py-4">
+                <div className="w-16 h-16 border-4 border-[#4fffb0] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+                <h2 className="text-xl font-bold text-white mb-2">Session in Progress</h2>
+                <p className="text-[#7a849a] text-sm mb-6">You are currently studying {resource.title}.</p>
+                <button
+                  onClick={() => setStep('reflect')}
+                  className="w-full bg-[#1e2535] hover:bg-[#2a3145] text-white font-bold py-3 rounded-xl border border-[#2a3145] transition-colors"
+                >
+                  I'm back. End Session.
                 </button>
-              ))}
-            </div>
+              </div>
+            )}
 
-            <button 
-              onClick={handleStartSession}
-              disabled={loading}
-              className="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-xl transition-colors"
-            >
-              {loading ? 'Launching...' : 'Launch Session'}
-            </button>
-          </div>
-        )}
+            {/* STEP 3: REFLECTION MODAL */}
+            {step === 'reflect' && (
+              <div className="text-center">
+                <h2 className="text-2xl font-bold text-white mb-2">Welcome back.</h2>
+                <p className="text-[#7a849a] text-sm mb-6">How did that session go?</p>
 
-        {/* STEP 2: ACTIVE SESSION BANNER */}
-        {step === 'active' && (
-          <div className="text-center py-4">
-            <div className="w-16 h-16 border-4 border-green-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <h2 className="text-xl font-bold text-white mb-2">Session in Progress</h2>
-            <p className="text-gray-400 text-sm mb-6">You are currently studying {resource.title}.</p>
-            
-            <button 
-              onClick={() => setStep('reflect')}
-              className="w-full bg-gray-800 hover:bg-gray-700 text-white font-bold py-3 rounded-xl border border-gray-700 transition-colors"
-            >
-              I'm back. End Session.
-            </button>
-          </div>
-        )}
+                <div className="flex flex-col gap-3">
+                  <motion.button
+                    onClick={() => handleEndSession('great')}
+                    className="p-4 bg-[#111520] border border-[#1e2535] hover:border-[#4fffb0]/40 rounded-xl text-left flex items-center gap-3 transition-colors"
+                    whileHover={{ x: 4 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <span className="text-2xl">🧠</span>
+                    <div>
+                      <div className="font-bold text-white">Learned a lot</div>
+                      <div className="text-xs text-[#7a849a]">Making solid progress.</div>
+                    </div>
+                  </motion.button>
 
-        {/* STEP 3: REFLECTION MODAL */}
-        {step === 'reflect' && (
-          <div className="text-center">
-            <h2 className="text-2xl font-bold text-white mb-2">Welcome back.</h2>
-            <p className="text-gray-400 text-sm mb-6">How did that session go?</p>
-            
-            <div className="flex flex-col gap-3">
-              <button onClick={() => handleEndSession('great')} className="p-4 bg-gray-900 border border-gray-700 hover:border-green-500 rounded-xl text-left flex items-center gap-3 transition-colors">
-                <span className="text-2xl">🧠</span>
-                <div>
-                  <div className="font-bold text-white">Learned a lot</div>
-                  <div className="text-xs text-gray-400">Making solid progress.</div>
+                  <motion.button
+                    onClick={() => handleEndSession('stuck')}
+                    className="p-4 bg-[#111520] border border-[#1e2535] hover:border-red-500/40 rounded-xl text-left flex items-center gap-3 transition-colors"
+                    whileHover={{ x: 4 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <span className="text-2xl">🧱</span>
+                    <div>
+                      <div className="font-bold text-white">I got stuck</div>
+                      <div className="text-xs text-[#7a849a]">Hit a wall. I need help.</div>
+                    </div>
+                  </motion.button>
                 </div>
-              </button>
+              </div>
+            )}
+          </motion.div>
+        </AnimatePresence>
 
-              <button onClick={() => handleEndSession('stuck')} className="p-4 bg-gray-900 border border-gray-700 hover:border-red-500 rounded-xl text-left flex items-center gap-3 transition-colors">
-                <span className="text-2xl">🧱</span>
-                <div>
-                  <div className="font-bold text-white">I got stuck</div>
-                  <div className="text-xs text-gray-400">Hit a wall. I need help.</div>
-                </div>
-              </button>
-            </div>
-          </div>
-        )}
-
-      </div>
+      </motion.div>
 
       {showAITutor && (
-        <AITutorPanel 
+        <AITutorPanel
           resource={resource}
           user={user}
           onClose={onClose}
         />
       )}
-    </div>
+    </motion.div>
   );
 }

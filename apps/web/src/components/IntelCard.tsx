@@ -14,13 +14,13 @@ export function IntelCard({ intel, onStartSession }: IntelCardProps) {
       case 'video': return <PlayCircle className="w-5 h-5 text-[#ffc93c]" />;
       case 'opensource': return <Code className="w-5 h-5 text-[#4fffb0]" />;
       case 'doc': return <FileText className="w-5 h-5 text-[#7c6aff]" />;
-      default: return <ExternalLink className="w-5 h-5 text-gray-400" />;
+      default: return <ExternalLink className="w-5 h-5 text-[#7a849a]" />;
     }
   };
 
   return (
     <motion.div
-      className="flex flex-col justify-between p-5 bg-gray-900 border border-gray-800 rounded-xl relative h-full cursor-default"
+      className="flex flex-col justify-between p-5 bg-[#111520] border border-[#1e2535] rounded-xl relative h-full cursor-default"
       whileHover={{
         y: -5,
         borderColor: 'rgba(79, 255, 176, 0.5)',
@@ -34,15 +34,15 @@ export function IntelCard({ intel, onStartSession }: IntelCardProps) {
           <div className="text-3xl">{getIcon()}</div>
           <div>
             <h3 className="text-lg font-bold text-white">{intel.title}</h3>
-            <p className="text-sm text-gray-400 mt-1">{intel.description}</p>
-            
+            <p className="text-sm text-[#7a849a] mt-1">{intel.description}</p>
+
             {/* Depth and Understanding Metadata */}
-            <div className="mt-4 pt-4 border-t border-gray-800">
-              <span className="text-xs uppercase tracking-wider text-green-500 font-bold">
+            <div className="mt-4 pt-4 border-t border-[#1e2535]">
+              <span className="text-xs uppercase tracking-wider text-[#4fffb0] font-bold">
                 {intel.depth}
               </span>
-              <p className="text-sm text-gray-300 mt-1">
-                <span className="font-semibold text-gray-500">You will learn: </span>
+              <p className="text-sm text-white/80 mt-1">
+                <span className="font-semibold text-[#7a849a]">You will learn: </span>
                 {intel.understanding || "Core concepts"}
               </p>
             </div>
@@ -51,11 +51,10 @@ export function IntelCard({ intel, onStartSession }: IntelCardProps) {
       </div>
 
       {/* ACTION BAR: Link and Tracking Button */}
-      <div className="mt-6 pt-4 border-t border-gray-800/50">
+      <div className="mt-6 pt-4 border-t border-[#1e2535]/50">
         <motion.button
           onClick={onStartSession}
-          className="w-full px-4 py-2 bg-green-600 text-white font-bold rounded-lg transition-colors"
-          whileHover={{ backgroundColor: '#22c55e' }}
+          className="w-full px-4 py-2 bg-[#4fffb0] text-[#0b0e14] font-bold rounded-lg transition-colors hover:bg-[#3de89e]"
           whileTap={{ scale: 0.97 }}
         >
           Start Study Session

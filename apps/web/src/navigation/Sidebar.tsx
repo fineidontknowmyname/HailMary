@@ -30,17 +30,23 @@ const NavLinkItem: React.FC<NavLinkItemProps> = ({ item, onClick }) => {
       to={path}
       onClick={onClick}
       aria-current={isActive ? 'page' : undefined}
-      className={`flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-lg transition-colors duration-150 outline-none focus-visible:ring-2 focus-visible:ring-[#4fffb0]/50 ${
+      className={`group flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-lg transition-colors duration-150 outline-none focus-visible:ring-2 focus-visible:ring-[#4fffb0]/50 ${
         isActive
           ? 'text-white bg-white/10'
           : 'text-slate-400 hover:text-white hover:bg-white/5'
       }`}
     >
-      <Icon
-        className="h-[18px] w-[18px]"
-        style={{ color: isActive ? ACCENT : undefined }}
-        strokeWidth={isActive ? 2.2 : 1.8}
-      />
+      <motion.span
+        className="shrink-0"
+        whileHover={{ x: 2, scale: 1.1 }}
+        transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+      >
+        <Icon
+          className="h-[18px] w-[18px]"
+          style={{ color: isActive ? ACCENT : undefined }}
+          strokeWidth={isActive ? 2.2 : 1.8}
+        />
+      </motion.span>
       <span className="truncate">{label}</span>
     </NavLink>
   );
