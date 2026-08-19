@@ -17,7 +17,8 @@ const app = express();
 const PORT = process.env.PORT || 4000;
 
 const allowedOrigins = [
-  process.env.FRONTEND_URL || 'http://localhost:5173',
+  process.env.FRONTEND_URL,
+  process.env.NODE_ENV !== 'production' ? 'http://localhost:5173' : null,
 ].filter((origin): origin is string => Boolean(origin));
 
 app.use(cors({

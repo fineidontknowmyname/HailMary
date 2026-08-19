@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import {
   Github, Linkedin, Twitter, Globe, MapPin, ExternalLink,
-  Loader2, UserX, Code2,
+  Loader2, UserX, Code2, AlertCircle,
 } from 'lucide-react';
-import { api } from '../lib/api';
+import { api, ApiError } from '../lib/api';
 import type { ProjectStatus } from '../types/project';
 
 interface PublicProfile {
@@ -159,6 +159,7 @@ export default function PublicProfileView() {
   const [data, setData] = useState<PortfolioResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!username) {
@@ -172,11 +173,17 @@ export default function PublicProfileView() {
     async function loadPortfolio() {
       setLoading(true);
       setNotFound(false);
+      setLoadError(null);
       try {
         const result = await api.get<PortfolioResponse>(`/api/portfolio/${username}`);
         if (!cancelled) setData(result);
-      } catch {
-        if (!cancelled) setNotFound(true);
+      } catch (err) {
+        if (cancelled) return;
+        if (err instanceof ApiError && err.status === 404) {
+          setNotFound(true);
+        } else {
+          setLoadError(err instanceof Error ? err.message : 'Failed to load portfolio');
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -191,6 +198,21 @@ export default function PublicProfileView() {
       <div className="min-h-screen bg-[#0b0e14] flex flex-col items-center justify-center gap-4">
         <Loader2 className="h-8 w-8 animate-spin text-[#4fffb0]" />
         <p className="text-sm font-mono text-[#7a849a]">Loading portfolio…</p>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="min-h-screen bg-[#0b0e14] flex flex-col items-center justify-center gap-4 text-center px-4">
+        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-red-500/10 border border-red-500/20">
+          <AlertCircle className="h-8 w-8 text-red-400" />
+        </div>
+        <h1 className="text-xl font-bold text-white">Couldn't load this portfolio</h1>
+        <p className="text-sm font-mono text-red-400 max-w-sm">{loadError}</p>
+        <Link to="/" className="text-sm font-mono text-[#4fffb0] hover:underline">
+          ← Back to HailMary
+        </Link>
       </div>
     );
   }

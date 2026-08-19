@@ -2,6 +2,16 @@ import { supabase } from './supabase';
 
 const API_URL = import.meta.env.VITE_API_BASE_URL;
 
+export class ApiError extends Error {
+  status: number;
+
+  constructor(message: string, status: number) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+  }
+}
+
 async function fetchWithAuth<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const { data: { session } } = await supabase.auth.getSession();
 
@@ -15,15 +25,20 @@ async function fetchWithAuth<T>(endpoint: string, options: RequestInit = {}): Pr
     headers.set('Authorization', `Bearer ${session.access_token}`);
   }
 
-  const response = await fetch(`${API_URL}${endpoint}`, {
-    ...options,
-    headers,
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${API_URL}${endpoint}`, {
+      ...options,
+      headers,
+    });
+  } catch (networkError: any) {
+    throw new ApiError(networkError.message || 'Network request failed', 0);
+  }
 
   const data = await response.json();
 
   if (!response.ok || !data.success) {
-    throw new Error(data.error || 'API request failed');
+    throw new ApiError(data.error || 'API request failed', response.status);
   }
 
   return data.data !== undefined ? data.data : data;
