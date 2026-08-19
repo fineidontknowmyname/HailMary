@@ -1,6 +1,6 @@
-import { Request, Response } from 'express';
 import { supabase } from '../lib/supabase';
 import { catchAsync } from '../middleware/errorHandler';
+import type { AuthenticatedRequest } from '../types/express';
 
 const PROJECT_FIELDS = [
   'title',
@@ -24,8 +24,8 @@ function pickProjectFields(body: Record<string, unknown>) {
 }
 
 export const ProjectsController = {
-  list: catchAsync(async (req: Request, res: Response) => {
-    const user = (req as any).user;
+  list: catchAsync<AuthenticatedRequest>(async (req, res) => {
+    const user = req.user;
 
     const { data, error } = await supabase
       .from('hailmary_projects')
@@ -37,8 +37,8 @@ export const ProjectsController = {
     res.status(200).json({ success: true, data: data ?? [] });
   }),
 
-  create: catchAsync(async (req: Request, res: Response) => {
-    const user = (req as any).user;
+  create: catchAsync<AuthenticatedRequest>(async (req, res) => {
+    const user = req.user;
     const fields = pickProjectFields(req.body);
 
     if (!fields.title || typeof fields.title !== 'string' || !fields.title.trim()) {
@@ -55,8 +55,8 @@ export const ProjectsController = {
     res.status(201).json({ success: true, data });
   }),
 
-  update: catchAsync(async (req: Request, res: Response) => {
-    const user = (req as any).user;
+  update: catchAsync<AuthenticatedRequest>(async (req, res) => {
+    const user = req.user;
     const { id } = req.params;
     const fields = pickProjectFields(req.body);
 
@@ -73,8 +73,8 @@ export const ProjectsController = {
     res.status(200).json({ success: true, data });
   }),
 
-  remove: catchAsync(async (req: Request, res: Response) => {
-    const user = (req as any).user;
+  remove: catchAsync<AuthenticatedRequest>(async (req, res) => {
+    const user = req.user;
     const { id } = req.params;
 
     const { error } = await supabase

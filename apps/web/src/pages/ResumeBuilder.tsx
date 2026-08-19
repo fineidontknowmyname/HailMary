@@ -130,8 +130,8 @@ export default function ResumeBuilder() {
         setExperience(liveExperience);
         setProjects(liveProjects);
         setResumeState(mapToResumeData(liveProfile, liveEducation, liveExperience, liveProjects, user!.email));
-      } catch (err: any) {
-        setError(err.message || 'Failed to load resume data');
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load resume data');
       } finally {
         setIsLoading(false);
       }

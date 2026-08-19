@@ -1,8 +1,9 @@
-// Rate limiting middleware
+import { Request, Response, NextFunction } from 'express';
+
 const requestLimits = new Map<string, number[]>();
 
-export const rateLimit = (req: any, res: any, next: any) => {
-  const ip = req.ip;
+export const rateLimit = (req: Request, res: Response, next: NextFunction) => {
+  const ip = req.ip ?? 'unknown';
   const now = Date.now();
   const oneMinuteAgo = now - 60000;
 

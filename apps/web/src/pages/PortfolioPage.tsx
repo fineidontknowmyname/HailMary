@@ -27,8 +27,8 @@ export default function PortfolioPage() {
       try {
         const data = await fetchProfile();
         setProfile(data || {});
-      } catch (err: any) {
-        setError(err.message || 'Failed to load portfolio profile');
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load portfolio profile');
       } finally {
         setLoading(false);
       }

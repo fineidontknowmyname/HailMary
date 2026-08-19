@@ -38,9 +38,9 @@ export function ChallengeModal({ intel, onClose, onSuccess }: ChallengeModalProp
           setChallenge(question);
           setStep('answering');
         }
-      } catch (err: any) {
+      } catch (err) {
         if (isMounted) {
-          setError(err.message || 'Failed to generate challenge.');
+          setError(err instanceof Error ? err.message : 'Failed to generate challenge.');
           setStep('answering');
         }
       }
@@ -67,8 +67,8 @@ export function ChallengeModal({ intel, onClose, onSuccess }: ChallengeModalProp
 
       setEvaluation(result);
       setStep('result');
-    } catch (err: any) {
-      setError(err.message || 'Evaluation failed.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Evaluation failed.');
       setStep('answering');
     }
   };

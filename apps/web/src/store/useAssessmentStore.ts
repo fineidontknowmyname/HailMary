@@ -94,14 +94,14 @@ export const useAssessmentStore = create<AssessmentState>()(
           time = CODEVITA_DURATION_SECONDS;
         }
 
-        const safeQuestions: SafeQuestion[] = rawData.map((q: any) => {
+        const safeQuestions: SafeQuestion[] = rawData.map((q: RawQuestion) => {
           return {
             id: String(q.id),
             section: q.section || q.cat || 'general',
-            question_text: q.text || q.question_text || '',
+            question_text: q.text || '',
             options: q.options || [],
-            difficulty: (q.diff || q.difficulty || 'medium') as 'easy' | 'medium' | 'hard',
-            company_tags: q.company_tags || [],
+            difficulty: (q.diff || 'medium') as 'easy' | 'medium' | 'hard',
+            company_tags: [],
             dataCtx: q.dataCtx
           };
         });

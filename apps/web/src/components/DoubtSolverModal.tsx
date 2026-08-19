@@ -38,8 +38,8 @@ export function DoubtSolverModal({ intel, onClose }: DoubtSolverModalProps) {
       });
 
       setAnswer(response);
-    } catch (err: any) {
-      setError(err.message || 'Failed to connect to AI core.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to connect to AI core.');
     } finally {
       setIsLoading(false);
     }

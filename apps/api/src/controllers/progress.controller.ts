@@ -1,10 +1,10 @@
-import { Request, Response } from 'express';
+import type { AuthenticatedRequest } from '../types/express';
 import { supabase } from '../lib/supabase';
 import { catchAsync } from '../middleware/errorHandler';
 
 export const ProgressController = {
-  getMissionLog: catchAsync(async (req: Request, res: Response) => {
-    const user = (req as any).user;
+  getMissionLog: catchAsync<AuthenticatedRequest>(async (req, res) => {
+    const user = req.user;
     
     const { data, error } = await supabase
       .from('user_progress')
@@ -24,8 +24,8 @@ export const ProgressController = {
     res.status(200).json({ success: true, data: mappedData });
   }),
 
-  markIntelComplete: catchAsync(async (req: Request, res: Response) => {
-    const user = (req as any).user;
+  markIntelComplete: catchAsync<AuthenticatedRequest>(async (req, res) => {
+    const user = req.user;
     const { intelId } = req.body;
 
     if (!intelId) {
@@ -44,8 +44,8 @@ export const ProgressController = {
     res.status(200).json({ success: true });
   }),
 
-  removeIntelProgress: catchAsync(async (req: Request, res: Response) => {
-    const user = (req as any).user;
+  removeIntelProgress: catchAsync<AuthenticatedRequest>(async (req, res) => {
+    const user = req.user;
     const { intelId } = req.params;
 
     const { error } = await supabase

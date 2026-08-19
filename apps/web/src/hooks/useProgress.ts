@@ -5,7 +5,7 @@ import type { UserProgress } from '@hailmary/types';
 
 export function useProgress() {
   const { user } = useAuth();
-  const [_entries, setEntries] = useState<UserProgress[]>([]);
+  const [, setEntries] = useState<UserProgress[]>([]);
   const [completed, setCompleted] = useState<Set<string>>(new Set());
 
   const fetchProgress = useCallback(async () => {
@@ -37,7 +37,7 @@ export function useProgress() {
 
     setCompleted(prev => {
       const next = new Set(prev);
-      wasCompleted ? next.delete(intelId) : next.add(intelId);
+      if (wasCompleted) next.delete(intelId); else next.add(intelId);
       return next;
     });
 
@@ -57,7 +57,7 @@ export function useProgress() {
       // Revert the optimistic update if the server request failed
       setCompleted(prev => {
         const next = new Set(prev);
-        wasCompleted ? next.add(intelId) : next.delete(intelId);
+        if (wasCompleted) next.add(intelId); else next.delete(intelId);
         return next;
       });
     }

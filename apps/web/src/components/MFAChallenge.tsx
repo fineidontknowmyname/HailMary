@@ -53,9 +53,9 @@ export function MFAChallenge({ onSuccess }: Props) {
       }
 
       onSuccess();
-    } catch (err: any) {
+    } catch (err) {
       console.error('MFA Error:', err);
-      setError(err.message || 'Invalid code. Please try again.');
+      setError(err instanceof Error ? err.message : 'Invalid code. Please try again.');
     } finally {
       setLoading(false);
     }

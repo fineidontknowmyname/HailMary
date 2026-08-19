@@ -43,9 +43,9 @@ export const uploadResource = async (req: Request, res: Response): Promise<void>
     if (dbError) throw dbError;
 
     res.status(200).json({ success: true, resource: dbData });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Upload Error:', error);
-    res.status(500).json({ error: error.message || 'Failed to upload resource' });
+    res.status(500).json({ error: error instanceof Error ? error.message : 'Failed to upload resource' });
   }
 };
 
@@ -65,8 +65,8 @@ export const contributeResource = async (req: Request, res: Response): Promise<v
     if (error) throw error;
 
     res.status(201).json({ success: true });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Contribute Resource Error:', error);
-    res.status(500).json({ success: false, error: error.message || 'Failed to submit resource' });
+    res.status(500).json({ success: false, error: error instanceof Error ? error.message : 'Failed to submit resource' });
   }
 };

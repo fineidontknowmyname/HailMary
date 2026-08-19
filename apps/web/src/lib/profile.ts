@@ -18,7 +18,7 @@ export async function upsertProfile(
   try {
     await api.put('/api/profile', { user_id: userId, ...updates })
     return { error: null }
-  } catch (error: any) {
-    return { error: error.message ?? 'Unknown error' }
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : 'Unknown error' }
   }
 }

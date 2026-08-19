@@ -19,8 +19,8 @@ export const createIntelSlice: StateCreator<IntelSlice> = (set) => ({
       // Hits our optimized Express route: GET /api/intel
       const data = await api.get<Intel[]>('/api/intel'); 
       set({ intel: data, isLoading: false });
-    } catch (error: any) {
-      set({ error: error.message, isLoading: false });
+    } catch (error) {
+      set({ error: error instanceof Error ? error.message : 'Unknown error', isLoading: false });
     }
   },
 });

@@ -45,11 +45,11 @@ export const aiService = {
       case 'feynman':
         modePrompt = SYSTEM_PROMPTS.FEYNMAN_EVALUATOR(topic);
         break;
-      case 'debugger':
-        // Infer language from tags, fallback to the resource title
+      case 'debugger': {
         const language = context.tags[0] || context.title;
         modePrompt = SYSTEM_PROMPTS.CODE_DEBUGGER(language);
         break;
+      }
       case 'tutor':
       default:
         modePrompt = SYSTEM_PROMPTS.ULTIMATE_TUTOR(topic);
@@ -85,10 +85,10 @@ Resource context:
 
       return responseText;
 
-    } catch (error: any) {
+    } catch (error) {
       console.error("GROQ CRASH REASON:", error);
       clearTimeout(timeout);
-      if (error.name === 'AbortError') {
+      if (error instanceof Error && error.name === 'AbortError') {
         throw new Error('AI processing timed out. Please try again.');
       }
       throw new Error('Failed to resolve doubt via AI Service.');
@@ -127,9 +127,9 @@ Tags: ${context.tags.join(', ')}`;
       await cacheService.set(cacheKey, challengeText, 2592000); 
 
       return challengeText;
-    } catch (error) {
+    } catch {
       clearTimeout(timeout);
-      return 'Explain the main concept of this resource in your own words.'; 
+      return 'Explain the main concept of this resource in your own words.';
     }
   },
 
@@ -159,7 +159,7 @@ Do not include any text outside of the JSON object.`;
 
       const resultText = completion.choices[0]?.message?.content || '{"passed":true,"feedback":"Good effort."}';
       return JSON.parse(resultText);
-    } catch (error) {
+    } catch {
       return { passed: true, feedback: 'Validation bypassed due to server load. Good work.' };
     }
   },

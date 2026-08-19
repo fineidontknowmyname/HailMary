@@ -1,14 +1,15 @@
-import { Router } from 'express';
+import { Router, type Request } from 'express';
 import { supabase } from '../lib/supabase';
 import { requireAuth } from '../middleware/auth';
 import { aiService } from '../services/aiService';
+import type { AuthenticatedRequest } from '../types/express';
 
 const router = Router();
 
 router.use(requireAuth);
 
-router.post('/start', async (req, res) => {
-  const user_id = (req as any).user.id;
+router.post('/start', async (req: Request, res) => {
+  const user_id = (req as AuthenticatedRequest).user.id;
   const { resource_id, planned_minutes } = req.body;
 
   try {
@@ -42,8 +43,8 @@ router.post('/start', async (req, res) => {
   }
 });
 
-router.post('/end', async (req, res) => {
-  const user_id = (req as any).user.id;
+router.post('/end', async (req: Request, res) => {
+  const user_id = (req as AuthenticatedRequest).user.id;
   const { session_id, actual_minutes, feeling, resource_id } = req.body;
 
   try {
@@ -94,8 +95,8 @@ router.post('/end', async (req, res) => {
   }
 });
 
-router.post('/ai-tutor', async (req, res) => {
-  const user_id = (req as any).user.id;
+router.post('/ai-tutor', async (req: Request, res) => {
+  const user_id = (req as AuthenticatedRequest).user.id;
   const { resource_id, resource_title, user_message } = req.body;
 
   try {

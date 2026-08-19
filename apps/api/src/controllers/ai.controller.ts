@@ -3,6 +3,7 @@ import { aiService } from '../services/aiService';
 import type { AiMode } from '../services/aiService';
 import { catchAsync } from '../middleware/errorHandler';
 import { supabase } from '../lib/supabase';
+import type { AuthenticatedRequest } from '../types/express';
 
 const VALID_MODES: AiMode[] = ['tutor', 'feynman', 'debugger'];
 
@@ -35,7 +36,7 @@ export const AIController = {
     res.status(200).json({ success: true, data: challenge });
   }),
 
-  submitFeynman: catchAsync(async (req: Request, res: Response) => {
+  submitFeynman: catchAsync<AuthenticatedRequest>(async (req, res) => {
     const { intelId, challenge, response, context } = req.body;
 
     if (!intelId || !challenge || !response || !context) {
@@ -45,7 +46,7 @@ export const AIController = {
     const evaluation = await aiService.evaluateFeynman(context, challenge, response);
 
     if (evaluation.passed) {
-      const user = (req as any).user;
+      const user = req.user;
       await supabase
         .from('user_progress')
         .upsert({ 

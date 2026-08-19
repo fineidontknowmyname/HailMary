@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import type { AuthenticatedRequest } from '../types/express';
 import { supabase } from '../lib/supabase';
 import { catchAsync } from '../middleware/errorHandler';
 
@@ -13,8 +13,8 @@ function pickExperienceFields(body: Record<string, unknown>) {
 }
 
 export const ExperienceController = {
-  list: catchAsync(async (req: Request, res: Response) => {
-    const user = (req as any).user;
+  list: catchAsync<AuthenticatedRequest>(async (req, res) => {
+    const user = req.user;
 
     const { data, error } = await supabase
       .from('hailmary_experience')
@@ -26,8 +26,8 @@ export const ExperienceController = {
     res.status(200).json({ success: true, data: data ?? [] });
   }),
 
-  create: catchAsync(async (req: Request, res: Response) => {
-    const user = (req as any).user;
+  create: catchAsync<AuthenticatedRequest>(async (req, res) => {
+    const user = req.user;
     const fields = pickExperienceFields(req.body);
 
     if (!fields.company || !fields.role) {
@@ -44,8 +44,8 @@ export const ExperienceController = {
     res.status(201).json({ success: true, data });
   }),
 
-  remove: catchAsync(async (req: Request, res: Response) => {
-    const user = (req as any).user;
+  remove: catchAsync<AuthenticatedRequest>(async (req, res) => {
+    const user = req.user;
     const { id } = req.params;
 
     const { error } = await supabase

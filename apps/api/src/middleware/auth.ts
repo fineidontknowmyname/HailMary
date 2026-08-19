@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
 import { supabase } from '../lib/supabase'
+import type { AuthenticatedRequest } from '../types/express'
 
 export async function requireAuth(req: Request, res: Response, next: NextFunction) {
   const authHeader = req.headers.authorization
@@ -15,6 +16,6 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
     return res.status(401).json({ error: 'Unauthorized — invalid token' })
   }
 
-  ;(req as any).user = data.user
+  ;(req as AuthenticatedRequest).user = data.user
   next()
 }

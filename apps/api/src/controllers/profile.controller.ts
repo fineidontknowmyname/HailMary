@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import type { AuthenticatedRequest } from '../types/express';
 import { supabase } from '../lib/supabase';
 import { catchAsync } from '../middleware/errorHandler';
 import { apiUpdatesToDbRow, dbRowToApiProfile } from '../lib/profileFields';
@@ -32,8 +32,8 @@ function pickUpdatableFields(body: Record<string, unknown>) {
 }
 
 export const ProfileController = {
-  getProfile: catchAsync(async (req: Request, res: Response) => {
-    const user = (req as any).user;
+  getProfile: catchAsync<AuthenticatedRequest>(async (req, res) => {
+    const user = req.user;
     
     const { data, error } = await supabase
       .from('user_profiles')
@@ -48,8 +48,8 @@ export const ProfileController = {
     res.status(200).json({ success: true, data: data ? dbRowToApiProfile(data) : null });
   }),
 
-  updateProfile: catchAsync(async (req: Request, res: Response) => {
-    const user = (req as any).user;
+  updateProfile: catchAsync<AuthenticatedRequest>(async (req, res) => {
+    const user = req.user;
 
     const updates = apiUpdatesToDbRow(pickUpdatableFields(req.body));
 

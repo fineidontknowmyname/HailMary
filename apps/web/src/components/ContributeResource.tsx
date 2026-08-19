@@ -30,8 +30,8 @@ export default function ContributeResource() {
       setMessage({ type: 'success', text: 'Resource submitted successfully! It will appear once approved.' });
       setFormData({ title: '', link: '', type: 'course', description: '' });
 
-    } catch (error: any) {
-      setMessage({ type: 'error', text: error.message || 'Failed to submit resource.' });
+    } catch (error) {
+      setMessage({ type: 'error', text: error instanceof Error ? error.message : 'Failed to submit resource.' });
     } finally {
       setLoading(false);
     }

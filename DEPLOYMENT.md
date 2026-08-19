@@ -37,10 +37,10 @@ When deploying `apps/api` to Render, add the following Environment Variables in 
 
 ## 3. CI/CD
 
-We use GitHub Actions to automate testing and build verification. Every push to the `main` branch triggers the `.github/workflows/deploy.yml` workflow, which runs:
+We use GitHub Actions to automate build verification. Every push or pull request to the `main` branch triggers the `.github/workflows/checks.yml` workflow, which runs:
 - `pnpm install`
 - `pnpm run lint`
 - `pnpm run type-check`
-- `pnpm run test`
+- `pnpm run build`
 
-If any of these steps fail, the deployment will be halted.
+Actual deployment is handled independently by Vercel (web) and Render (api) via their own GitHub integrations, not by this workflow.

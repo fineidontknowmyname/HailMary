@@ -31,8 +31,8 @@ async function fetchWithAuth<T>(endpoint: string, options: RequestInit = {}): Pr
       ...options,
       headers,
     });
-  } catch (networkError: any) {
-    throw new ApiError(networkError.message || 'Network request failed', 0);
+  } catch (networkError) {
+    throw new ApiError(networkError instanceof Error ? networkError.message : 'Network request failed', 0);
   }
 
   const data = await response.json();
@@ -46,7 +46,7 @@ async function fetchWithAuth<T>(endpoint: string, options: RequestInit = {}): Pr
 
 export const api = {
   get: <T>(endpoint: string) => fetchWithAuth<T>(endpoint, { method: 'GET' }),
-  post: <T>(endpoint: string, body?: any) => fetchWithAuth<T>(endpoint, { method: 'POST', body: body ? JSON.stringify(body) : undefined }),
-  put: <T>(endpoint: string, body: any) => fetchWithAuth<T>(endpoint, { method: 'PUT', body: JSON.stringify(body) }),
+  post: <T>(endpoint: string, body?: unknown) => fetchWithAuth<T>(endpoint, { method: 'POST', body: body ? JSON.stringify(body) : undefined }),
+  put: <T>(endpoint: string, body: unknown) => fetchWithAuth<T>(endpoint, { method: 'PUT', body: JSON.stringify(body) }),
   delete: <T>(endpoint: string) => fetchWithAuth<T>(endpoint, { method: 'DELETE' }),
 };

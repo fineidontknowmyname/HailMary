@@ -62,7 +62,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
     async function checkAAL() {
       if (session?.user) {
         // Fallback check on session object directly if AAL exists
-        const sessionAal = (session as any).aal;
+        const sessionAal = (session as { aal?: string }).aal;
         const hasFactors = session.user.factors && session.user.factors.length > 0;
 
         if (sessionAal && hasFactors && sessionAal === 'aal1') {
