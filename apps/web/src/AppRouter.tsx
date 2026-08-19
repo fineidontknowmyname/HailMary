@@ -1,21 +1,31 @@
+import { lazy, Suspense } from 'react';
 import { Routes, Route, Outlet, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'motion/react';
 import { AppLayout } from './navigation/AppLayout';
 import { useAuth } from './auth/useAuth';
 import App from './App';
-import ProfilePage from './pages/ProfilePage';
 import UpdatePasswordModal from './components/UpdatePasswordModal';
-import { AssessmentEngine } from './components/AssessmentEngine';
-
-import TutorialsAndLabs from './pages/TutorialsAndLabs';
-import ContributeResource from './components/ContributeResource';
-import IncubatorPage from './pages/IncubatorPage';
-import PortfolioPage from './pages/PortfolioPage';
-import PublicProfileView from './pages/PublicProfileView';
-import ResumeBuilder from './pages/ResumeBuilder';
 import { pageVariants, pageTransition } from './lib/motion';
 import { useAppTheme } from './lib/ThemeProvider';
 import './AppRouter.css';
+
+const ProfilePage = lazy(() => import('./pages/ProfilePage'));
+const AssessmentEngine = lazy(() => import('./components/AssessmentEngine').then(m => ({ default: m.AssessmentEngine })));
+const TutorialsAndLabs = lazy(() => import('./pages/TutorialsAndLabs'));
+const ContributeResource = lazy(() => import('./components/ContributeResource'));
+const IncubatorPage = lazy(() => import('./pages/IncubatorPage'));
+const PortfolioPage = lazy(() => import('./pages/PortfolioPage'));
+const PublicProfileView = lazy(() => import('./pages/PublicProfileView'));
+const ResumeBuilder = lazy(() => import('./pages/ResumeBuilder'));
+
+function RouteFallback() {
+  const { theme } = useAppTheme();
+  return (
+    <div className="flex min-h-[60vh] items-center justify-center">
+      <div className="h-8 w-8 animate-spin rounded-full border-2 border-transparent" style={{ borderTopColor: theme.accentText, borderRightColor: theme.accentText }} />
+    </div>
+  );
+}
 
 /** Wraps a page in the shared page-transition motion.div */
 function PageWrapper({ children }: { children: React.ReactNode }) {
@@ -83,6 +93,7 @@ export function AppRouter() {
       {passwordRecoveryPending && <UpdatePasswordModal />}
 
       <AnimatePresence mode="wait">
+        <Suspense fallback={<RouteFallback />}>
         <Routes location={location} key={location.pathname}>
 
           <Route element={<DashboardLayout />}>
@@ -144,6 +155,7 @@ export function AppRouter() {
           {/* ── Global 404 fallback ─────────────────────────────── */}
           <Route path="*" element={<PageWrapper><PlaceholderPage title="404 — Page Not Found" /></PageWrapper>} />
         </Routes>
+        </Suspense>
       </AnimatePresence>
     </>
   );

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { FilterBar } from './components/FilterBar';
 import { IntelCard } from './components/IntelCard';
@@ -6,7 +6,6 @@ import { SkeletonCard } from './components/SkeletonCard';
 import { SignInModal } from './components/SignInModal';
 import { DoubtSolverModal } from './components/DoubtSolverModal';
 import { ChallengeModal } from './components/ChallengeModal';
-import ProfilePage from './pages/ProfilePage';
 import SessionManager from './components/SessionManager';
 import { AnimatedNumber } from './components/ui/AnimatedNumber';
 import { TextReveal } from './components/ui/TextReveal';
@@ -20,6 +19,8 @@ import type { Intel } from '@hailmary/types';
 import { staggerContainer, staggerItem, fadeUp } from './lib/motion';
 import { FONT_HEADING, FONT_DISPLAY, GLASS_CARD_CLASS, glassCardStyle, accentHoverShadow } from './lib/theme';
 import { useAppTheme } from './lib/ThemeProvider';
+
+const ProfilePage = lazy(() => import('./pages/ProfilePage'));
 
 export default function App() {
   const { theme } = useAppTheme();
@@ -71,7 +72,11 @@ export default function App() {
   }
 
   if (showProfile && isLoggedIn) {
-    return <ProfilePage onBack={() => setShowProfile(false)} />;
+    return (
+      <Suspense fallback={null}>
+        <ProfilePage onBack={() => setShowProfile(false)} />
+      </Suspense>
+    );
   }
 
   return (
