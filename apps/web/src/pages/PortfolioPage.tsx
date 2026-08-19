@@ -53,9 +53,7 @@ export default function PortfolioPage() {
     );
   }, [profile?.username, user]);
 
-  const backendUrl = import.meta.env.VITE_API_BASE_URL;
-  const liveUrl = username ? `${backendUrl}/api/portfolio/${username}` : '';
-  const shareableLink = `${window.location.origin}/${username}`;
+  const shareableLink = username ? `${window.location.origin}/${username}` : '';
 
   async function copyShareableLink() {
     await navigator.clipboard.writeText(shareableLink);
@@ -89,7 +87,7 @@ export default function PortfolioPage() {
     );
   }
 
-  if (error || !liveUrl) {
+  if (error || !shareableLink) {
     return (
       <div className="min-h-screen bg-[#13161e] flex flex-col items-center justify-center gap-3 text-center px-4">
         <AlertCircle className="h-10 w-10 text-red-400" />
@@ -171,7 +169,7 @@ export default function PortfolioPage() {
 
           <div className="pt-6 border-t border-slate-800 flex justify-end">
             <a
-              href={liveUrl}
+              href={shareableLink}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg transition-all"

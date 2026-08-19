@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { supabase } from '../lib/supabase';
 import { catchAsync } from '../middleware/errorHandler';
+import { apiUpdatesToDbRow, dbRowToApiProfile } from '../lib/profileFields';
 
 const UPDATABLE_PROFILE_FIELDS = [
   'username',
@@ -41,13 +42,13 @@ export const ProfileController = {
       throw new Error(error.message);
     }
 
-    res.status(200).json({ success: true, data: data ?? null });
+    res.status(200).json({ success: true, data: data ? dbRowToApiProfile(data) : null });
   }),
 
   updateProfile: catchAsync(async (req: Request, res: Response) => {
     const user = (req as any).user;
 
-    const updates = pickUpdatableFields(req.body);
+    const updates = apiUpdatesToDbRow(pickUpdatableFields(req.body));
 
     const { error } = await supabase
       .from('user_profiles')
