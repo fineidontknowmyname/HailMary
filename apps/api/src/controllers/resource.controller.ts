@@ -1,10 +1,5 @@
 import { Request, Response } from 'express';
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  process.env.SUPABASE_URL as string,
-  process.env.SUPABASE_KEY as string
-);
+import { supabase } from '../lib/supabase';
 
 export const uploadResource = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -20,7 +15,6 @@ export const uploadResource = async (req: Request, res: Response): Promise<void>
     const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
     const filePath = `uploads/${fileName}`;
 
-    // Upload to Supabase Storage
     const { error: uploadError } = await supabase.storage
       .from('resources')
       .upload(filePath, file.buffer, {
@@ -29,12 +23,10 @@ export const uploadResource = async (req: Request, res: Response): Promise<void>
 
     if (uploadError) throw uploadError;
 
-    // Get public URL
     const { data: publicUrlData } = supabase.storage
       .from('resources')
       .getPublicUrl(filePath);
 
-    // Insert metadata into resources table
     const { data: dbData, error: dbError } = await supabase
       .from('resources')
       .insert([

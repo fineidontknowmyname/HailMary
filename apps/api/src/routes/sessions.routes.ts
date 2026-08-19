@@ -1,35 +1,27 @@
 import { Router } from 'express';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '../lib/supabase';
+import { requireAuth } from '../middleware/auth';
 import { aiService } from '../services/aiService';
 
 const router = Router();
 
-// Initialize Supabase Admin Client
-// We use the SERVICE_ROLE_KEY here so the backend can securely write to the DB
-const supabase = createClient(
-  process.env.SUPABASE_URL!, 
-  process.env.SUPABASE_KEY! 
-);
+router.use(requireAuth);
 
-// ==========================================
-// 1. START SESSION: The Launch
-// ==========================================
 router.post('/start', async (req, res) => {
-  const { user_id, resource_id, planned_minutes } = req.body;
+  const user_id = (req as any).user.id;
+  const { resource_id, planned_minutes } = req.body;
 
   try {
-    // 1. Ensure a tracking record exists in user_resources (Upsert)
     const { error: trackError } = await supabase
       .from('user_resources')
-      .upsert({ 
-        user_id, 
-        resource_id, 
-        last_accessed: new Date().toISOString() 
+      .upsert({
+        user_id,
+        resource_id,
+        last_accessed: new Date().toISOString()
       }, { onConflict: 'user_id, resource_id' });
 
     if (trackError) throw trackError;
 
-    // 2. Create the active study session
     const { data: session, error: sessionError } = await supabase
       .from('study_sessions')
       .insert([{
@@ -50,14 +42,11 @@ router.post('/start', async (req, res) => {
   }
 });
 
-// ==========================================
-// 2. END SESSION: The Return & Reflection
-// ==========================================
 router.post('/end', async (req, res) => {
-  const { session_id, actual_minutes, feeling, user_id, resource_id } = req.body;
+  const user_id = (req as any).user.id;
+  const { session_id, actual_minutes, feeling, resource_id } = req.body;
 
   try {
-    // 1. Update the study_session to completed
     const { error: updateError } = await supabase
       .from('study_sessions')
       .update({
@@ -66,11 +55,11 @@ router.post('/end', async (req, res) => {
         status: 'completed',
         ended_at: new Date().toISOString()
       })
-      .eq('id', session_id);
+      .eq('id', session_id)
+      .eq('user_id', user_id);
 
     if (updateError) throw updateError;
 
-    // 2. Fetch current totals from user_resources
     const { data: tracker } = await supabase
       .from('user_resources')
       .select('total_sessions, total_minutes_spent')
@@ -81,7 +70,6 @@ router.post('/end', async (req, res) => {
     const newSessionCount = (tracker?.total_sessions || 0) + 1;
     const newTotalMinutes = (tracker?.total_minutes_spent || 0) + actual_minutes;
 
-    // 3. Update the global tracking stats
     await supabase
       .from('user_resources')
       .update({
@@ -91,14 +79,13 @@ router.post('/end', async (req, res) => {
       .eq('user_id', user_id)
       .eq('resource_id', resource_id);
 
-    // 4. Milestone Logic: Tell the frontend if they hit session 5, 10, or 15
     const isMilestone = newSessionCount > 0 && newSessionCount % 5 === 0;
 
-    res.json({ 
-      success: true, 
-      isMilestone, 
+    res.json({
+      success: true,
+      isMilestone,
       totalSessions: newSessionCount,
-      needsAITutor: feeling === 'stuck' // If stuck, tell frontend to trigger AI
+      needsAITutor: feeling === 'stuck'
     });
 
   } catch (error) {
@@ -107,17 +94,13 @@ router.post('/end', async (req, res) => {
   }
 });
 
-// ==========================================
-// 3. AI TUTOR: The Guide
-// ==========================================
 router.post('/ai-tutor', async (req, res) => {
-  const { user_id, resource_id, resource_title, user_message } = req.body;
+  const user_id = (req as any).user.id;
+  const { resource_id, resource_title, user_message } = req.body;
 
   try {
-    // 1. Get response from AI Service
     const ai_response = await aiService.tutorSession(resource_title, user_message);
 
-    // 2. Save the interaction to Supabase ai_doubts table
     const { error: insertError } = await supabase
       .from('ai_doubts')
       .insert([{
@@ -129,7 +112,6 @@ router.post('/ai-tutor', async (req, res) => {
 
     if (insertError) throw insertError;
 
-    // 3. Return the response
     res.json({ success: true, ai_response });
   } catch (error) {
     console.error('AI Tutor Error:', error);

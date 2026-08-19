@@ -2,8 +2,8 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import { globalErrorHandler } from './middleware/errorHandler';
+import { rateLimit } from './middleware/rateLimit';
 
-// Route Imports
 import intelRoutes from './routes/intel.routes';
 import progressRoutes from './routes/progress.routes';
 import profileRoutes from './routes/profile.routes';
@@ -20,11 +20,17 @@ const allowedOrigins = [
 ].filter((origin): origin is string => Boolean(origin));
 
 app.use(cors({
-  origin: true,
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    callback(new Error('Not allowed by CORS'));
+  },
   credentials: true
 }));
 
 app.use(express.json());
+app.use(rateLimit);
 
 app.get('/health', (_, res) => {
   res.json({ status: 'ok', project: 'Project Hail Mary', version: '2.0.0-enterprise' });

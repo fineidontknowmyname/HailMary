@@ -20,7 +20,7 @@ Before running the app locally, ensure you have set up your environment variable
 
 When deploying `apps/web` to Vercel, you need to add the following Environment Variables in the Vercel dashboard (Project Settings > Environment Variables):
 
-*   `VITE_API_URL`: The URL of your deployed backend (e.g., `https://hailmary.onrender.com`)
+*   `VITE_API_BASE_URL`: The URL of your deployed backend (e.g., `https://hailmary.onrender.com`)
 *   `VITE_APP_URL`: The URL of your deployed frontend (e.g., `https://hailmary.vercel.app`)
 *   `VITE_SUPABASE_URL`: Your Supabase project URL
 *   `VITE_SUPABASE_ANON_KEY`: Your Supabase anon key

@@ -1,5 +1,6 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, type ReactNode } from 'react';
 import type { Intel } from '@hailmary/types';
+import { api } from '../lib/api';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -8,8 +9,43 @@ interface Message {
 
 interface AITutorPanelProps {
   resource: Intel;
-  user: any;
+  user: { id: string } | null;
   onClose: () => void;
+}
+
+interface AiTutorResponse {
+  success: boolean;
+  ai_response: string;
+}
+
+function renderInlineMarkdown(text: string): ReactNode[] {
+  const parts: ReactNode[] = [];
+  const pattern = /\*\*(.+?)\*\*|`(.+?)`/g;
+  let lastIndex = 0;
+  let key = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = pattern.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(text.slice(lastIndex, match.index));
+    }
+    if (match[1] !== undefined) {
+      parts.push(<strong key={key++}>{match[1]}</strong>);
+    } else if (match[2] !== undefined) {
+      parts.push(
+        <code key={key++} className="bg-black/30 px-1 py-0.5 rounded font-mono text-xs">
+          {match[2]}
+        </code>
+      );
+    }
+    lastIndex = pattern.lastIndex;
+  }
+
+  if (lastIndex < text.length) {
+    parts.push(text.slice(lastIndex));
+  }
+
+  return parts;
 }
 
 export default function AITutorPanel({ resource, user, onClose }: AITutorPanelProps) {
@@ -33,7 +69,7 @@ export default function AITutorPanel({ resource, user, onClose }: AITutorPanelPr
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || loading) return;
+    if (!input.trim() || loading || !user) return;
 
     const userMessage = input.trim();
     setInput('');
@@ -41,26 +77,20 @@ export default function AITutorPanel({ resource, user, onClose }: AITutorPanelPr
     setLoading(true);
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/sessions/ai-tutor`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          user_id: user?.id,
-          resource_id: resource.id,
-          resource_title: resource.title,
-          user_message: userMessage
-        })
+      const data = await api.post<AiTutorResponse>('/api/sessions/ai-tutor', {
+        resource_id: resource.id,
+        resource_title: resource.title,
+        user_message: userMessage
       });
 
-      const data = await res.json();
       if (data.success) {
         setMessages(prev => [...prev, { role: 'assistant', content: data.ai_response }]);
       } else {
         setMessages(prev => [...prev, { role: 'assistant', content: "Sorry, I'm having trouble connecting to my brain. Please try again." }]);
       }
     } catch (error) {
-      console.error("AI Tutor Error:", error);
-      setMessages(prev => [...prev, { role: 'assistant', content: "An error occurred. Please try again." }]);
+      console.error('AI Tutor Error:', error);
+      setMessages(prev => [...prev, { role: 'assistant', content: 'An error occurred. Please try again.' }]);
     } finally {
       setLoading(false);
     }
@@ -68,8 +98,7 @@ export default function AITutorPanel({ resource, user, onClose }: AITutorPanelPr
 
   return (
     <div className="fixed inset-y-0 right-0 w-96 bg-[#13161e] border-l border-gray-800 shadow-2xl z-50 flex flex-col transform transition-transform duration-300">
-      
-      {/* Header */}
+
       <div className="flex items-center justify-between p-4 border-b border-gray-800 bg-[#1e2535]">
         <div>
           <h3 className="font-bold text-white text-lg flex items-center gap-2">
@@ -77,7 +106,7 @@ export default function AITutorPanel({ resource, user, onClose }: AITutorPanelPr
           </h3>
           <p className="text-xs text-green-500 truncate max-w-[250px]">{resource.title}</p>
         </div>
-        <button 
+        <button
           onClick={onClose}
           className="text-gray-400 hover:text-white transition-colors"
         >
@@ -85,27 +114,21 @@ export default function AITutorPanel({ resource, user, onClose }: AITutorPanelPr
         </button>
       </div>
 
-      {/* Chat Area */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((msg, idx) => (
-          <div 
-            key={idx} 
+          <div
+            key={idx}
             className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
           >
-            <div 
+            <div
               className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm ${
-                msg.role === 'user' 
-                  ? 'bg-green-600 text-white rounded-tr-none' 
+                msg.role === 'user'
+                  ? 'bg-green-600 text-white rounded-tr-none'
                   : 'bg-gray-800 text-gray-200 rounded-tl-none border border-gray-700'
               }`}
             >
-              {/* Very basic markdown rendering for bold text and code, assuming plain text normally */}
               {msg.content.split('\n').map((line, i) => (
-                <p key={i} className="mb-1 last:mb-0" dangerouslySetInnerHTML={{ 
-                  __html: line
-                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                    .replace(/`(.*?)`/g, '<code class="bg-black/30 px-1 py-0.5 rounded font-mono text-xs">$1</code>')
-                }} />
+                <p key={i} className="mb-1 last:mb-0">{renderInlineMarkdown(line)}</p>
               ))}
             </div>
           </div>
@@ -122,7 +145,6 @@ export default function AITutorPanel({ resource, user, onClose }: AITutorPanelPr
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Form */}
       <form onSubmit={handleSendMessage} className="p-4 border-t border-gray-800 bg-[#1a1f2e]">
         <div className="relative">
           <input

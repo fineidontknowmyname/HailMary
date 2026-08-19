@@ -1,13 +1,26 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { backdropVariants, modalVariants, modalTransition } from '../lib/motion';
+import { api } from '../lib/api';
 import type { Intel } from '@hailmary/types';
 import AITutorPanel from './AITutorPanel';
+
+interface SessionStartResponse {
+  success: boolean;
+  sessionId: string;
+}
+
+interface SessionEndResponse {
+  success: boolean;
+  isMilestone: boolean;
+  totalSessions: number;
+  needsAITutor: boolean;
+}
 
 interface SessionManagerProps {
   resource: Intel;
   onClose: () => void;
-  user: any; // Using any for user if type is not strictly exported, but better to use user type if available
+  user: { id: string } | null;
 }
 
 export default function SessionManager({ resource, onClose, user }: SessionManagerProps) {
@@ -17,63 +30,46 @@ export default function SessionManager({ resource, onClose, user }: SessionManag
   const [loading, setLoading] = useState(false);
   const [showAITutor, setShowAITutor] = useState(false);
 
-  // 1. THE LAUNCH
   const handleStartSession = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/sessions/start`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          user_id: user?.id,
-          resource_id: resource.id,
-          planned_minutes: plannedMinutes
-        })
+      const data = await api.post<SessionStartResponse>('/api/sessions/start', {
+        resource_id: resource.id,
+        planned_minutes: plannedMinutes
       });
-      
-      const data = await res.json();
       if (data.success) {
         setSessionId(data.sessionId);
         setStep('active');
-        // Open the actual course in a new tab!
         window.open(resource.link, '_blank');
       }
     } catch (error) {
-      console.error("Failed to start session", error);
+      console.error('Failed to start session', error);
     } finally {
       setLoading(false);
     }
   };
 
-  // 2. THE REFLECTION
   const handleEndSession = async (feeling: 'great' | 'neutral' | 'stuck') => {
     setLoading(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/sessions/end`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          session_id: sessionId,
-          user_id: user?.id,
-          resource_id: resource.id,
-          actual_minutes: plannedMinutes, // For v1, we'll assume they did the planned time
-          feeling: feeling
-        })
+      const data = await api.post<SessionEndResponse>('/api/sessions/end', {
+        session_id: sessionId,
+        resource_id: resource.id,
+        actual_minutes: plannedMinutes,
+        feeling
       });
 
-      const data = await res.json();
-      
       if (data.needsAITutor) {
         setShowAITutor(true);
-        setStep('launch'); // Reset main modal step
+        setStep('launch');
       } else {
         if (data.isMilestone) {
           alert(`Milestone Reached! You've completed ${data.totalSessions} sessions.`);
         }
-        onClose(); // Close the manager
+        onClose();
       }
     } catch (error) {
-      console.error("Failed to end session", error);
+      console.error('Failed to end session', error);
     } finally {
       setLoading(false);
     }
@@ -123,15 +119,12 @@ export default function SessionManager({ resource, onClose, user }: SessionManag
         exit="exit"
         transition={modalTransition}
       >
-        
-        {/* CLOSE BUTTON */}
         {step !== 'active' && (
           <button onClick={onClose} className="absolute top-4 right-4 text-[#7a849a] hover:text-white transition-colors">
             ✕
           </button>
         )}
 
-        {/* Steps with smooth transitions */}
         <AnimatePresence mode="wait">
           <motion.div
             key={step}
@@ -140,7 +133,6 @@ export default function SessionManager({ resource, onClose, user }: SessionManag
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
           >
-            {/* STEP 1: LAUNCH MODAL */}
             {step === 'launch' && (
               <div className="text-center">
                 <h2 className="text-2xl font-bold text-white mb-2">Set your intent.</h2>
@@ -176,7 +168,6 @@ export default function SessionManager({ resource, onClose, user }: SessionManag
               </div>
             )}
 
-            {/* STEP 2: ACTIVE SESSION BANNER */}
             {step === 'active' && (
               <div className="text-center py-4">
                 <div className="w-16 h-16 border-4 border-[#4fffb0] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
@@ -191,7 +182,6 @@ export default function SessionManager({ resource, onClose, user }: SessionManag
               </div>
             )}
 
-            {/* STEP 3: REFLECTION MODAL */}
             {step === 'reflect' && (
               <div className="text-center">
                 <h2 className="text-2xl font-bold text-white mb-2">Welcome back.</h2>
