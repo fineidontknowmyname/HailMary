@@ -48,13 +48,17 @@ export const ProgressController = {
     const user = req.user;
     const { intelId } = req.params;
 
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('user_progress')
       .delete()
       .eq('user_id', user.id)
-      .eq('resource_id', intelId);
+      .eq('resource_id', intelId)
+      .select('resource_id');
 
     if (error) throw new Error(error.message);
+    if (!data || data.length === 0) {
+      return res.status(404).json({ success: false, error: 'Progress entry not found' });
+    }
     res.status(200).json({ success: true });
   })
 };

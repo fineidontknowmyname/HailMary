@@ -48,13 +48,17 @@ export const ExperienceController = {
     const user = req.user;
     const { id } = req.params;
 
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('hailmary_experience')
       .delete()
       .eq('id', id)
-      .eq('user_id', user.id);
+      .eq('user_id', user.id)
+      .select('id');
 
     if (error) throw new Error(error.message);
+    if (!data || data.length === 0) {
+      return res.status(404).json({ success: false, error: 'Experience entry not found' });
+    }
     res.status(200).json({ success: true });
   }),
 };
