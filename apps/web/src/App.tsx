@@ -18,7 +18,7 @@ import { useAuth } from './auth/useAuth';
 import { useAuthStore } from './auth/authStore';
 import type { Intel } from '@hailmary/types';
 import { staggerContainer, staggerItem, fadeUp } from './lib/motion';
-import { FONT_HEADING, GLASS_CARD_CLASS, glassCardStyle, accentHoverShadow } from './lib/theme';
+import { FONT_HEADING, FONT_DISPLAY, GLASS_CARD_CLASS, glassCardStyle, accentHoverShadow } from './lib/theme';
 import { useAppTheme } from './lib/ThemeProvider';
 
 export default function App() {
@@ -90,9 +90,9 @@ export default function App() {
             : '100% free · no sign-up required to browse'}
         </div>
 
-        <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight leading-tight mb-4" style={{ fontFamily: FONT_HEADING }}>
+        <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight leading-tight mb-4" style={{ fontFamily: FONT_DISPLAY }}>
           Every free dev resource.<br/>
-          <span style={{ background: `linear-gradient(90deg, ${theme.accentText}, ${theme.electricText})`, WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' }}>
+          <span style={{ color: theme.accentText }}>
             <TextReveal text="One place." delay={0.3} />
           </span>
         </h1>

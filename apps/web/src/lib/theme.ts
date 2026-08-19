@@ -67,8 +67,9 @@ export const LIGHT_THEME: AppTheme = {
   shadowPanel: '0 1px 2px rgba(16,24,40,0.05), 0 16px 48px -8px rgba(16,24,40,0.12)',
 };
 
-export const FONT_HEADING = "'Sora', sans-serif";
-export const FONT_BODY = "'Manrope', sans-serif";
+export const FONT_DISPLAY = "'Playfair Display', serif";
+export const FONT_HEADING = "'Roboto', sans-serif";
+export const FONT_BODY = "'Lato', sans-serif";
 
 export const GLASS_CARD_CLASS =
   'relative rounded-2xl border backdrop-blur-xl transition-colors duration-200';

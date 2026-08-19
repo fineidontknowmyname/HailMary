@@ -14,6 +14,7 @@ import PortfolioPage from './pages/PortfolioPage';
 import PublicProfileView from './pages/PublicProfileView';
 import ResumeBuilder from './pages/ResumeBuilder';
 import { pageVariants, pageTransition } from './lib/motion';
+import { useAppTheme } from './lib/ThemeProvider';
 import './AppRouter.css';
 
 /** Wraps a page in the shared page-transition motion.div */
@@ -35,17 +36,22 @@ function PageWrapper({ children }: { children: React.ReactNode }) {
 // Replace each with the real page component once built.
 
 function PlaceholderPage({ title }: { title: string }) {
+  const { theme } = useAppTheme();
   return (
     <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 text-center">
       <div
-        className="placeholder-icon-tile flex h-16 w-16 items-center justify-center rounded-2xl"
+        className="flex h-16 w-16 items-center justify-center rounded-2xl border"
+        style={{ background: theme.cardBg, borderColor: theme.cardBorder }}
       >
         <span className="text-2xl">🚧</span>
       </div>
-      <h1 className="text-2xl font-black text-white">{title}</h1>
-      <p className="font-mono text-sm text-[#7a849a]">This module is coming soon.</p>
-      <span className="inline-flex items-center gap-2 rounded-full border border-[#4fffb0]/20 bg-[#4fffb0]/5 px-4 py-1.5 text-xs font-mono text-[#4fffb0]">
-        <span className="h-1.5 w-1.5 rounded-full bg-[#4fffb0] animate-pulse" />
+      <h1 className="text-2xl font-black" style={{ color: theme.heading }}>{title}</h1>
+      <p className="font-mono text-sm" style={{ color: theme.muted }}>This module is coming soon.</p>
+      <span
+        className="inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-xs font-mono"
+        style={{ borderColor: theme.accentBorder, background: theme.accentSoftBg, color: theme.accentText }}
+      >
+        <span className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ background: theme.accentText }} />
         Under active development
       </span>
     </div>

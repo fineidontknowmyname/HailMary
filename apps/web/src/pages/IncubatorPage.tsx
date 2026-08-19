@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import {
-  Plus, Search, Github, Globe, FileText, Layers,
-  Loader2, FolderOpen, AlertCircle, Pencil, Trash2,
+  Plus, Search, FolderOpen, AlertCircle, Loader2, Pencil, Trash2,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { supabase } from '../lib/supabase';
@@ -9,48 +8,58 @@ import { useAuth } from '../auth/useAuth';
 import type { HailMaryProject, ProjectStatus } from '../types/project';
 import { ProjectModal } from '../components/ProjectModal';
 import { staggerContainer, staggerItem } from '../lib/motion';
-
-// ─── Constants ────────────────────────────────────────────────────────────────
+import { useAppTheme } from '../lib/ThemeProvider';
+import type { AppTheme } from '../lib/theme';
 
 type FilterTab = 'All' | ProjectStatus;
 const FILTER_TABS: FilterTab[] = ['All', 'Ongoing', 'Finished', 'Not Started'];
 
-const STATUS_CONFIG: Record<
-  ProjectStatus,
-  { border: string; glow: string; dot: string; badge: string }
-> = {
-  'Ongoing': {
-    border: 'border-green-500/60',
-    glow:   '0 0 20px rgba(34,197,94,0.15), 0 0 1px rgba(34,197,94,0.4)',
-    dot:    'bg-green-400 shadow-[0_0_6px_rgba(34,197,94,0.8)]',
-    badge:  'bg-green-500/10 text-green-400 border-green-500/30',
-  },
-  'Finished': {
-    border: 'border-blue-500/60',
-    glow:   '0 0 20px rgba(59,130,246,0.15), 0 0 1px rgba(59,130,246,0.4)',
-    dot:    'bg-blue-400 shadow-[0_0_6px_rgba(59,130,246,0.8)]',
-    badge:  'bg-blue-500/10 text-blue-400 border-blue-500/30',
-  },
-  'Not Started': {
-    border: 'border-[#2a3040]',
-    glow:   'none',
-    dot:    'bg-[#3d4558]',
-    badge:  'bg-[#1a1e28] text-[#7a849a] border-[#2a3040]',
-  },
-};
-
-// ─── Project Card ─────────────────────────────────────────────────────────────
+function statusConfig(status: ProjectStatus, theme: AppTheme) {
+  if (status === 'Ongoing') {
+    return {
+      border: theme.accentBorderStrong,
+      accentBar: theme.accentText,
+      dot: theme.accentText,
+      badgeBg: theme.accentSoftBg,
+      badgeText: theme.accentText,
+      badgeBorder: theme.accentBorder,
+      pulse: true,
+    };
+  }
+  if (status === 'Finished') {
+    return {
+      border: theme.electricText,
+      accentBar: theme.electricText,
+      dot: theme.electricText,
+      badgeBg: 'rgba(59,130,246,0.1)',
+      badgeText: theme.electricText,
+      badgeBorder: 'rgba(59,130,246,0.3)',
+      pulse: false,
+    };
+  }
+  return {
+    border: theme.cardBorder,
+    accentBar: theme.cardBorder,
+    dot: theme.dim,
+    badgeBg: theme.cardBg,
+    badgeText: theme.muted,
+    badgeBorder: theme.cardBorder,
+    pulse: false,
+  };
+}
 
 function ProjectCard({
   project,
   onEdit,
   onDelete,
+  theme,
 }: {
   project: HailMaryProject;
   onEdit: () => void;
   onDelete: () => void;
+  theme: AppTheme;
 }) {
-  const cfg = STATUS_CONFIG[project.status];
+  const cfg = statusConfig(project.status, theme);
   const [deleting, setDeleting] = useState(false);
 
   async function handleDelete() {
@@ -62,44 +71,30 @@ function ProjectCard({
 
   return (
     <article
-      className={`relative flex flex-col rounded-2xl border ${cfg.border} bg-[#1e222d]
-        transition-all duration-300 hover:-translate-y-0.5 group overflow-hidden`}
-      style={{ boxShadow: cfg.glow }}
+      className="relative flex flex-col rounded-2xl border transition-all duration-300 hover:-translate-y-0.5 group overflow-hidden"
+      style={{ borderColor: cfg.border, background: theme.cardBg, boxShadow: theme.shadowCard }}
     >
-      {/* Top accent bar */}
-      <div
-        className={`absolute top-0 left-0 right-0 h-px ${
-          project.status === 'Ongoing'
-            ? 'bg-gradient-to-r from-transparent via-green-500/60 to-transparent'
-            : project.status === 'Finished'
-            ? 'bg-gradient-to-r from-transparent via-blue-500/60 to-transparent'
-            : 'bg-gradient-to-r from-transparent via-[#2a3040] to-transparent'
-        }`}
-      />
+      <div className="absolute top-0 left-0 right-0 h-px" style={{ background: cfg.accentBar }} />
 
-      {/* Card header */}
       <div className="flex items-start justify-between gap-3 px-5 pt-5 pb-3">
         <div className="flex-1 min-w-0">
-          {/* Status badge */}
           <span
-            className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full
-              text-[10px] font-mono font-semibold border mb-3 ${cfg.badge}`}
+            className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold border mb-3"
+            style={{ background: cfg.badgeBg, color: cfg.badgeText, borderColor: cfg.badgeBorder }}
           >
-            <span className={`h-1.5 w-1.5 rounded-full ${cfg.dot} ${
-              project.status === 'Ongoing' ? 'animate-pulse' : ''
-            }`} />
+            <span className={`h-1.5 w-1.5 rounded-full ${cfg.pulse ? 'animate-pulse' : ''}`} style={{ background: cfg.dot }} />
             {project.status}
           </span>
-          <h3 className="text-base font-bold text-white leading-tight line-clamp-2">
+          <h3 className="text-base font-bold leading-tight line-clamp-2" style={{ color: theme.heading }}>
             {project.title}
           </h3>
         </div>
 
-        {/* Action buttons — appear on hover */}
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 mt-1">
           <button
             onClick={onEdit}
-            className="p-1.5 rounded-lg text-[#7a849a] hover:text-[#4fffb0] hover:bg-[#4fffb0]/10 transition-all"
+            className="p-1.5 rounded-lg transition-all"
+            style={{ color: theme.muted }}
             title="Edit project"
           >
             <Pencil className="h-3.5 w-3.5" />
@@ -107,7 +102,8 @@ function ProjectCard({
           <button
             onClick={handleDelete}
             disabled={deleting}
-            className="p-1.5 rounded-lg text-[#7a849a] hover:text-red-400 hover:bg-red-400/10 transition-all"
+            className="p-1.5 rounded-lg hover:text-red-400 transition-all"
+            style={{ color: theme.muted }}
             title="Delete project"
           >
             {deleting
@@ -117,44 +113,39 @@ function ProjectCard({
         </div>
       </div>
 
-      {/* Notes preview */}
       {project.raw_notes && (
-        <p className="px-5 pb-3 text-xs text-[#7a849a] line-clamp-2 leading-relaxed font-mono">
+        <p className="px-5 pb-3 text-xs line-clamp-2 leading-relaxed font-mono" style={{ color: theme.muted }}>
           {project.raw_notes}
         </p>
       )}
 
-      {/* Tech stack pills */}
       {(project.tech_stack || []).length > 0 && (
         <div className="px-5 pb-3 flex flex-wrap gap-1.5">
           {(project.tech_stack || []).slice(0, 5).map((tech) => (
             <span
               key={tech}
-              className="px-2 py-0.5 rounded-md text-[10px] font-mono font-medium
-                bg-[#13161e] border border-[#252b3b] text-[#4fffb0]"
+              className="px-2 py-0.5 rounded-md text-[10px] font-mono font-medium border"
+              style={{ background: theme.bgBase, borderColor: theme.cardBorder, color: theme.accentText }}
             >
               {tech}
             </span>
           ))}
           {(project.tech_stack || []).length > 5 && (
-            <span className="px-2 py-0.5 rounded-md text-[10px] font-mono text-[#3d4558] border border-[#252b3b]">
+            <span className="px-2 py-0.5 rounded-md text-[10px] font-mono border" style={{ color: theme.dim, borderColor: theme.cardBorder }}>
               +{(project.tech_stack || []).length - 5}
             </span>
           )}
         </div>
       )}
 
-      {/* Metrics chip */}
       {project.metrics && (
         <div className="px-5 pb-3">
-          <span className="inline-flex items-center gap-1.5 text-[10px] font-mono text-amber-400/80
-            bg-amber-500/5 border border-amber-500/15 px-2.5 py-1 rounded-lg">
+          <span className="inline-flex items-center gap-1.5 text-[10px] font-mono px-2.5 py-1 rounded-lg border" style={{ color: '#F59E0B', background: 'rgba(245,158,11,0.06)', borderColor: 'rgba(245,158,11,0.15)' }}>
             📈 {project.metrics}
           </span>
         </div>
       )}
 
-      {/* Links row */}
       {(project.github_url || project.live_url) && (
         <div className="px-5 pb-3 flex items-center gap-3">
           {project.github_url && (
@@ -163,11 +154,10 @@ function ProjectCard({
               target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
-              className="flex items-center gap-1 text-[10px] font-mono text-[#7a849a]
-                hover:text-[#4fffb0] transition-colors"
+              className="flex items-center gap-1 text-[10px] font-mono transition-colors"
+              style={{ color: theme.muted }}
             >
-              <Github className="h-3 w-3" />
-              GitHub
+              Source
             </a>
           )}
           {project.live_url && (
@@ -176,43 +166,34 @@ function ProjectCard({
               target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
-              className="flex items-center gap-1 text-[10px] font-mono text-[#7a849a]
-                hover:text-blue-400 transition-colors"
+              className="flex items-center gap-1 text-[10px] font-mono transition-colors"
+              style={{ color: theme.muted }}
             >
-              <Globe className="h-3 w-3" />
               Live
             </a>
           )}
         </div>
       )}
 
-      {/* Card footer — sync indicators */}
-      <div className="mt-auto px-5 py-3 flex items-center gap-3 border-t border-[#1a1e2a]">
+      <div className="mt-auto px-5 py-3 flex items-center gap-3 border-t" style={{ borderColor: theme.cardBorder }}>
         <div
-          className={`flex items-center gap-1.5 text-[10px] font-mono rounded-md px-2 py-1
-            transition-colors ${
-              project.sync_to_resume
-                ? 'bg-[#4fffb0]/5 text-[#4fffb0] border border-[#4fffb0]/15'
-                : 'text-[#2a3040] border border-[#1e2535]'
-            }`}
+          className="flex items-center gap-1.5 text-[10px] font-mono rounded-md px-2 py-1 border transition-colors"
+          style={project.sync_to_resume
+            ? { background: theme.accentSoftBg, color: theme.accentText, borderColor: theme.accentBorder }
+            : { color: theme.dim, borderColor: theme.cardBorder }}
         >
-          <FileText className="h-3 w-3" />
           Resume
         </div>
         <div
-          className={`flex items-center gap-1.5 text-[10px] font-mono rounded-md px-2 py-1
-            transition-colors ${
-              project.sync_to_portfolio
-                ? 'bg-purple-500/5 text-purple-400 border border-purple-500/15'
-                : 'text-[#2a3040] border border-[#1e2535]'
-            }`}
+          className="flex items-center gap-1.5 text-[10px] font-mono rounded-md px-2 py-1 border transition-colors"
+          style={project.sync_to_portfolio
+            ? { background: 'rgba(59,130,246,0.08)', color: theme.electricText, borderColor: 'rgba(59,130,246,0.25)' }
+            : { color: theme.dim, borderColor: theme.cardBorder }}
         >
-          <Layers className="h-3 w-3" />
           Portfolio
         </div>
 
-        {/* Created date — far right */}
-        <span className="ml-auto text-[9px] font-mono text-[#2a3040]">
+        <span className="ml-auto text-[9px] font-mono" style={{ color: theme.dim }}>
           {new Date(project.created_at).toLocaleDateString('en-US', {
             month: 'short', day: 'numeric', year: '2-digit',
           })}
@@ -222,24 +203,19 @@ function ProjectCard({
   );
 }
 
-// ─── Empty State ──────────────────────────────────────────────────────────────
-
-function EmptyState({ filtered, onNew }: { filtered: boolean; onNew: () => void }) {
+function EmptyState({ filtered, onNew, theme }: { filtered: boolean; onNew: () => void; theme: AppTheme }) {
   return (
     <div className="col-span-full flex flex-col items-center justify-center py-24 text-center">
       <div
-        className="h-20 w-20 rounded-2xl flex items-center justify-center mb-6"
-        style={{
-          background: 'linear-gradient(135deg, rgba(79,255,176,0.08) 0%, rgba(79,255,176,0.02) 100%)',
-          border: '1px solid rgba(79,255,176,0.12)',
-        }}
+        className="h-20 w-20 rounded-2xl flex items-center justify-center mb-6 border"
+        style={{ background: theme.accentSoftBg, borderColor: theme.accentBorder }}
       >
-        <FolderOpen className="h-9 w-9 text-[#4fffb0]/60" />
+        <FolderOpen className="h-9 w-9" style={{ color: theme.accentText, opacity: 0.6 }} />
       </div>
-      <h3 className="text-lg font-bold text-white mb-2">
+      <h3 className="text-lg font-bold mb-2" style={{ color: theme.heading }}>
         {filtered ? 'No projects match this filter' : 'No projects yet'}
       </h3>
-      <p className="text-sm font-mono text-[#7a849a] mb-6 max-w-xs">
+      <p className="text-sm font-mono mb-6 max-w-xs" style={{ color: theme.muted }}>
         {filtered
           ? 'Try switching to "All" or changing your search query.'
           : 'Every great career starts with a single project. Start capturing yours.'}
@@ -247,8 +223,8 @@ function EmptyState({ filtered, onNew }: { filtered: boolean; onNew: () => void 
       {!filtered && (
         <button
           onClick={onNew}
-          className="flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold
-            bg-[#4fffb0] text-[#0b0e14] hover:bg-[#3de89e] transition-all duration-200"
+          className="flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold transition-all duration-200"
+          style={{ background: theme.accentText, color: theme.bgBase }}
         >
           <Plus className="h-4 w-4" />
           Add Your First Project
@@ -258,22 +234,19 @@ function EmptyState({ filtered, onNew }: { filtered: boolean; onNew: () => void 
   );
 }
 
-// ─── Main Page Component ──────────────────────────────────────────────────────
-
 export default function IncubatorPage() {
+  const { theme } = useAppTheme();
   const { user, isLoggedIn } = useAuth();
 
   const [projects,  setProjects]  = useState<HailMaryProject[]>([]);
   const [loading,   setLoading]   = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
 
-  // UI state
   const [activeFilter, setActiveFilter] = useState<FilterTab>('All');
   const [searchQuery,  setSearchQuery]  = useState('');
   const [modalOpen,    setModalOpen]    = useState(false);
   const [editTarget,   setEditTarget]   = useState<HailMaryProject | null>(null);
 
-  // ── Fetch ──────────────────────────────────────────────────────────────────
   useEffect(() => {
     if (!isLoggedIn || !user) {
       setLoading(false);
@@ -295,7 +268,6 @@ export default function IncubatorPage() {
     fetchProjects();
   }, [user, isLoggedIn]);
 
-  // ── Filter + Search ────────────────────────────────────────────────────────
   const visibleProjects = useMemo(() => {
     let list = projects || [];
     if (activeFilter !== 'All') {
@@ -313,7 +285,6 @@ export default function IncubatorPage() {
     return list;
   }, [projects, activeFilter, searchQuery]);
 
-  // ── Handlers ───────────────────────────────────────────────────────────────
   function openNew() {
     setEditTarget(null);
     setModalOpen(true);
@@ -342,27 +313,23 @@ export default function IncubatorPage() {
     setProjects((prev) => prev.filter((p) => p.id !== id));
   }
 
-  // ── Not logged in ──────────────────────────────────────────────────────────
   if (!isLoggedIn) {
     return (
-      <div className="min-h-screen bg-[#13161e] flex flex-col items-center justify-center text-center px-4">
+      <div className="min-h-screen flex flex-col items-center justify-center text-center px-4" style={{ background: theme.bgBase }}>
         <div
-          className="h-20 w-20 rounded-2xl flex items-center justify-center mb-6"
-          style={{
-            background: 'linear-gradient(135deg, rgba(79,255,176,0.08) 0%, rgba(79,255,176,0.02) 100%)',
-            border: '1px solid rgba(79,255,176,0.12)',
-          }}
+          className="h-20 w-20 rounded-2xl flex items-center justify-center mb-6 border"
+          style={{ background: theme.accentSoftBg, borderColor: theme.accentBorder }}
         >
-          <FolderOpen className="h-9 w-9 text-[#4fffb0]/60" />
+          <FolderOpen className="h-9 w-9" style={{ color: theme.accentText, opacity: 0.6 }} />
         </div>
-        <h1 className="text-2xl font-bold text-white mb-3">Project Incubator</h1>
-        <p className="text-sm font-mono text-[#7a849a] mb-6 max-w-sm">
+        <h1 className="text-2xl font-bold mb-3" style={{ color: theme.heading }}>Project Incubator</h1>
+        <p className="text-sm font-mono mb-6 max-w-sm" style={{ color: theme.muted }}>
           Sign in to track your projects, log metrics, and feed your resume engine.
         </p>
         <button
           onClick={() => window.dispatchEvent(new Event('open-auth-modal'))}
-          className="flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold
-            bg-[#4fffb0] text-[#0b0e14] hover:bg-[#3de89e] transition-all"
+          className="flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold transition-all"
+          style={{ background: theme.accentText, color: theme.bgBase }}
         >
           Initialize Session →
         </button>
@@ -370,7 +337,6 @@ export default function IncubatorPage() {
     );
   }
 
-  // ── Counts for filter badges ───────────────────────────────────────────────
   const counts: Record<FilterTab, number> = {
     All:           (projects || []).length,
     Ongoing:       (projects || []).filter((p) => p.status === 'Ongoing').length,
@@ -379,19 +345,18 @@ export default function IncubatorPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#13161e] text-white">
+    <div className="min-h-screen" style={{ color: theme.heading }}>
 
-      {/* ── Page header ──────────────────────────────────────────────────────── */}
       <div className="mb-8">
         <div className="flex items-end justify-between gap-4">
           <div>
-            <p className="text-xs font-mono text-[#4fffb0] mb-1 tracking-widest uppercase">
+            <p className="text-xs font-mono mb-1 tracking-widest uppercase" style={{ color: theme.accentText }}>
               Build → Project Incubator
             </p>
-            <h1 className="text-2xl font-black text-white">
+            <h1 className="text-2xl font-black" style={{ color: theme.heading }}>
               Your Projects
             </h1>
-            <p className="text-sm font-mono text-[#7a849a] mt-1">
+            <p className="text-sm font-mono mt-1" style={{ color: theme.muted }}>
               {(projects || []).length} project{(projects || []).length !== 1 ? 's' : ''} tracked
               {(projects || []).filter((p) => p.sync_to_resume).length > 0 &&
                 ` · ${(projects || []).filter((p) => p.sync_to_resume).length} synced to resume`}
@@ -399,10 +364,8 @@ export default function IncubatorPage() {
           </div>
           <button
             onClick={openNew}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold
-              bg-[#4fffb0] text-[#0b0e14] hover:bg-[#3de89e] transition-all duration-200
-              shadow-[0_0_20px_rgba(79,255,176,0.2)] hover:shadow-[0_0_30px_rgba(79,255,176,0.35)]
-              flex-shrink-0"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 flex-shrink-0"
+            style={{ background: theme.accentText, color: theme.bgBase }}
           >
             <Plus className="h-4 w-4" />
             <span className="hidden sm:inline">New Project</span>
@@ -410,45 +373,36 @@ export default function IncubatorPage() {
         </div>
       </div>
 
-      {/* ── Top bar: Search + Filters ─────────────────────────────────────────── */}
       <div className="flex flex-col sm:flex-row gap-3 mb-7">
-        {/* Search */}
         <div className="relative flex-1">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#3d4558]" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: theme.dim }} />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search by title, notes, or tech stack…"
-            className="w-full bg-[#1e222d] border border-[#252b3b] rounded-xl
-              pl-10 pr-4 py-2.5 text-sm text-white placeholder-[#3d4558]
-              outline-none focus:border-[#4fffb0]/50 focus:ring-1 focus:ring-[#4fffb0]/10
-              transition-all duration-200"
+            className="w-full rounded-xl pl-10 pr-4 py-2.5 text-sm outline-none transition-all duration-200"
+            style={{ background: theme.inputBg, border: `1px solid ${theme.inputBorder}`, color: theme.heading }}
           />
         </div>
 
-        {/* Filter tabs */}
-        <div className="flex gap-1 bg-[#1e222d] border border-[#252b3b] rounded-xl p-1 flex-shrink-0">
+        <div className="flex gap-1 rounded-xl p-1 flex-shrink-0 border" style={{ background: theme.cardBg, borderColor: theme.cardBorder }}>
           {FILTER_TABS.map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveFilter(tab)}
-              className={`relative px-3 py-1.5 rounded-lg text-xs font-mono font-semibold
-                transition-all duration-200 ${
-                  activeFilter === tab
-                    ? 'bg-[#13161e] text-[#4fffb0] shadow-sm'
-                    : 'text-[#7a849a] hover:text-white'
-                }`}
+              className="relative px-3 py-1.5 rounded-lg text-xs font-mono font-semibold transition-all duration-200"
+              style={activeFilter === tab
+                ? { background: theme.bgBase, color: theme.accentText }
+                : { color: theme.muted }}
             >
               {tab === 'Not Started' ? 'Idle' : tab}
               {counts[tab] > 0 && (
                 <span
-                  className={`ml-1.5 inline-flex items-center justify-center h-4 min-w-4 px-1
-                    rounded-full text-[9px] font-bold ${
-                      activeFilter === tab
-                        ? 'bg-[#4fffb0]/20 text-[#4fffb0]'
-                        : 'bg-[#252b3b] text-[#7a849a]'
-                    }`}
+                  className="ml-1.5 inline-flex items-center justify-center h-4 min-w-4 px-1 rounded-full text-[9px] font-bold"
+                  style={activeFilter === tab
+                    ? { background: theme.accentSoftBg, color: theme.accentText }
+                    : { background: theme.cardBorder, color: theme.muted }}
                 >
                   {counts[tab]}
                 </span>
@@ -458,11 +412,10 @@ export default function IncubatorPage() {
         </div>
       </div>
 
-      {/* ── Content area ─────────────────────────────────────────────────────── */}
       {loading ? (
         <div className="flex flex-col items-center justify-center py-32 gap-4">
-          <Loader2 className="h-8 w-8 animate-spin text-[#4fffb0]" />
-          <p className="text-sm font-mono text-[#7a849a]">Loading projects…</p>
+          <Loader2 className="h-8 w-8 animate-spin" style={{ color: theme.accentText }} />
+          <p className="text-sm font-mono" style={{ color: theme.muted }}>Loading projects…</p>
         </div>
       ) : fetchError ? (
         <div className="flex flex-col items-center justify-center py-24 gap-3 text-center">
@@ -470,7 +423,8 @@ export default function IncubatorPage() {
           <p className="text-sm font-mono text-red-400">{fetchError}</p>
           <button
             onClick={() => window.location.reload()}
-            className="text-xs font-mono text-[#7a849a] hover:text-white underline transition-colors"
+            className="text-xs font-mono underline transition-colors"
+            style={{ color: theme.muted }}
           >
             Retry
           </button>
@@ -481,6 +435,7 @@ export default function IncubatorPage() {
             <EmptyState
               filtered={activeFilter !== 'All' || searchQuery.trim() !== ''}
               onNew={openNew}
+              theme={theme}
             />
           ) : (
             <motion.div
@@ -501,6 +456,7 @@ export default function IncubatorPage() {
                       project={project}
                       onEdit={() => openEdit(project)}
                       onDelete={() => handleDeleted(project.id)}
+                      theme={theme}
                     />
                   </motion.div>
                 ))}
@@ -511,7 +467,6 @@ export default function IncubatorPage() {
 
       )}
 
-      {/* ── Modal ────────────────────────────────────────────────────────────── */}
       <AnimatePresence>
         {modalOpen && (
           <ProjectModal

@@ -401,10 +401,7 @@ export default function PublicProfileView() {
     <div style={{ fontFamily: 'Manrope, sans-serif' }}>
 
       <section
-        className="relative overflow-hidden min-h-[600px] sm:min-h-[680px] lg:min-h-[740px]"
-        style={{
-          background: `linear-gradient(to right, ${INDIGO} 0%, ${INDIGO} 68%, ${LIME} 68%, ${LIME} 100%)`,
-        }}
+        className="relative overflow-hidden min-h-[600px] sm:min-h-[680px] lg:min-h-[740px] bg-[#4B3CE0] lg:bg-[linear-gradient(to_right,#4B3CE0_0%,#4B3CE0_68%,#D4F547_68%,#D4F547_100%)]"
       >
         <ArcOutline
           className="absolute -left-40 top-1/2 -translate-y-1/2 opacity-[0.12] pointer-events-none hidden md:block"

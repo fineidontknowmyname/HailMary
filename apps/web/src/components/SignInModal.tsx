@@ -3,6 +3,8 @@ import { motion } from 'motion/react';
 import { supabase } from '../lib/supabase';
 import { useAuthStore } from '../auth/authStore';
 import { backdropVariants, modalVariants, modalTransition } from '../lib/motion';
+import { FONT_DISPLAY } from '../lib/theme';
+import { useAppTheme } from '../lib/ThemeProvider';
 
 interface SignInModalProps {
   isOpen: boolean;
@@ -12,6 +14,7 @@ interface SignInModalProps {
 type Mode = 'signup' | 'login';
 
 export function SignInModal({ isOpen, onClose }: SignInModalProps) {
+  const { theme } = useAppTheme();
   const [mode, setMode] = useState<Mode>('signup');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -135,21 +138,19 @@ export function SignInModal({ isOpen, onClose }: SignInModalProps) {
       transition={{ duration: 0.18 }}
     >
       <motion.div
-        className="relative w-full max-w-[420px] mx-4 overflow-hidden rounded-2xl border border-[#1e2535] bg-[#13161e] shadow-[0_24px_80px_-12px_rgba(0,0,0,0.8)]"
+        className="relative w-full max-w-[420px] mx-4 overflow-hidden rounded-2xl border backdrop-blur-xl"
+        style={{ borderColor: theme.cardBorder, background: theme.bgPanel, boxShadow: theme.shadowPanel }}
         variants={modalVariants}
         initial="initial"
         animate="animate"
         exit="exit"
         transition={modalTransition}
       >
-        {/* ── Decorative gradient glow ── */}
-        <div className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 h-48 w-72 rounded-full bg-[#4fffb0]/[0.07] blur-[80px]" />
-
-        {/* ── Close button ── */}
         <button
           onClick={handleClose}
           aria-label="Close modal"
-          className="absolute top-4 right-4 z-10 flex h-8 w-8 items-center justify-center rounded-lg text-[#7a849a] transition-all hover:bg-white/5 hover:text-white"
+          className="absolute top-4 right-4 z-10 flex h-8 w-8 items-center justify-center rounded-lg transition-colors"
+          style={{ color: theme.muted }}
         >
           <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
             <path strokeLinecap="round" d="M18 6 6 18M6 6l12 12" />
@@ -157,38 +158,30 @@ export function SignInModal({ isOpen, onClose }: SignInModalProps) {
         </button>
 
         <div className="relative px-8 pt-8 pb-8">
-          {/* ── Mode toggle pill ── */}
           <div className="flex justify-center mb-7">
-            <div className="inline-flex rounded-full bg-[#0b0e14] border border-[#1e2535] p-1">
+            <div className="inline-flex rounded-full p-1" style={{ background: theme.bgBase, border: `1px solid ${theme.cardBorder}` }}>
               <button
                 onClick={() => setMode('signup')}
-                className={`relative z-10 rounded-full px-5 py-2 text-xs font-bold tracking-wide transition-all duration-200 ${
-                  isSignUp
-                    ? 'bg-[#4fffb0] text-[#0b0e14] shadow-[0_0_16px_rgba(79,255,176,0.25)]'
-                    : 'text-[#7a849a] hover:text-white'
-                }`}
+                className="relative z-10 rounded-full px-5 py-2 text-xs font-bold tracking-wide transition-all duration-200"
+                style={isSignUp ? { background: theme.accentText, color: theme.bgBase } : { color: theme.muted }}
               >
                 Sign Up
               </button>
               <button
                 onClick={() => setMode('login')}
-                className={`relative z-10 rounded-full px-5 py-2 text-xs font-bold tracking-wide transition-all duration-200 ${
-                  !isSignUp
-                    ? 'bg-[#4fffb0] text-[#0b0e14] shadow-[0_0_16px_rgba(79,255,176,0.25)]'
-                    : 'text-[#7a849a] hover:text-white'
-                }`}
+                className="relative z-10 rounded-full px-5 py-2 text-xs font-bold tracking-wide transition-all duration-200"
+                style={!isSignUp ? { background: theme.accentText, color: theme.bgBase } : { color: theme.muted }}
               >
                 Log In
               </button>
             </div>
           </div>
 
-          {/* ── Dynamic heading ── */}
           <div className="text-center mb-7">
-            <h2 id="auth-modal-title" className="text-2xl font-bold text-white mb-1.5">
+            <h2 id="auth-modal-title" className="text-2xl font-bold mb-1.5" style={{ color: theme.heading, fontFamily: FONT_DISPLAY }}>
               {isSignUp ? 'Create your account' : 'Welcome back'}
             </h2>
-            <p className="text-sm text-[#7a849a]">
+            <p className="text-sm" style={{ color: theme.muted }}>
               {isSignUp
                 ? 'Create a free account to continue.'
                 : 'Log in to your account to continue.'}
@@ -220,7 +213,7 @@ export function SignInModal({ isOpen, onClose }: SignInModalProps) {
           <form onSubmit={handleManualAuth} className="space-y-4">
             {/* Email */}
             <div className="group relative">
-              <div className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[#4a5568] transition-colors group-focus-within:text-[#4fffb0]">
+              <div className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 transition-colors" style={{ color: theme.dim }}>
                 <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
                   <rect x="2" y="4" width="20" height="16" rx="3" />
                   <path strokeLinecap="round" d="m2 7 10 6 10-6" />
@@ -235,13 +228,14 @@ export function SignInModal({ isOpen, onClose }: SignInModalProps) {
                 autoFocus
                 autoComplete="email"
                 placeholder="you@email.com"
-                className="w-full rounded-xl border border-[#1e2535] bg-[#0b0e14] py-3 pl-10 pr-4 text-sm text-white placeholder-[#4a5568] outline-none transition-all focus:border-[#4fffb0] focus:ring-2 focus:ring-[#4fffb0]/10"
+                className="w-full rounded-xl py-3 pl-10 pr-4 text-sm outline-none transition-all"
+                style={{ border: `1px solid ${theme.inputBorder}`, background: theme.inputBg, color: theme.heading }}
               />
             </div>
 
             {/* Password */}
             <div className="group relative">
-              <div className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[#4a5568] transition-colors group-focus-within:text-[#4fffb0]">
+              <div className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 transition-colors" style={{ color: theme.dim }}>
                 <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
                   <rect x="3" y="11" width="18" height="11" rx="3" />
                   <path strokeLinecap="round" d="M7 11V7a5 5 0 0 1 10 0v4" />
@@ -256,12 +250,14 @@ export function SignInModal({ isOpen, onClose }: SignInModalProps) {
                 autoComplete={isSignUp ? 'new-password' : 'current-password'}
                 placeholder={isSignUp ? 'Create a password' : 'Your password'}
                 minLength={6}
-                className="w-full rounded-xl border border-[#1e2535] bg-[#0b0e14] py-3 pl-10 pr-10 text-sm text-white placeholder-[#4a5568] outline-none transition-all focus:border-[#4fffb0] focus:ring-2 focus:ring-[#4fffb0]/10"
+                className="w-full rounded-xl py-3 pl-10 pr-10 text-sm outline-none transition-all"
+                style={{ border: `1px solid ${theme.inputBorder}`, background: theme.inputBg, color: theme.heading }}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(s => !s)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#4a5568] hover:text-[#7a849a] transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
+                style={{ color: theme.dim }}
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
                 {showPassword ? (
@@ -281,7 +277,8 @@ export function SignInModal({ isOpen, onClose }: SignInModalProps) {
             <button
               type="submit"
               disabled={loading}
-              className="group relative w-full overflow-hidden rounded-xl bg-[#4fffb0] py-3 text-sm font-bold text-[#0b0e14] transition-all hover:bg-[#3de89e] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
+              className="group relative w-full overflow-hidden rounded-xl py-3 text-sm font-bold transition-all active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
+              style={{ background: theme.accentText, color: theme.bgBase }}
             >
               <span className="relative z-10 flex items-center justify-center gap-2">
                 {loading ? (
@@ -303,16 +300,17 @@ export function SignInModal({ isOpen, onClose }: SignInModalProps) {
 
           {/* ── Divider ── */}
           <div className="flex items-center gap-3 my-6">
-            <div className="flex-1 h-px bg-[#1e2535]" />
-            <span className="text-[#4a5568] text-[10px] font-mono uppercase tracking-[0.2em]">or</span>
-            <div className="flex-1 h-px bg-[#1e2535]" />
+            <div className="flex-1 h-px" style={{ background: theme.cardBorder }} />
+            <span className="text-[10px] font-mono uppercase tracking-[0.2em]" style={{ color: theme.dim }}>or</span>
+            <div className="flex-1 h-px" style={{ background: theme.cardBorder }} />
           </div>
 
           {/* ── Google OAuth ── */}
           <button
             onClick={handleGoogleAuth}
             disabled={loading}
-            className="group w-full flex items-center justify-center gap-3 rounded-xl border border-[#1e2535] bg-[#0b0e14] py-3 text-sm text-white transition-all hover:border-[#3a4255] hover:bg-[#111520] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+            className="group w-full flex items-center justify-center gap-3 rounded-xl border py-3 text-sm transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{ borderColor: theme.cardBorder, background: theme.bgBase, color: theme.heading }}
           >
             {/* Google logo */}
             <svg className="h-4 w-4 shrink-0" viewBox="0 0 48 48">
@@ -325,7 +323,7 @@ export function SignInModal({ isOpen, onClose }: SignInModalProps) {
           </button>
 
           {/* ── Footer note ── */}
-          <p className="mt-6 text-center text-[10px] text-[#4a5568] leading-relaxed">
+          <p className="mt-6 text-center text-[10px] leading-relaxed" style={{ color: theme.dim }}>
             By continuing, you agree to HailMary's Terms of Service.
           </p>
         </div>

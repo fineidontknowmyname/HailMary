@@ -3,6 +3,8 @@ import { User } from 'lucide-react'
 import { useAuth } from '../auth/useAuth'
 import { fetchProfile, upsertProfile } from '../lib/profile'
 import type { UserProfile } from '../types/profile'
+import { useAppTheme } from '../lib/ThemeProvider'
+import type { AppTheme } from '../lib/theme'
 
 const SOCIAL_DRAFT_KEY = 'socialLinksDraft'
 
@@ -32,10 +34,10 @@ function readDraftFromStorage(): SocialDraft {
   }
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({ title, children, theme }: { title: string; children: React.ReactNode; theme: AppTheme }) {
   return (
-    <div className="bg-[#111520] border border-[#1e2535] rounded-2xl p-6 space-y-4">
-      <h2 className="text-sm font-bold text-white font-mono tracking-wide border-b border-[#1e2535] pb-3">
+    <div className="rounded-2xl p-6 space-y-4 border" style={{ background: theme.cardBg, borderColor: theme.cardBorder }}>
+      <h2 className="text-sm font-bold font-mono tracking-wide border-b pb-3" style={{ color: theme.heading, borderColor: theme.cardBorder }}>
         {title}
       </h2>
       {children}
@@ -43,41 +45,42 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   )
 }
 
-function Field({ label, value, onChange, placeholder, type = 'text' }: {
+function Field({ label, value, onChange, placeholder, type = 'text', theme }: {
   label: string; value: string; onChange: (v: string) => void
-  placeholder?: string; type?: string
+  placeholder?: string; type?: string; theme: AppTheme
 }) {
   return (
     <div>
-      <label className="block text-xs font-mono text-[#7a849a] mb-2">{label}</label>
+      <label className="block text-xs font-mono mb-2" style={{ color: theme.muted }}>{label}</label>
       {type === 'textarea' ? (
         <textarea
           value={value} onChange={e => onChange(e.target.value)}
           placeholder={placeholder} rows={3}
-          className="w-full bg-[#0b0e14] border border-[#1e2535] rounded-xl px-4 py-3 text-sm text-white placeholder-[#7a849a] outline-none focus:border-[#4fffb0] transition-colors resize-none"
+          className="w-full rounded-xl px-4 py-3 text-sm outline-none transition-colors resize-none"
+          style={{ background: theme.inputBg, border: `1px solid ${theme.inputBorder}`, color: theme.heading }}
         />
       ) : (
         <input
           type={type} value={value} onChange={e => onChange(e.target.value)}
           placeholder={placeholder}
-          className="w-full bg-[#0b0e14] border border-[#1e2535] rounded-xl px-4 py-3 text-sm text-white placeholder-[#7a849a] outline-none focus:border-[#4fffb0] transition-colors"
+          className="w-full rounded-xl px-4 py-3 text-sm outline-none transition-colors"
+          style={{ background: theme.inputBg, border: `1px solid ${theme.inputBorder}`, color: theme.heading }}
         />
       )}
     </div>
   )
 }
 
-function SaveButton({ onClick, saving, saved }: {
-  onClick: () => void; saving: boolean; saved: boolean
+function SaveButton({ onClick, saving, saved, theme }: {
+  onClick: () => void; saving: boolean; saved: boolean; theme: AppTheme
 }) {
   return (
     <button
       onClick={onClick} disabled={saving}
-      className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all disabled:opacity-50 ${
-        saved
-          ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-          : 'bg-[#4fffb0] text-[#0b0e14] hover:bg-[#3de89e]'
-      }`}
+      className="px-6 py-2.5 rounded-xl text-sm font-bold transition-all disabled:opacity-50 border"
+      style={saved
+        ? { background: 'rgba(16,185,129,0.15)', color: '#34D399', borderColor: 'rgba(16,185,129,0.25)' }
+        : { background: theme.accentText, color: theme.bgBase, borderColor: theme.accentText }}
     >
       {saving ? 'Saving…' : saved ? '✓ Saved' : 'Save'}
     </button>
@@ -85,6 +88,7 @@ function SaveButton({ onClick, saving, saved }: {
 }
 
 export default function ProfilePage({ onBack }: { onBack: () => void }) {
+  const { theme } = useAppTheme()
   const { user, loading: authLoading } = useAuth()
   const [profile, setProfile] = useState<Partial<UserProfile>>({})
   const [loading, setLoading] = useState(true)
@@ -92,10 +96,8 @@ export default function ProfilePage({ onBack }: { onBack: () => void }) {
   const [saved,  setSaved]    = useState<Record<string, boolean>>({})
   const [error,  setError]    = useState<string | null>(null)
 
-  // Social Links draft — persisted in localStorage so mobile tab-switches don't wipe inputs
   const [socialDraft, setSocialDraft] = useState<SocialDraft>(readDraftFromStorage)
 
-  // Persist social draft to localStorage on every keystroke
   useEffect(() => {
     if (typeof window === 'undefined') return
     localStorage.setItem(SOCIAL_DRAFT_KEY, JSON.stringify(socialDraft))
@@ -109,7 +111,6 @@ export default function ProfilePage({ onBack }: { onBack: () => void }) {
     }
     fetchProfile().then(p => {
       if (p) {
-        // Seed draft from DB only when localStorage has no in-progress edits
         const storedRaw = typeof window !== 'undefined' ? localStorage.getItem(SOCIAL_DRAFT_KEY) : null
         if (!storedRaw) {
           setSocialDraft({
@@ -159,40 +160,40 @@ export default function ProfilePage({ onBack }: { onBack: () => void }) {
 
   if (loading || authLoading) {
     return (
-      <div className="min-h-screen bg-[#0b0e14] flex items-center justify-center">
-        <div className="text-[#7a849a] font-mono text-sm animate-pulse">Loading profile…</div>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: theme.bgBase }}>
+        <div className="font-mono text-sm animate-pulse" style={{ color: theme.muted }}>Loading profile…</div>
       </div>
     )
   }
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-[#0b0e14] text-white flex flex-col">
-        <div className="sticky top-0 z-40 bg-[#0b0e14]/80 backdrop-blur-md border-b border-[#1e2535]">
+      <div className="min-h-screen flex flex-col" style={{ background: theme.bgBase, color: theme.heading }}>
+        <div className="sticky top-0 z-40 backdrop-blur-md border-b" style={{ background: theme.headerBg, borderColor: theme.cardBorder }}>
           <div className="max-w-2xl mx-auto px-6 py-4 flex items-center gap-4">
-            <button onClick={onBack} className="text-[#7a849a] hover:text-white transition-colors text-sm font-mono">
+            <button onClick={onBack} className="transition-colors text-sm font-mono" style={{ color: theme.muted }}>
               ← Back
             </button>
             <div className="font-black text-lg">
-              Hail<span className="text-[#4fffb0]">Mary</span>
+              Hail<span style={{ color: theme.accentText }}>Mary</span>
             </div>
           </div>
         </div>
         <div className="flex-1 flex flex-col items-center justify-center min-h-[50vh] px-4 text-center max-w-lg mx-auto">
-          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[#1a1e28] mb-6 border border-gray-800">
-            <User className="h-10 w-10 text-gray-500" />
+          <div className="flex h-20 w-20 items-center justify-center rounded-full mb-6 border" style={{ background: theme.cardBg, borderColor: theme.cardBorder }}>
+            <User className="h-10 w-10" style={{ color: theme.dim }} />
           </div>
-          <h1 className="text-2xl font-bold text-white mb-4">No Active Session</h1>
-          <p className="text-gray-400 mb-1">
+          <h1 className="text-2xl font-bold mb-4" style={{ color: theme.heading }}>No Active Session</h1>
+          <p className="mb-1" style={{ color: theme.muted }}>
             To track your assessment scores, save resources, and build your profile, you need to initialize a session.
           </p>
-          <p className="text-green-400/80 text-sm mb-8">
+          <p className="text-sm mb-8" style={{ color: theme.accentText }}>
             (New here? Clicking Initialize will automatically create your account).
           </p>
-          {/* Note: I'm putting a placeholder button here, but ideally this triggers the AuthModal. Assuming there's a global trigger or they can just go back to header. I'll dispatch a custom event or let them click it if there's a global state. I'll just make it a button that says 'Initialize Session →'. */}
-          <button 
+          <button
             onClick={() => window.dispatchEvent(new Event('open-auth-modal'))}
-            className="rounded-xl bg-green-500 px-8 py-3 text-sm font-bold text-black transition-colors hover:bg-green-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-[#0b0e14]"
+            className="rounded-xl px-8 py-3 text-sm font-bold transition-colors"
+            style={{ background: theme.accentText, color: theme.bgBase }}
           >
             Initialize Session →
           </button>
@@ -202,18 +203,19 @@ export default function ProfilePage({ onBack }: { onBack: () => void }) {
   }
 
   return (
-    <div className="min-h-screen bg-[#0b0e14] text-white">
+    <div className="min-h-screen" style={{ background: theme.bgBase, color: theme.heading }}>
 
-      <div className="sticky top-0 z-40 bg-[#0b0e14]/80 backdrop-blur-md border-b border-[#1e2535]">
+      <div className="sticky top-0 z-40 backdrop-blur-md border-b" style={{ background: theme.headerBg, borderColor: theme.cardBorder }}>
         <div className="max-w-2xl mx-auto px-6 py-4 flex items-center gap-4">
           <button
             onClick={onBack}
-            className="text-[#7a849a] hover:text-white transition-colors text-sm font-mono"
+            className="transition-colors text-sm font-mono"
+            style={{ color: theme.muted }}
           >
             ← Back
           </button>
           <div className="font-black text-lg">
-            Hail<span className="text-[#4fffb0]">Mary</span>
+            Hail<span style={{ color: theme.accentText }}>Mary</span>
           </div>
         </div>
       </div>
@@ -222,22 +224,23 @@ export default function ProfilePage({ onBack }: { onBack: () => void }) {
 
         <div>
           <h1 className="text-xl font-bold">Edit Profile</h1>
-          <p className="text-[#7a849a] text-sm mt-1">{user?.email}</p>
+          <p className="text-sm mt-1" style={{ color: theme.muted }}>{user?.email}</p>
         </div>
 
         {error && (
-          <div className="flex items-center justify-between bg-red-500/10 border border-red-500/30 text-red-400 rounded-xl px-4 py-3 text-sm font-mono">
+          <div className="flex items-center justify-between rounded-xl px-4 py-3 text-sm font-mono bg-red-500/10 border border-red-500/30 text-red-400">
             <span>{error}</span>
-            <button onClick={() => setError(null)} className="ml-4 text-red-400 hover:text-red-300 font-bold">✕</button>
+            <button onClick={() => setError(null)} className="ml-4 hover:text-red-300 font-bold">✕</button>
           </div>
         )}
 
-        <Section title="Basic Information">
-          <Field label="Username"  value={profile.username ?? ''} onChange={set('username')}  placeholder="your-username" />
-          <Field label="Full Name" value={profile.name     ?? ''} onChange={set('name')}      placeholder="Your Name" />
-          <Field label="Location"  value={profile.location ?? ''} onChange={set('location')}  placeholder="City, Country" />
+        <Section title="Basic Information" theme={theme}>
+          <Field theme={theme} label="Username"  value={profile.username ?? ''} onChange={set('username')}  placeholder="your-username" />
+          <Field theme={theme} label="Full Name" value={profile.name     ?? ''} onChange={set('name')}      placeholder="Your Name" />
+          <Field theme={theme} label="Location"  value={profile.location ?? ''} onChange={set('location')}  placeholder="City, Country" />
           <div className="flex justify-end pt-2">
             <SaveButton
+              theme={theme}
               onClick={() => saveSection('basic', {
                 username: profile.username ?? null,
                 name:     profile.name     ?? null,
@@ -248,18 +251,20 @@ export default function ProfilePage({ onBack }: { onBack: () => void }) {
           </div>
         </Section>
 
-        <Section title="About You">
-          <Field label="Bio" value={profile.bio ?? ''} onChange={set('bio')} placeholder="A short bio about yourself…" type="textarea" />
+        <Section title="About You" theme={theme}>
+          <Field theme={theme} label="Bio" value={profile.bio ?? ''} onChange={set('bio')} placeholder="A short bio about yourself…" type="textarea" />
           <div className="flex justify-end pt-2">
             <SaveButton
+              theme={theme}
               onClick={() => saveSection('bio', { bio: profile.bio ?? null })}
               saving={saving['bio']} saved={saved['bio']}
             />
           </div>
         </Section>
 
-        <Section title="Social Links">
+        <Section title="Social Links" theme={theme}>
           <Field
+            theme={theme}
             label="GitHub"
             value={socialDraft.github_url}
             onChange={v => setSocialDraft(d => ({ ...d, github_url: v }))}
@@ -267,6 +272,7 @@ export default function ProfilePage({ onBack }: { onBack: () => void }) {
             type="url"
           />
           <Field
+            theme={theme}
             label="LinkedIn"
             value={socialDraft.linkedin_url}
             onChange={v => setSocialDraft(d => ({ ...d, linkedin_url: v }))}
@@ -274,6 +280,7 @@ export default function ProfilePage({ onBack }: { onBack: () => void }) {
             type="url"
           />
           <Field
+            theme={theme}
             label="X (Twitter)"
             value={socialDraft.twitter_url}
             onChange={v => setSocialDraft(d => ({ ...d, twitter_url: v }))}
@@ -281,6 +288,7 @@ export default function ProfilePage({ onBack }: { onBack: () => void }) {
             type="url"
           />
           <Field
+            theme={theme}
             label="Reddit"
             value={socialDraft.reddit_url}
             onChange={v => setSocialDraft(d => ({ ...d, reddit_url: v }))}
@@ -288,6 +296,7 @@ export default function ProfilePage({ onBack }: { onBack: () => void }) {
             type="url"
           />
           <Field
+            theme={theme}
             label="Personal Website"
             value={socialDraft.website_url}
             onChange={v => setSocialDraft(d => ({ ...d, website_url: v }))}
@@ -296,6 +305,7 @@ export default function ProfilePage({ onBack }: { onBack: () => void }) {
           />
           <div className="flex justify-end pt-2">
             <SaveButton
+              theme={theme}
               onClick={() => saveSection('social', {
                 github_url:   socialDraft.github_url   || null,
                 linkedin_url: socialDraft.linkedin_url || null,
@@ -308,14 +318,15 @@ export default function ProfilePage({ onBack }: { onBack: () => void }) {
           </div>
         </Section>
 
-        <Section title="Connected Platforms">
-          <p className="text-xs text-[#7a849a] font-mono">
+        <Section title="Connected Platforms" theme={theme}>
+          <p className="text-xs font-mono" style={{ color: theme.muted }}>
             Enter your usernames to sync progress across platforms (e.g., LeetCode, HackerRank). This will allow us to track your coding activity and display it on your profile.
           </p>
-          <Field label="LeetCode Username"   value={profile.leetcode_username   ?? ''} onChange={set('leetcode_username')}   placeholder="your-leetcode-username" />
-          <Field label="HackerRank Username" value={profile.hackerrank_username ?? ''} onChange={set('hackerrank_username')} placeholder="your-hackerrank-username" />
+          <Field theme={theme} label="LeetCode Username"   value={profile.leetcode_username   ?? ''} onChange={set('leetcode_username')}   placeholder="your-leetcode-username" />
+          <Field theme={theme} label="HackerRank Username" value={profile.hackerrank_username ?? ''} onChange={set('hackerrank_username')} placeholder="your-hackerrank-username" />
           <div className="flex justify-end pt-2">
             <SaveButton
+              theme={theme}
               onClick={() => saveSection('platforms', {
                 leetcode_username:   profile.leetcode_username   ?? null,
                 hackerrank_username: profile.hackerrank_username ?? null,
@@ -325,18 +336,17 @@ export default function ProfilePage({ onBack }: { onBack: () => void }) {
           </div>
         </Section>
 
-        <Section title="Learning Goals">
-          <label className="block text-xs font-mono text-[#7a849a] mb-3">Weekly goal (hours)</label>
+        <Section title="Learning Goals" theme={theme}>
+          <label className="block text-xs font-mono mb-3" style={{ color: theme.muted }}>Weekly goal (hours)</label>
           <div className="flex gap-3 flex-wrap">
             {[1, 2, 3, 5, 7, 10].map(h => (
               <button
                 key={h}
                 onClick={() => setProfile(p => ({ ...p, weekly_goal_hours: h }))}
-                className={`px-4 py-2 rounded-xl text-sm font-mono border transition-all ${
-                  profile.weekly_goal_hours === h
-                    ? 'bg-[#4fffb0] border-[#4fffb0] text-[#0b0e14] font-bold'
-                    : 'bg-[#0b0e14] border-[#1e2535] text-[#7a849a] hover:border-[#4fffb0]/50 hover:text-white'
-                }`}
+                className="px-4 py-2 rounded-xl text-sm font-mono border transition-all"
+                style={profile.weekly_goal_hours === h
+                  ? { background: theme.accentText, borderColor: theme.accentText, color: theme.bgBase, fontWeight: 700 }
+                  : { background: theme.inputBg, borderColor: theme.cardBorder, color: theme.muted }}
               >
                 {h}h
               </button>
@@ -344,6 +354,7 @@ export default function ProfilePage({ onBack }: { onBack: () => void }) {
           </div>
           <div className="flex justify-end pt-2">
             <SaveButton
+              theme={theme}
               onClick={() => saveSection('goals', { weekly_goal_hours: profile.weekly_goal_hours ?? 1 })}
               saving={saving['goals']} saved={saved['goals']}
             />

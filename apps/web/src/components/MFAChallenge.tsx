@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '../auth/useAuth';
+import { useAppTheme } from '../lib/ThemeProvider';
 
 interface Props {
   onSuccess: () => void;
@@ -9,6 +10,7 @@ interface Props {
 
 export function MFAChallenge({ onSuccess }: Props) {
   const { session } = useAuth();
+  const { theme } = useAppTheme();
   const [code, setCode] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -25,7 +27,6 @@ export function MFAChallenge({ onSuccess }: Props) {
     try {
       setLoading(true);
 
-      // Find the enrolled TOTP factor from the session
       const factors = session?.user?.factors || [];
       const totpFactor = factors.find(f => f.factor_type === 'totp' && f.status === 'verified');
 
@@ -33,7 +34,6 @@ export function MFAChallenge({ onSuccess }: Props) {
         throw new Error('No verified TOTP factor found for this user.');
       }
 
-      // Create a challenge
       const { data: challengeData, error: challengeError } = await supabase.auth.mfa.challenge({
         factorId: totpFactor.id,
       });
@@ -42,7 +42,6 @@ export function MFAChallenge({ onSuccess }: Props) {
         throw challengeError;
       }
 
-      // Verify the challenge with the entered code
       const { error: verifyError } = await supabase.auth.mfa.verify({
         factorId: totpFactor.id,
         challengeId: challengeData.id,
@@ -53,7 +52,6 @@ export function MFAChallenge({ onSuccess }: Props) {
         throw verifyError;
       }
 
-      // Success! Dismiss the modal.
       onSuccess();
     } catch (err: any) {
       console.error('MFA Error:', err);
@@ -65,11 +63,18 @@ export function MFAChallenge({ onSuccess }: Props) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md">
-      <div className="bg-zinc-900 border border-[#1e2535] rounded-2xl w-full max-w-sm mx-4 p-8 relative shadow-2xl">
+      <div
+        className="rounded-2xl w-full max-w-sm mx-4 p-8 relative border backdrop-blur-xl"
+        style={{ background: theme.bgPanel, borderColor: theme.cardBorder, boxShadow: theme.shadowPanel }}
+      >
         <div className="text-center mb-6">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#4fffb0]/10 mb-4">
+          <div
+            className="mx-auto flex h-12 w-12 items-center justify-center rounded-full mb-4"
+            style={{ background: theme.accentSoftBg }}
+          >
             <svg
-              className="h-6 w-6 text-[#4fffb0]"
+              className="h-6 w-6"
+              style={{ color: theme.accentText }}
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -83,8 +88,8 @@ export function MFAChallenge({ onSuccess }: Props) {
               />
             </svg>
           </div>
-          <h2 className="text-xl font-bold text-white mb-2">Two-Factor Authentication</h2>
-          <p className="text-[#7a849a] text-sm">
+          <h2 className="text-xl font-bold mb-2" style={{ color: theme.heading }}>Two-Factor Authentication</h2>
+          <p className="text-sm" style={{ color: theme.muted }}>
             Please enter the 6-digit code from your authenticator app to continue.
           </p>
         </div>
@@ -97,7 +102,8 @@ export function MFAChallenge({ onSuccess }: Props) {
               value={code}
               onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
               placeholder="000000"
-              className="w-full bg-[#0b0e14] border border-[#1e2535] rounded-xl px-4 py-4 text-center text-2xl tracking-[0.5em] font-mono text-white placeholder-[#7a849a]/30 outline-none focus:border-[#4fffb0] focus:ring-2 focus:ring-[#4fffb0]/10 transition-all"
+              className="w-full rounded-xl px-4 py-4 text-center text-2xl tracking-[0.5em] font-mono outline-none transition-all"
+              style={{ background: theme.inputBg, border: `1px solid ${theme.inputBorder}`, color: theme.heading }}
               autoFocus
             />
           </div>
@@ -111,7 +117,8 @@ export function MFAChallenge({ onSuccess }: Props) {
           <button
             type="submit"
             disabled={loading || code.length !== 6}
-            className="w-full flex items-center justify-center gap-2 bg-[#4fffb0] text-[#0b0e14] font-bold py-3 rounded-xl text-sm hover:bg-[#3de89e] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full flex items-center justify-center gap-2 font-bold py-3 rounded-xl text-sm transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{ background: theme.accentText, color: theme.bgBase }}
           >
             {loading ? (
               <>

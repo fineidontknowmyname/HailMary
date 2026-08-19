@@ -3,35 +3,31 @@ import { KeyRound, Eye, EyeOff, CheckCircle2, AlertCircle, Loader2 } from 'lucid
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../auth/useAuth'
 import { useNavigate } from 'react-router-dom'
-
-// ─── Password strength helpers ─────────────────────────────────────────────
+import { useAppTheme } from '../lib/ThemeProvider'
+import type { AppTheme } from '../lib/theme'
 
 interface StrengthResult {
   score: 0 | 1 | 2 | 3 | 4
   label: string
-  color: string        // Tailwind bg class
-  textColor: string    // Tailwind text class
 }
 
-function getStrength(pw: string): StrengthResult {
-  if (!pw) return { score: 0, label: '', color: 'bg-zinc-800', textColor: 'text-zinc-600' }
+function getStrength(pw: string, theme: AppTheme): StrengthResult & { color: string; textColor: string } {
+  if (!pw) return { score: 0, label: '', color: theme.cardBorder, textColor: theme.dim }
   let score = 0
   if (pw.length >= 8)  score++
   if (pw.length >= 12) score++
   if (/[A-Z]/.test(pw) && /[a-z]/.test(pw)) score++
   if (/[0-9]/.test(pw) && /[^A-Za-z0-9]/.test(pw)) score++
 
-  const map: Record<number, Omit<StrengthResult, 'score'>> = {
-    0: { label: '',         color: 'bg-zinc-800',    textColor: 'text-zinc-600' },
-    1: { label: 'Weak',     color: 'bg-red-500',     textColor: 'text-red-400' },
-    2: { label: 'Fair',     color: 'bg-amber-500',   textColor: 'text-amber-400' },
-    3: { label: 'Good',     color: 'bg-[#4fffb0]',   textColor: 'text-[#4fffb0]' },
-    4: { label: 'Strong',   color: 'bg-[#4fffb0]',   textColor: 'text-[#4fffb0]' },
+  const map: Record<number, { label: string; color: string; textColor: string }> = {
+    0: { label: '',       color: theme.cardBorder, textColor: theme.dim },
+    1: { label: 'Weak',   color: '#EF4444',         textColor: '#F87171' },
+    2: { label: 'Fair',   color: '#F59E0B',         textColor: '#FBBF24' },
+    3: { label: 'Good',   color: theme.accentText,  textColor: theme.accentText },
+    4: { label: 'Strong', color: theme.accentText,  textColor: theme.accentText },
   }
   return { score: score as StrengthResult['score'], ...map[score] }
 }
-
-// ─── PasswordInput sub-component ───────────────────────────────────────────
 
 interface PasswordInputProps {
   id: string
@@ -46,12 +42,13 @@ interface PasswordInputProps {
 function PasswordInput({
   id, label, value, onChange, placeholder = '••••••••', autoFocus = false, strengthBar = false,
 }: PasswordInputProps) {
+  const { theme } = useAppTheme();
   const [visible, setVisible] = useState(false)
-  const strength = getStrength(value)
+  const strength = getStrength(value, theme)
 
   return (
     <div className="space-y-2">
-      <label htmlFor={id} className="block text-xs font-mono text-[#7a849a]">{label}</label>
+      <label htmlFor={id} className="block text-xs font-mono" style={{ color: theme.muted }}>{label}</label>
 
       <div className="relative">
         <input
@@ -64,13 +61,15 @@ function PasswordInput({
           autoComplete={id === 'new-password' ? 'new-password' : 'off'}
           required
           minLength={6}
-          className="w-full bg-[#0b0e14] border border-[#1e2535] rounded-xl px-4 py-3 pr-11 text-sm text-white placeholder-[#3d4760] outline-none focus:border-[#4fffb0] focus:ring-2 focus:ring-[#4fffb0]/10 transition-all"
+          className="w-full rounded-xl px-4 py-3 pr-11 text-sm outline-none transition-colors"
+          style={{ background: theme.inputBg, border: `1px solid ${theme.inputBorder}`, color: theme.heading }}
         />
         <button
           type="button"
           aria-label={visible ? 'Hide password' : 'Show password'}
           onClick={() => setVisible(v => !v)}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-[#7a849a] hover:text-white transition-colors p-1"
+          className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors p-1"
+          style={{ color: theme.muted }}
         >
           {visible
             ? <EyeOff className="h-4 w-4" />
@@ -78,40 +77,33 @@ function PasswordInput({
         </button>
       </div>
 
-      {/* Strength bar — only shown on the primary password field */}
       {strengthBar && value.length > 0 && (
         <div className="space-y-1">
           <div className="flex gap-1">
             {([1, 2, 3, 4] as const).map(seg => (
               <div
                 key={seg}
-                className={`h-[3px] flex-1 rounded-full transition-all duration-300 ${
-                  strength.score >= seg ? strength.color : 'bg-zinc-800'
-                }`}
+                className="h-[3px] flex-1 rounded-full transition-all duration-300"
+                style={{ background: strength.score >= seg ? strength.color : theme.cardBorder }}
               />
             ))}
           </div>
-          <p className={`text-[10px] font-mono ${strength.textColor}`}>{strength.label}</p>
+          <p className="text-[10px] font-mono" style={{ color: strength.textColor }}>{strength.label}</p>
         </div>
       )}
     </div>
   )
 }
 
-// ─── Main component ────────────────────────────────────────────────────────
-
 type Phase = 'idle' | 'loading' | 'success' | 'error'
 
 interface UpdatePasswordModalProps {
-  /**
-   * Called after the user successfully updates their password.
-   * Typically: navigate to '/' or close the modal.
-   */
   onSuccess?: () => void
 }
 
 export default function UpdatePasswordModal({ onSuccess }: UpdatePasswordModalProps) {
   const { setPasswordRecoveryPending } = useAuth()
+  const { theme } = useAppTheme()
   const navigate = useNavigate()
 
   const [newPassword,     setNewPassword]     = useState('')
@@ -122,7 +114,6 @@ export default function UpdatePasswordModal({ onSuccess }: UpdatePasswordModalPr
   const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const [countdown, setCountdown] = useState(3)
 
-  // Validate match in real-time once the user has typed in the confirm field
   useEffect(() => {
     if (confirmPassword.length > 0) {
       setMatchError(newPassword !== confirmPassword)
@@ -131,7 +122,6 @@ export default function UpdatePasswordModal({ onSuccess }: UpdatePasswordModalPr
     }
   }, [newPassword, confirmPassword])
 
-  // Auto-redirect countdown after success
   useEffect(() => {
     if (phase === 'success') {
       setCountdown(3)
@@ -185,7 +175,6 @@ export default function UpdatePasswordModal({ onSuccess }: UpdatePasswordModalPr
     setPhase('success')
   }
 
-  // ── Success state ─────────────────────────────────────────────────────────
   if (phase === 'success') {
     return (
       <div
@@ -194,33 +183,36 @@ export default function UpdatePasswordModal({ onSuccess }: UpdatePasswordModalPr
         aria-modal="true"
         aria-label="Password updated"
       >
-        <div className="bg-[#111520] border border-[#1e2535] rounded-2xl w-full max-w-md mx-4 p-10 flex flex-col items-center gap-5 text-center animate-[fadeSlideUp_0.25s_ease]">
-          {/* Glow ring */}
-          <div className="relative flex items-center justify-center">
-            <div className="absolute inset-0 rounded-full bg-[#4fffb0]/20 blur-xl scale-150" />
-            <div
-              className="relative flex h-16 w-16 items-center justify-center rounded-full"
-              style={{ background: 'rgba(79,255,176,0.12)', border: '1px solid rgba(79,255,176,0.3)' }}
-            >
-              <CheckCircle2 className="h-8 w-8 text-[#4fffb0]" />
-            </div>
+        <div
+          className="rounded-2xl w-full max-w-md mx-4 p-10 flex flex-col items-center gap-5 text-center border backdrop-blur-xl animate-[fadeSlideUp_0.25s_ease]"
+          style={{ background: theme.bgPanel, borderColor: theme.cardBorder, boxShadow: theme.shadowPanel }}
+        >
+          <div
+            className="flex h-16 w-16 items-center justify-center rounded-full"
+            style={{ background: theme.accentSoftBg, border: `1px solid ${theme.accentBorder}` }}
+          >
+            <CheckCircle2 className="h-8 w-8" style={{ color: theme.accentText }} />
           </div>
 
           <div>
-            <h2 className="text-xl font-black text-white">Password Updated!</h2>
-            <p className="mt-2 text-sm font-mono text-[#7a849a]">
+            <h2 className="text-xl font-black" style={{ color: theme.heading }}>Password Updated!</h2>
+            <p className="mt-2 text-sm font-mono" style={{ color: theme.muted }}>
               Your password has been changed successfully.
             </p>
           </div>
 
-          <div className="inline-flex items-center gap-2 rounded-full border border-[#4fffb0]/20 bg-[#4fffb0]/5 px-4 py-1.5 text-xs font-mono text-[#4fffb0]">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#4fffb0] animate-pulse" />
+          <div
+            className="inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-xs font-mono"
+            style={{ borderColor: theme.accentBorder, background: theme.accentSoftBg, color: theme.accentText }}
+          >
+            <span className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ background: theme.accentText }} />
             Redirecting to dashboard in {countdown}s…
           </div>
 
           <button
             onClick={handleDone}
-            className="mt-1 text-xs font-mono text-[#7a849a] hover:text-white transition-colors underline underline-offset-2"
+            className="mt-1 text-xs font-mono transition-colors underline underline-offset-2"
+            style={{ color: theme.muted }}
           >
             Go now
           </button>
@@ -229,7 +221,6 @@ export default function UpdatePasswordModal({ onSuccess }: UpdatePasswordModalPr
     )
   }
 
-  // ── Form state ────────────────────────────────────────────────────────────
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
@@ -237,28 +228,25 @@ export default function UpdatePasswordModal({ onSuccess }: UpdatePasswordModalPr
       aria-modal="true"
       aria-labelledby="update-password-title"
     >
-      <div className="bg-[#111520] border border-[#1e2535] rounded-2xl w-full max-w-md mx-4 p-8 relative">
-
-        {/* Header */}
+      <div
+        className="rounded-2xl w-full max-w-md mx-4 p-8 relative border backdrop-blur-xl"
+        style={{ background: theme.bgPanel, borderColor: theme.cardBorder, boxShadow: theme.shadowPanel }}
+      >
         <div className="text-center mb-8">
           <div
             className="inline-flex h-12 w-12 items-center justify-center rounded-xl mb-4"
-            style={{
-              background: 'linear-gradient(135deg, rgba(79,255,176,0.15) 0%, rgba(79,255,176,0.04) 100%)',
-              border: '1px solid rgba(79,255,176,0.2)',
-            }}
+            style={{ background: theme.accentSoftBg, border: `1px solid ${theme.accentBorder}` }}
           >
-            <KeyRound className="h-5 w-5 text-[#4fffb0]" />
+            <KeyRound className="h-5 w-5" style={{ color: theme.accentText }} />
           </div>
-          <h2 id="update-password-title" className="text-xl font-black text-white">
+          <h2 id="update-password-title" className="text-xl font-black" style={{ color: theme.heading }}>
             Set New Password
           </h2>
-          <p className="mt-1.5 text-sm font-mono text-[#7a849a]">
+          <p className="mt-1.5 text-sm font-mono" style={{ color: theme.muted }}>
             Choose a strong password for your account.
           </p>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-5" noValidate>
 
           <PasswordInput
@@ -277,7 +265,6 @@ export default function UpdatePasswordModal({ onSuccess }: UpdatePasswordModalPr
             onChange={setConfirmPassword}
           />
 
-          {/* Match validation */}
           {matchError && (
             <div className="flex items-center gap-2 text-xs font-mono text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
               <AlertCircle className="h-3.5 w-3.5 shrink-0" />
@@ -285,7 +272,6 @@ export default function UpdatePasswordModal({ onSuccess }: UpdatePasswordModalPr
             </div>
           )}
 
-          {/* Supabase / server errors */}
           {(phase === 'error' || errorMsg) && errorMsg && (
             <div className="flex items-start gap-2 text-xs font-mono text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
               <AlertCircle className="h-3.5 w-3.5 shrink-0 mt-0.5" />
@@ -297,7 +283,8 @@ export default function UpdatePasswordModal({ onSuccess }: UpdatePasswordModalPr
             type="submit"
             id="update-password-submit"
             disabled={phase === 'loading' || matchError || newPassword.length < 6}
-            className="w-full flex items-center justify-center gap-2 bg-[#4fffb0] text-[#0b0e14] font-bold py-3 rounded-xl text-sm hover:bg-[#3de89e] active:scale-[0.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100"
+            className="w-full flex items-center justify-center gap-2 font-bold py-3 rounded-xl text-sm transition-all active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100"
+            style={{ background: theme.accentText, color: theme.bgBase }}
           >
             {phase === 'loading' ? (
               <>
@@ -310,8 +297,7 @@ export default function UpdatePasswordModal({ onSuccess }: UpdatePasswordModalPr
           </button>
         </form>
 
-        {/* Bail-out link */}
-        <p className="text-center text-xs text-[#3d4760] mt-6 font-mono">
+        <p className="text-center text-xs mt-6 font-mono" style={{ color: theme.dim }}>
           Changed your mind?{' '}
           <button
             type="button"
@@ -319,7 +305,8 @@ export default function UpdatePasswordModal({ onSuccess }: UpdatePasswordModalPr
               setPasswordRecoveryPending(false)
               navigate('/', { replace: true })
             }}
-            className="text-[#7a849a] hover:text-white transition-colors underline underline-offset-2"
+            className="transition-colors underline underline-offset-2"
+            style={{ color: theme.muted }}
           >
             Return to dashboard
           </button>

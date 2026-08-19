@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, type ReactNode } from 'react';
 import type { Intel } from '@hailmary/types';
 import { api } from '../lib/api';
+import { useAppTheme } from '../lib/ThemeProvider';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -49,6 +50,7 @@ function renderInlineMarkdown(text: string): ReactNode[] {
 }
 
 export default function AITutorPanel({ resource, user, onClose }: AITutorPanelProps) {
+  const { theme } = useAppTheme();
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
@@ -97,18 +99,22 @@ export default function AITutorPanel({ resource, user, onClose }: AITutorPanelPr
   };
 
   return (
-    <div className="fixed inset-y-0 right-0 w-96 bg-[#13161e] border-l border-gray-800 shadow-2xl z-50 flex flex-col transform transition-transform duration-300">
+    <div
+      className="fixed inset-y-0 right-0 w-96 border-l z-50 flex flex-col transform transition-transform duration-300 backdrop-blur-xl"
+      style={{ background: theme.bgPanel, borderColor: theme.cardBorder, boxShadow: theme.shadowPanel }}
+    >
 
-      <div className="flex items-center justify-between p-4 border-b border-gray-800 bg-[#1e2535]">
+      <div className="flex items-center justify-between p-4 border-b" style={{ borderColor: theme.cardBorder, background: theme.bgBase }}>
         <div>
-          <h3 className="font-bold text-white text-lg flex items-center gap-2">
+          <h3 className="font-bold text-lg flex items-center gap-2" style={{ color: theme.heading }}>
             <span className="text-xl">🤖</span> AI Tutor
           </h3>
-          <p className="text-xs text-green-500 truncate max-w-[250px]">{resource.title}</p>
+          <p className="text-xs truncate max-w-[250px]" style={{ color: theme.accentText }}>{resource.title}</p>
         </div>
         <button
           onClick={onClose}
-          className="text-gray-400 hover:text-white transition-colors"
+          className="transition-colors"
+          style={{ color: theme.muted }}
         >
           ✕
         </button>
@@ -121,11 +127,10 @@ export default function AITutorPanel({ resource, user, onClose }: AITutorPanelPr
             className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
           >
             <div
-              className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm ${
-                msg.role === 'user'
-                  ? 'bg-green-600 text-white rounded-tr-none'
-                  : 'bg-gray-800 text-gray-200 rounded-tl-none border border-gray-700'
-              }`}
+              className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm border ${msg.role === 'user' ? 'rounded-tr-none' : 'rounded-tl-none'}`}
+              style={msg.role === 'user'
+                ? { background: theme.accentText, color: theme.bgBase, borderColor: theme.accentText }
+                : { background: theme.cardBg, color: theme.body, borderColor: theme.cardBorder }}
             >
               {msg.content.split('\n').map((line, i) => (
                 <p key={i} className="mb-1 last:mb-0">{renderInlineMarkdown(line)}</p>
@@ -135,17 +140,20 @@ export default function AITutorPanel({ resource, user, onClose }: AITutorPanelPr
         ))}
         {loading && (
           <div className="flex justify-start">
-            <div className="bg-gray-800 text-gray-400 rounded-2xl rounded-tl-none px-4 py-3 text-sm border border-gray-700 flex items-center gap-2">
-              <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></div>
-              <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-              <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+            <div
+              className="rounded-2xl rounded-tl-none px-4 py-3 text-sm border flex items-center gap-2"
+              style={{ background: theme.cardBg, borderColor: theme.cardBorder, color: theme.muted }}
+            >
+              <div className="w-2 h-2 rounded-full animate-bounce" style={{ background: theme.dim }}></div>
+              <div className="w-2 h-2 rounded-full animate-bounce" style={{ background: theme.dim, animationDelay: '0.2s' }}></div>
+              <div className="w-2 h-2 rounded-full animate-bounce" style={{ background: theme.dim, animationDelay: '0.4s' }}></div>
             </div>
           </div>
         )}
         <div ref={messagesEndRef} />
       </div>
 
-      <form onSubmit={handleSendMessage} className="p-4 border-t border-gray-800 bg-[#1a1f2e]">
+      <form onSubmit={handleSendMessage} className="p-4 border-t" style={{ borderColor: theme.cardBorder, background: theme.bgBase }}>
         <div className="relative">
           <input
             type="text"
@@ -153,12 +161,14 @@ export default function AITutorPanel({ resource, user, onClose }: AITutorPanelPr
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ask your question..."
             disabled={loading}
-            className="w-full bg-gray-900 border border-gray-700 text-white rounded-xl pl-4 pr-12 py-3 text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all disabled:opacity-50"
+            className="w-full rounded-xl pl-4 pr-12 py-3 text-sm outline-none transition-all disabled:opacity-50"
+            style={{ background: theme.inputBg, border: `1px solid ${theme.inputBorder}`, color: theme.heading }}
           />
           <button
             type="submit"
             disabled={!input.trim() || loading}
-            className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-green-600 hover:bg-green-500 text-white rounded-lg transition-colors disabled:opacity-50 disabled:hover:bg-green-600"
+            className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-lg transition-colors disabled:opacity-50"
+            style={{ background: theme.accentText, color: theme.bgBase }}
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 transform rotate-90" viewBox="0 0 20 20" fill="currentColor">
               <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />

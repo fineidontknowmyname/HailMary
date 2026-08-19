@@ -4,6 +4,7 @@ import { backdropVariants, modalVariants, modalTransition } from '../lib/motion'
 import { api } from '../lib/api';
 import type { Intel } from '@hailmary/types';
 import AITutorPanel from './AITutorPanel';
+import { useAppTheme } from '../lib/ThemeProvider';
 
 interface SessionStartResponse {
   success: boolean;
@@ -24,6 +25,7 @@ interface SessionManagerProps {
 }
 
 export default function SessionManager({ resource, onClose, user }: SessionManagerProps) {
+  const { theme } = useAppTheme();
   const [step, setStep] = useState<'launch' | 'active' | 'reflect'>('launch');
   const [plannedMinutes, setPlannedMinutes] = useState(60);
   const [sessionId, setSessionId] = useState<string | null>(null);
@@ -86,17 +88,24 @@ export default function SessionManager({ resource, onClose, user }: SessionManag
         transition={{ duration: 0.18 }}
       >
         <motion.div
-          className="bg-[#13161e] border border-[#1e2535] rounded-2xl w-full max-w-md p-6 shadow-2xl relative text-center"
+          className="rounded-2xl w-full max-w-md p-6 relative text-center border backdrop-blur-xl"
+          style={{ background: theme.bgPanel, borderColor: theme.cardBorder, boxShadow: theme.shadowPanel }}
           variants={modalVariants}
           initial="initial"
           animate="animate"
           exit="exit"
           transition={modalTransition}
         >
-          <button onClick={onClose} className="absolute top-4 right-4 text-[#7a849a] hover:text-white transition-colors">✕</button>
-          <h2 className="text-xl font-bold text-white mb-4">Authentication Required</h2>
-          <p className="text-[#7a849a] text-sm mb-6">Please sign in to track study sessions.</p>
-          <button onClick={onClose} className="w-full bg-[#4fffb0] hover:bg-[#3de89e] text-[#0b0e14] font-bold py-3 rounded-xl transition-colors">Okay</button>
+          <button onClick={onClose} className="absolute top-4 right-4 transition-colors" style={{ color: theme.muted }}>✕</button>
+          <h2 className="text-xl font-bold mb-4" style={{ color: theme.heading }}>Authentication Required</h2>
+          <p className="text-sm mb-6" style={{ color: theme.muted }}>Please sign in to track study sessions.</p>
+          <button
+            onClick={onClose}
+            className="w-full font-bold py-3 rounded-xl transition-colors"
+            style={{ background: theme.accentText, color: theme.bgBase }}
+          >
+            Okay
+          </button>
         </motion.div>
       </motion.div>
     );
@@ -112,7 +121,8 @@ export default function SessionManager({ resource, onClose, user }: SessionManag
       transition={{ duration: 0.18 }}
     >
       <motion.div
-        className="bg-[#13161e] border border-[#1e2535] rounded-2xl w-full max-w-md p-6 shadow-2xl relative"
+        className="rounded-2xl w-full max-w-md p-6 relative border backdrop-blur-xl"
+        style={{ background: theme.bgPanel, borderColor: theme.cardBorder, boxShadow: theme.shadowPanel }}
         variants={modalVariants}
         initial="initial"
         animate="animate"
@@ -120,7 +130,7 @@ export default function SessionManager({ resource, onClose, user }: SessionManag
         transition={modalTransition}
       >
         {step !== 'active' && (
-          <button onClick={onClose} className="absolute top-4 right-4 text-[#7a849a] hover:text-white transition-colors">
+          <button onClick={onClose} className="absolute top-4 right-4 transition-colors" style={{ color: theme.muted }}>
             ✕
           </button>
         )}
@@ -135,9 +145,9 @@ export default function SessionManager({ resource, onClose, user }: SessionManag
           >
             {step === 'launch' && (
               <div className="text-center">
-                <h2 className="text-2xl font-bold text-white mb-2">Set your intent.</h2>
-                <p className="text-[#7a849a] text-sm mb-6">
-                  How long are you committing to <strong className="text-white">{resource.title}</strong> right now?
+                <h2 className="text-2xl font-bold mb-2" style={{ color: theme.heading }}>Set your intent.</h2>
+                <p className="text-sm mb-6" style={{ color: theme.muted }}>
+                  How long are you committing to <strong style={{ color: theme.heading }}>{resource.title}</strong> right now?
                 </p>
 
                 <div className="grid grid-cols-3 gap-3 mb-6">
@@ -145,11 +155,10 @@ export default function SessionManager({ resource, onClose, user }: SessionManag
                     <motion.button
                       key={mins}
                       onClick={() => setPlannedMinutes(mins)}
-                      className={`py-3 rounded-xl border font-bold transition-all ${
-                        plannedMinutes === mins
-                          ? 'bg-[#4fffb0]/10 border-[#4fffb0] text-[#4fffb0]'
-                          : 'bg-[#1e2535] border-[#2a3145] text-[#7a849a] hover:border-[#4a5568]'
-                      }`}
+                      className="py-3 rounded-xl border font-bold transition-all"
+                      style={plannedMinutes === mins
+                        ? { background: theme.accentSoftBg, borderColor: theme.accentText, color: theme.accentText }
+                        : { background: theme.cardBg, borderColor: theme.cardBorder, color: theme.muted }}
                       whileTap={{ scale: 0.96 }}
                     >
                       {mins / 60 >= 1 ? `${mins / 60} hr` : `${mins} min`}
@@ -160,7 +169,8 @@ export default function SessionManager({ resource, onClose, user }: SessionManag
                 <motion.button
                   onClick={handleStartSession}
                   disabled={loading}
-                  className="w-full bg-[#4fffb0] hover:bg-[#3de89e] text-[#0b0e14] font-bold py-3 rounded-xl transition-colors disabled:opacity-60"
+                  className="w-full font-bold py-3 rounded-xl transition-colors disabled:opacity-60"
+                  style={{ background: theme.accentText, color: theme.bgBase }}
                   whileTap={{ scale: 0.98 }}
                 >
                   {loading ? 'Launching...' : 'Launch Session'}
@@ -170,12 +180,16 @@ export default function SessionManager({ resource, onClose, user }: SessionManag
 
             {step === 'active' && (
               <div className="text-center py-4">
-                <div className="w-16 h-16 border-4 border-[#4fffb0] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-                <h2 className="text-xl font-bold text-white mb-2">Session in Progress</h2>
-                <p className="text-[#7a849a] text-sm mb-6">You are currently studying {resource.title}.</p>
+                <div
+                  className="w-16 h-16 border-4 border-t-transparent rounded-full animate-spin mx-auto mb-4"
+                  style={{ borderColor: theme.accentText, borderTopColor: 'transparent' }}
+                />
+                <h2 className="text-xl font-bold mb-2" style={{ color: theme.heading }}>Session in Progress</h2>
+                <p className="text-sm mb-6" style={{ color: theme.muted }}>You are currently studying {resource.title}.</p>
                 <button
                   onClick={() => setStep('reflect')}
-                  className="w-full bg-[#1e2535] hover:bg-[#2a3145] text-white font-bold py-3 rounded-xl border border-[#2a3145] transition-colors"
+                  className="w-full font-bold py-3 rounded-xl border transition-colors"
+                  style={{ background: theme.cardBg, borderColor: theme.cardBorder, color: theme.heading }}
                 >
                   I'm back. End Session.
                 </button>
@@ -184,33 +198,35 @@ export default function SessionManager({ resource, onClose, user }: SessionManag
 
             {step === 'reflect' && (
               <div className="text-center">
-                <h2 className="text-2xl font-bold text-white mb-2">Welcome back.</h2>
-                <p className="text-[#7a849a] text-sm mb-6">How did that session go?</p>
+                <h2 className="text-2xl font-bold mb-2" style={{ color: theme.heading }}>Welcome back.</h2>
+                <p className="text-sm mb-6" style={{ color: theme.muted }}>How did that session go?</p>
 
                 <div className="flex flex-col gap-3">
                   <motion.button
                     onClick={() => handleEndSession('great')}
-                    className="p-4 bg-[#111520] border border-[#1e2535] hover:border-[#4fffb0]/40 rounded-xl text-left flex items-center gap-3 transition-colors"
-                    whileHover={{ x: 4 }}
+                    className="p-4 rounded-xl text-left flex items-center gap-3 transition-colors border"
+                    style={{ background: theme.cardBg, borderColor: theme.cardBorder }}
+                    whileHover={{ x: 4, borderColor: theme.accentBorderStrong }}
                     whileTap={{ scale: 0.98 }}
                   >
                     <span className="text-2xl">🧠</span>
                     <div>
-                      <div className="font-bold text-white">Learned a lot</div>
-                      <div className="text-xs text-[#7a849a]">Making solid progress.</div>
+                      <div className="font-bold" style={{ color: theme.heading }}>Learned a lot</div>
+                      <div className="text-xs" style={{ color: theme.muted }}>Making solid progress.</div>
                     </div>
                   </motion.button>
 
                   <motion.button
                     onClick={() => handleEndSession('stuck')}
-                    className="p-4 bg-[#111520] border border-[#1e2535] hover:border-red-500/40 rounded-xl text-left flex items-center gap-3 transition-colors"
-                    whileHover={{ x: 4 }}
+                    className="p-4 rounded-xl text-left flex items-center gap-3 transition-colors border"
+                    style={{ background: theme.cardBg, borderColor: theme.cardBorder }}
+                    whileHover={{ x: 4, borderColor: 'rgba(239,68,68,0.4)' }}
                     whileTap={{ scale: 0.98 }}
                   >
                     <span className="text-2xl">🧱</span>
                     <div>
-                      <div className="font-bold text-white">I got stuck</div>
-                      <div className="text-xs text-[#7a849a]">Hit a wall. I need help.</div>
+                      <div className="font-bold" style={{ color: theme.heading }}>I got stuck</div>
+                      <div className="text-xs" style={{ color: theme.muted }}>Hit a wall. I need help.</div>
                     </div>
                   </motion.button>
                 </div>

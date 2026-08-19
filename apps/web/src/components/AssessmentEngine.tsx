@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import './AssessmentEngine.css';
 import { useAssessmentStore } from '../store/useAssessmentStore';
 import type { GradedAnswer, SectionBreakdown } from '../store/useAssessmentStore';
+import { useAppTheme } from '../lib/ThemeProvider';
 
 function formatTime(seconds: number): string {
   const m = Math.floor(seconds / 60).toString().padStart(2, '0');
@@ -356,9 +357,10 @@ function ResultScreen() {
 
 export function AssessmentEngine({ variant }: AssessmentEngineProps) {
   const status = useAssessmentStore((s) => s.status);
+  const { mode } = useAppTheme();
 
   return (
-    <div className="assessment-engine">
+    <div className="assessment-engine" data-theme={mode}>
       {status === 'idle' && <StartScreen variant={variant} />}
       {status === 'in-progress' && <QuizInterface />}
       {status === 'completed' && <ResultScreen />}

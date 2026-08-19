@@ -4,8 +4,10 @@ import { useAuth } from '../auth/useAuth';
 import { supabase } from '../lib/supabase';
 import type { UserProfile } from '../types/profile';
 import { InViewFade } from '../components/ui/InViewFade';
+import { useAppTheme } from '../lib/ThemeProvider';
 
 export default function PortfolioPage() {
+  const { theme } = useAppTheme();
   const { user, isLoggedIn } = useAuth();
   const [profile, setProfile] = useState<Partial<UserProfile> | null>(null);
   const [loading, setLoading] = useState(true);
@@ -63,14 +65,15 @@ export default function PortfolioPage() {
 
   if (!isLoggedIn) {
     return (
-      <div className="min-h-screen bg-[#13161e] flex flex-col items-center justify-center text-center px-4">
-        <h1 className="text-2xl font-bold text-white mb-3">Portfolio Control Center</h1>
-        <p className="text-sm font-mono text-[#7a849a] mb-6 max-w-sm">
+      <div className="min-h-screen flex flex-col items-center justify-center text-center px-4" style={{ background: theme.bgBase }}>
+        <h1 className="text-2xl font-bold mb-3" style={{ color: theme.heading }}>Portfolio Control Center</h1>
+        <p className="text-sm font-mono mb-6 max-w-sm" style={{ color: theme.muted }}>
           Sign in to view your live portfolio link.
         </p>
         <button
           onClick={() => window.dispatchEvent(new Event('open-auth-modal'))}
-          className="px-6 py-3 rounded-lg text-sm font-bold bg-[#4fffb0] text-[#0b0e14]"
+          className="px-6 py-3 rounded-lg text-sm font-bold transition-colors"
+          style={{ background: theme.accentText, color: theme.bgBase }}
         >
           Initialize Session
         </button>
@@ -80,16 +83,16 @@ export default function PortfolioPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#13161e] flex flex-col items-center justify-center gap-4">
-        <Loader2 className="h-8 w-8 animate-spin text-[#4fffb0]" />
-        <p className="text-sm font-mono text-[#7a849a]">Loading portfolio link...</p>
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4" style={{ background: theme.bgBase }}>
+        <Loader2 className="h-8 w-8 animate-spin" style={{ color: theme.accentText }} />
+        <p className="text-sm font-mono" style={{ color: theme.muted }}>Loading portfolio link...</p>
       </div>
     );
   }
 
   if (error || !shareableLink) {
     return (
-      <div className="min-h-screen bg-[#13161e] flex flex-col items-center justify-center gap-3 text-center px-4">
+      <div className="min-h-screen flex flex-col items-center justify-center gap-3 text-center px-4" style={{ background: theme.bgBase }}>
         <AlertCircle className="h-10 w-10 text-red-400" />
         <p className="text-sm font-mono text-red-400 max-w-md">
           {error || 'Add a username in your profile to publish your portfolio.'}
@@ -99,19 +102,20 @@ export default function PortfolioPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0d0f14] p-8 text-slate-200">
+    <div className="min-h-screen p-8" style={{ color: theme.heading }}>
       <div className="max-w-3xl">
-        <h1 className="text-3xl font-bold text-white mb-2">Portfolio Control Center</h1>
-        <p className="text-slate-400 mb-8">Live-synced with your Global Profile, Resume, and Project Incubator data.</p>
+        <h1 className="text-3xl font-bold mb-2" style={{ color: theme.heading }}>Portfolio Control Center</h1>
+        <p className="mb-8" style={{ color: theme.muted }}>Live-synced with your Global Profile, Resume, and Project Incubator data.</p>
 
-        <div className="bg-[#13161e] border border-[#252b3b] p-6 rounded-xl space-y-6">
+        <div className="rounded-xl p-6 space-y-6 border" style={{ background: theme.cardBg, borderColor: theme.cardBorder }}>
           <div>
-            <h3 className="text-emerald-400 font-semibold mb-2">Your Public Link</h3>
-            <div className="flex flex-col gap-3 bg-black/30 p-3 rounded-lg border border-slate-800 sm:flex-row sm:items-center">
-              <code className="text-slate-300 flex-1 break-all text-sm">{shareableLink}</code>
+            <h3 className="font-semibold mb-2" style={{ color: theme.accentText }}>Your Public Link</h3>
+            <div className="flex flex-col gap-3 p-3 rounded-lg border sm:flex-row sm:items-center" style={{ background: theme.inputBg, borderColor: theme.cardBorder }}>
+              <code className="flex-1 break-all text-sm" style={{ color: theme.body }}>{shareableLink}</code>
               <button
                 onClick={copyShareableLink}
-                className="inline-flex items-center justify-center gap-2 text-sm px-3 py-2 bg-slate-800 hover:bg-slate-700 rounded text-white transition-colors"
+                className="inline-flex items-center justify-center gap-2 text-sm px-3 py-2 rounded transition-colors"
+                style={{ background: theme.cardBg, color: theme.heading, border: `1px solid ${theme.cardBorder}` }}
               >
                 <Copy className="h-4 w-4" />
                 {copied ? 'Copied' : 'Copy'}
@@ -119,46 +123,46 @@ export default function PortfolioPage() {
             </div>
           </div>
 
-          <div className="pt-6 border-t border-slate-800">
-            <h3 className="text-sm font-semibold text-white mb-4">Data Sources</h3>
+          <div className="pt-6 border-t" style={{ borderColor: theme.cardBorder }}>
+            <h3 className="text-sm font-semibold mb-4" style={{ color: theme.heading }}>Data Sources</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <InViewFade delay={0}>
-                <div className="bg-[#0d1117] border border-slate-800 p-4 rounded-xl flex items-start gap-3">
-                  <div className="p-2 bg-emerald-500/10 rounded-lg shrink-0">
-                    <User className="h-5 w-5 text-emerald-400" />
+                <div className="border p-4 rounded-xl flex items-start gap-3" style={{ background: theme.bgBase, borderColor: theme.cardBorder }}>
+                  <div className="p-2 rounded-lg shrink-0" style={{ background: theme.accentSoftBg }}>
+                    <User className="h-5 w-5" style={{ color: theme.accentText }} />
                   </div>
                   <div>
-                    <div className="text-sm font-medium text-white">Global Profile</div>
-                    <div className="text-xs font-mono text-emerald-400 mt-1 flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                    <div className="text-sm font-medium" style={{ color: theme.heading }}>Global Profile</div>
+                    <div className="text-xs font-mono mt-1 flex items-center gap-1" style={{ color: theme.accentText }}>
+                      <span className="w-1.5 h-1.5 rounded-full" style={{ background: theme.accentText }}></span>
                       Synced
                     </div>
                   </div>
                 </div>
               </InViewFade>
               <InViewFade delay={0.1}>
-                <div className="bg-[#0d1117] border border-slate-800 p-4 rounded-xl flex items-start gap-3">
-                  <div className="p-2 bg-emerald-500/10 rounded-lg shrink-0">
-                    <Briefcase className="h-5 w-5 text-emerald-400" />
+                <div className="border p-4 rounded-xl flex items-start gap-3" style={{ background: theme.bgBase, borderColor: theme.cardBorder }}>
+                  <div className="p-2 rounded-lg shrink-0" style={{ background: theme.accentSoftBg }}>
+                    <Briefcase className="h-5 w-5" style={{ color: theme.accentText }} />
                   </div>
                   <div>
-                    <div className="text-sm font-medium text-white">Experience & Education</div>
-                    <div className="text-xs font-mono text-emerald-400 mt-1 flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                    <div className="text-sm font-medium" style={{ color: theme.heading }}>Experience & Education</div>
+                    <div className="text-xs font-mono mt-1 flex items-center gap-1" style={{ color: theme.accentText }}>
+                      <span className="w-1.5 h-1.5 rounded-full" style={{ background: theme.accentText }}></span>
                       Synced
                     </div>
                   </div>
                 </div>
               </InViewFade>
               <InViewFade delay={0.2}>
-                <div className="bg-[#0d1117] border border-slate-800 p-4 rounded-xl flex items-start gap-3">
-                  <div className="p-2 bg-emerald-500/10 rounded-lg shrink-0">
-                    <Folder className="h-5 w-5 text-emerald-400" />
+                <div className="border p-4 rounded-xl flex items-start gap-3" style={{ background: theme.bgBase, borderColor: theme.cardBorder }}>
+                  <div className="p-2 rounded-lg shrink-0" style={{ background: theme.accentSoftBg }}>
+                    <Folder className="h-5 w-5" style={{ color: theme.accentText }} />
                   </div>
                   <div>
-                    <div className="text-sm font-medium text-white">Project Incubator</div>
-                    <div className="text-xs font-mono text-emerald-400 mt-1 flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                    <div className="text-sm font-medium" style={{ color: theme.heading }}>Project Incubator</div>
+                    <div className="text-xs font-mono mt-1 flex items-center gap-1" style={{ color: theme.accentText }}>
+                      <span className="w-1.5 h-1.5 rounded-full" style={{ background: theme.accentText }}></span>
                       Synced
                     </div>
                   </div>
@@ -167,12 +171,13 @@ export default function PortfolioPage() {
             </div>
           </div>
 
-          <div className="pt-6 border-t border-slate-800 flex justify-end">
+          <div className="pt-6 border-t flex justify-end" style={{ borderColor: theme.cardBorder }}>
             <a
               href={shareableLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg transition-all"
+              className="inline-flex items-center gap-2 px-6 py-3 font-bold rounded-lg transition-all"
+              style={{ background: theme.accentText, color: theme.bgBase }}
             >
               Preview Live Portfolio
               <ExternalLink className="h-4 w-4" />

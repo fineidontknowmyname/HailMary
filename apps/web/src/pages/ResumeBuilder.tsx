@@ -10,6 +10,7 @@ import type { HailMaryEducation, HailMaryExperience } from '../types/resume';
 import { ResumeRenderer } from '../components/pdf-engine/ResumeRenderer';
 import type { HailMaryResumeData } from '../components/pdf-engine/types';
 import { ResumeControlPanel } from '../components/ResumeControlPanel';
+import { useAppTheme } from '../lib/ThemeProvider';
 
 type ProfileRow = Partial<UserProfile> & {
   full_name?: string | null;
@@ -86,6 +87,7 @@ function mapToResumeData(
 }
 
 export default function ResumeBuilder() {
+  const { theme } = useAppTheme();
   const { user, isLoggedIn, loading: authLoading } = useAuth();
 
   const [isLoading, setIsLoading] = useState(true);
@@ -152,14 +154,15 @@ export default function ResumeBuilder() {
 
   if (!isLoggedIn) {
     return (
-      <div className="min-h-screen bg-[#13161e] flex flex-col items-center justify-center text-center px-4">
-        <h1 className="text-2xl font-bold text-white mb-3">Resume Builder</h1>
-        <p className="text-sm font-mono text-[#7a849a] mb-6 max-w-sm">
+      <div className="min-h-screen flex flex-col items-center justify-center text-center px-4" style={{ background: theme.bgBase }}>
+        <h1 className="text-2xl font-bold mb-3" style={{ color: theme.heading }}>Resume Builder</h1>
+        <p className="text-sm font-mono mb-6 max-w-sm" style={{ color: theme.muted }}>
           Sign in to access the Anti-Slop Resume Engine.
         </p>
         <button
           onClick={() => window.dispatchEvent(new Event('open-auth-modal'))}
-          className="px-6 py-3 rounded-xl text-sm font-bold bg-[#4fffb0] text-[#0b0e14]"
+          className="px-6 py-3 rounded-xl text-sm font-bold transition-colors"
+          style={{ background: theme.accentText, color: theme.bgBase }}
         >
           Initialize Session →
         </button>
@@ -169,10 +172,10 @@ export default function ResumeBuilder() {
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-[#13161e] gap-3 text-center">
+      <div className="flex flex-col items-center justify-center min-h-screen gap-3 text-center" style={{ background: theme.bgBase }}>
         <AlertCircle className="h-8 w-8 text-red-400" />
         <p className="text-sm font-mono text-red-400">{error}</p>
-        <button onClick={() => window.location.reload()} className="text-xs text-[#7a849a] underline">
+        <button onClick={() => window.location.reload()} className="text-xs underline" style={{ color: theme.muted }}>
           Retry
         </button>
       </div>
@@ -180,13 +183,12 @@ export default function ResumeBuilder() {
   }
 
   return (
-    <div className="h-screen w-full flex flex-col md:flex-row bg-[#13161e] overflow-hidden">
-      {/* ── Left: Control Panel ── */}
-      <div className="w-full md:w-1/2 lg:w-[45%] xl:w-[40%] h-full overflow-y-auto border-r border-[#1e222d]">
+    <div className="h-screen w-full flex flex-col md:flex-row overflow-hidden" style={{ background: theme.bgBase }}>
+      <div className="w-full md:w-1/2 lg:w-[45%] xl:w-[40%] h-full overflow-y-auto border-r" style={{ borderColor: theme.cardBorder }}>
         {isLoading ? (
           <div className="flex flex-col items-center justify-center h-full gap-3">
-            <div className="h-8 w-8 border-2 border-[#4fffb0] border-t-transparent rounded-full animate-spin" />
-            <p className="text-xs font-mono text-[#7a849a] animate-pulse">Loading profile data…</p>
+            <div className="h-8 w-8 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: theme.accentText, borderTopColor: 'transparent' }} />
+            <p className="text-xs font-mono animate-pulse" style={{ color: theme.muted }}>Loading profile data…</p>
           </div>
         ) : (
           <ResumeControlPanel
@@ -202,10 +204,9 @@ export default function ResumeBuilder() {
         )}
       </div>
 
-      {/* ── Right: Live PDF Preview ── */}
-      <div className="w-full md:w-1/2 lg:w-[55%] xl:w-[60%] h-full bg-[#0a0c10] flex flex-col relative">
+      <div className="w-full md:w-1/2 lg:w-[55%] xl:w-[60%] h-full flex flex-col relative" style={{ background: theme.mode === 'dark' ? '#0a0c10' : '#E5E9F0' }}>
         <div className="absolute top-4 right-6 z-10">
-          <div className="bg-[#1e222d]/80 backdrop-blur border border-[#2a3040] rounded-lg px-3 py-1.5 text-xs font-mono text-[#7a849a]">
+          <div className="backdrop-blur rounded-lg px-3 py-1.5 text-xs font-mono border" style={{ background: theme.headerBg, borderColor: theme.cardBorder, color: theme.muted }}>
             Live Preview
           </div>
         </div>
