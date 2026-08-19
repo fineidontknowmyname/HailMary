@@ -48,3 +48,25 @@ export const uploadResource = async (req: Request, res: Response): Promise<void>
     res.status(500).json({ error: error.message || 'Failed to upload resource' });
   }
 };
+
+export const contributeResource = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { title, link, type, description } = req.body;
+
+    if (!title || !link || !type || !description) {
+      res.status(400).json({ success: false, error: 'Title, link, type, and description are required.' });
+      return;
+    }
+
+    const { error } = await supabase.from('resources').insert([
+      { title, link, type, description, status: 'pending' }
+    ]);
+
+    if (error) throw error;
+
+    res.status(201).json({ success: true });
+  } catch (error: any) {
+    console.error('Contribute Resource Error:', error);
+    res.status(500).json({ success: false, error: error.message || 'Failed to submit resource' });
+  }
+};

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { AlertCircle, Copy, ExternalLink, Loader2, User, Briefcase, Folder } from 'lucide-react';
 import { useAuth } from '../auth/useAuth';
-import { supabase } from '../lib/supabase';
+import { fetchProfile } from '../lib/profile';
 import type { UserProfile } from '../types/profile';
 import { InViewFade } from '../components/ui/InViewFade';
 import { useAppTheme } from '../lib/ThemeProvider';
@@ -25,16 +25,7 @@ export default function PortfolioPage() {
       setError(null);
 
       try {
-        const { data, error: profileError } = await supabase
-          .from('user_profiles')
-          .select('username')
-          .eq('user_id', user!.id)
-          .single();
-
-        if (profileError && profileError.code !== 'PGRST116') {
-          throw new Error(profileError.message);
-        }
-
+        const data = await fetchProfile();
         setProfile(data || {});
       } catch (err: any) {
         setError(err.message || 'Failed to load portfolio profile');

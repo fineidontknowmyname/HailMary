@@ -11,6 +11,9 @@ import aiRoutes from './routes/ai.routes';
 import resourceRoutes from './routes/resource.routes';
 import sessionsRoutes from './routes/sessions.routes';
 import portfolioRoutes from './routes/portfolio.routes';
+import projectsRoutes from './routes/projects.routes';
+import educationRoutes from './routes/education.routes';
+import experienceRoutes from './routes/experience.routes';
 
 
 const app = express();
@@ -45,6 +48,9 @@ app.use('/api/ai', aiRoutes);
 app.use('/api/resources', resourceRoutes);
 app.use('/api/sessions', sessionsRoutes);
 app.use('/api/portfolio', portfolioRoutes);
+app.use('/api/projects', projectsRoutes);
+app.use('/api/education', educationRoutes);
+app.use('/api/experience', experienceRoutes);
 
 app.use(globalErrorHandler);
 

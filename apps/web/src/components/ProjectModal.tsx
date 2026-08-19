@@ -4,7 +4,7 @@ import {
   BookOpen, Zap, Trophy, Layers, ToggleLeft, ToggleRight,
 } from 'lucide-react';
 import { motion } from 'motion/react';
-import { supabase } from '../lib/supabase';
+import { api } from '../lib/api';
 import { useAuth } from '../auth/useAuth';
 import type { HailMaryProject, ProjectFormData, ProjectStatus } from '../types/project';
 import { EMPTY_FORM } from '../types/project';
@@ -248,31 +248,19 @@ export function ProjectModal({ project, onClose, onSaved }: ProjectModalProps) {
       technical_challenges: form.technical_challenges || null,
       metrics:              form.metrics              || null,
       github_url:           form.github_url           || null,
-      live_url:              form.live_url              || null,
-      user_id:              user.id,
+      live_url:             form.live_url             || null,
     };
 
-    if (isEdit && project) {
-      const { data, error: sbError } = await supabase
-        .from('hailmary_projects')
-        .update(payload)
-        .eq('id', project.id)
-        .select()
-        .single();
+    try {
+      const data = isEdit && project
+        ? await api.put<HailMaryProject>(`/api/projects/${project.id}`, payload)
+        : await api.post<HailMaryProject>('/api/projects', payload);
 
       setSaving(false);
-      if (sbError) { setError(sbError.message); return; }
-      onSaved(data as HailMaryProject);
-    } else {
-      const { data, error: sbError } = await supabase
-        .from('hailmary_projects')
-        .insert(payload)
-        .select()
-        .single();
-
+      onSaved(data);
+    } catch (err) {
       setSaving(false);
-      if (sbError) { setError(sbError.message); return; }
-      onSaved(data as HailMaryProject);
+      setError(err instanceof Error ? err.message : 'Failed to save project.');
     }
   }
 

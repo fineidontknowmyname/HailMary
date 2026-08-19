@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { AlertCircle } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { api } from '../lib/api';
 import { useAuth } from '../auth/useAuth';
 import { fetchProfile } from '../lib/profile';
 import type { UserProfile } from '../types/profile';
@@ -113,24 +113,17 @@ export default function ResumeBuilder() {
       setError(null);
 
       try {
-        const [profData, eduRes, expRes, projRes] = await Promise.all([
+        const [profData, liveEducation, liveExperience, liveProjects] = await Promise.all([
           fetchProfile(),
-          supabase.from('hailmary_education').select('*').eq('user_id', user!.id).order('start_year', { ascending: false }),
-          supabase.from('hailmary_experience').select('*').eq('user_id', user!.id).order('start_year', { ascending: false }),
-          supabase.from('hailmary_projects').select('*').eq('user_id', user!.id).order('created_at', { ascending: false }),
+          api.get<HailMaryEducation[]>('/api/education'),
+          api.get<HailMaryExperience[]>('/api/experience'),
+          api.get<HailMaryProject[]>('/api/projects'),
         ]);
-
-        if (eduRes.error) throw new Error(eduRes.error.message);
-        if (expRes.error) throw new Error(expRes.error.message);
-        if (projRes.error) throw new Error(projRes.error.message);
 
         // Debug: verify profile data reaches the component
         console.log('[ResumeBuilder] Fetched Profile:', profData);
 
         const liveProfile = profData || { user_id: user!.id };
-        const liveEducation = (eduRes.data || []) as HailMaryEducation[];
-        const liveExperience = (expRes.data || []) as HailMaryExperience[];
-        const liveProjects = (projRes.data || []) as HailMaryProject[];
 
         setProfile(liveProfile);
         setEducation(liveEducation);

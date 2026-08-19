@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { supabase } from '../lib/supabase';
+import { api } from '../lib/api';
 import { useAppTheme } from '../lib/ThemeProvider';
 
 export default function ContributeResource() {
@@ -20,17 +20,12 @@ export default function ContributeResource() {
     setMessage(null);
 
     try {
-      const { error } = await supabase.from('resources').insert([
-        {
-          title: formData.title,
-          link: formData.link,
-          type: formData.type,
-          description: formData.description,
-          status: 'pending'
-        }
-      ]);
-
-      if (error) throw error;
+      await api.post('/api/resources/contribute', {
+        title: formData.title,
+        link: formData.link,
+        type: formData.type,
+        description: formData.description,
+      });
 
       setMessage({ type: 'success', text: 'Resource submitted successfully! It will appear once approved.' });
       setFormData({ title: '', link: '', type: 'course', description: '' });

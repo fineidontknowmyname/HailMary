@@ -3,7 +3,7 @@ import {
   Plus, Search, FolderOpen, AlertCircle, Loader2, Pencil, Trash2,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { supabase } from '../lib/supabase';
+import { api } from '../lib/api';
 import { useAuth } from '../auth/useAuth';
 import type { HailMaryProject, ProjectStatus } from '../types/project';
 import { ProjectModal } from '../components/ProjectModal';
@@ -65,8 +65,13 @@ function ProjectCard({
   async function handleDelete() {
     if (!confirm(`Delete "${project.title}"? This cannot be undone.`)) return;
     setDeleting(true);
-    await supabase.from('hailmary_projects').delete().eq('id', project.id);
-    onDelete();
+    try {
+      await api.delete(`/api/projects/${project.id}`);
+      onDelete();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to delete project.');
+      setDeleting(false);
+    }
   }
 
   return (
@@ -255,15 +260,14 @@ export default function IncubatorPage() {
     async function fetchProjects() {
       setLoading(true);
       setFetchError(null);
-      const { data, error } = await supabase
-        .from('hailmary_projects')
-        .select('*')
-        .eq('user_id', user!.id)
-        .order('created_at', { ascending: false });
-
-      if (error) setFetchError(error.message);
-      else setProjects((data ?? []) as HailMaryProject[]);
-      setLoading(false);
+      try {
+        const data = await api.get<HailMaryProject[]>('/api/projects');
+        setProjects(data ?? []);
+      } catch (err) {
+        setFetchError(err instanceof Error ? err.message : 'Failed to load projects.');
+      } finally {
+        setLoading(false);
+      }
     }
     fetchProjects();
   }, [user, isLoggedIn]);

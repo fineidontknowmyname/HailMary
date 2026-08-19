@@ -3,7 +3,7 @@ import {
   ChevronDown, ChevronRight, Plus, Trash2,
   User, GraduationCap, Briefcase, FolderKanban, Sparkles, Loader2, RefreshCw
 } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { api } from '../lib/api';
 import { useAuth } from '../auth/useAuth';
 import { upsertProfile } from '../lib/profile';
 import type { UserProfile } from '../types/profile';
@@ -146,27 +146,17 @@ export function ResumeControlPanel({
     setEduError(null);
 
     try {
-      const { data, error } = await supabase
-        .from('hailmary_education')
-        .insert({
-          user_id: user.id,
-          institution: eduForm.institution,
-          degree: eduForm.degree,
-          cgpa: eduForm.cgpa || null,
-          start_year: eduForm.start_year || null,
-          end_year: eduForm.end_year || null,
-        })
-        .select()
-        .single();
+      const data = await api.post<HailMaryEducation>('/api/education', {
+        institution: eduForm.institution,
+        degree: eduForm.degree,
+        cgpa: eduForm.cgpa || null,
+        start_year: eduForm.start_year || null,
+        end_year: eduForm.end_year || null,
+      });
 
-      if (error) {
-        console.error('[ResumeControlPanel] Education save failed:', error.message);
-        setEduError(error.message);
-      } else if (data) {
-        setEducation([data as HailMaryEducation, ...education]);
-        setEduForm(null);
-        setEduError(null);
-      }
+      setEducation([data, ...education]);
+      setEduForm(null);
+      setEduError(null);
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Unexpected error saving education.';
       console.error('[ResumeControlPanel] Education save exception:', msg);
@@ -177,8 +167,12 @@ export function ResumeControlPanel({
   }
 
   async function deleteEdu(id: string) {
-    await supabase.from('hailmary_education').delete().eq('id', id);
-    setEducation(education.filter(e => e.id !== id));
+    try {
+      await api.delete(`/api/education/${id}`);
+      setEducation(education.filter(e => e.id !== id));
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to delete education entry.');
+    }
   }
 
   const [expForm, setExpForm] = useState<ExperienceFormData | null>(null);
@@ -196,27 +190,17 @@ export function ResumeControlPanel({
     setExpError(null);
 
     try {
-      const { data, error } = await supabase
-        .from('hailmary_experience')
-        .insert({
-          user_id: user.id,
-          company: expForm.company,
-          role: expForm.role,
-          raw_notes: expForm.raw_notes || null,
-          start_year: expForm.start_year || null,
-          end_year: expForm.end_year || null,
-        })
-        .select()
-        .single();
+      const data = await api.post<HailMaryExperience>('/api/experience', {
+        company: expForm.company,
+        role: expForm.role,
+        raw_notes: expForm.raw_notes || null,
+        start_year: expForm.start_year || null,
+        end_year: expForm.end_year || null,
+      });
 
-      if (error) {
-        console.error('[ResumeControlPanel] Experience save failed:', error.message);
-        setExpError(error.message);
-      } else if (data) {
-        setExperience([data as HailMaryExperience, ...experience]);
-        setExpForm(null);
-        setExpError(null);
-      }
+      setExperience([data, ...experience]);
+      setExpForm(null);
+      setExpError(null);
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Unexpected error saving experience.';
       console.error('[ResumeControlPanel] Experience save exception:', msg);
@@ -227,14 +211,24 @@ export function ResumeControlPanel({
   }
 
   async function deleteExp(id: string) {
-    await supabase.from('hailmary_experience').delete().eq('id', id);
-    setExperience(experience.filter(e => e.id !== id));
+    try {
+      await api.delete(`/api/experience/${id}`);
+      setExperience(experience.filter(e => e.id !== id));
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to delete experience entry.');
+    }
   }
 
   async function toggleProjectSync(id: string, currentVal: boolean) {
     const nextVal = !currentVal;
+    const previous = projects;
     setProjects(projects.map(p => p.id === id ? { ...p, sync_to_resume: nextVal } : p));
-    await supabase.from('hailmary_projects').update({ sync_to_resume: nextVal }).eq('id', id);
+    try {
+      await api.put(`/api/projects/${id}`, { sync_to_resume: nextVal });
+    } catch (err) {
+      setProjects(previous);
+      alert(err instanceof Error ? err.message : 'Failed to update project sync.');
+    }
   }
 
   return (
