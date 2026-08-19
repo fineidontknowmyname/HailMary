@@ -11,3 +11,8 @@ body {
   background: #0b0e14;
   font-family: 'Lato', sans-serif;
 }
+
+::placeholder {
+  color: var(--placeholder-color, #8A8F98);
+  opacity: 1;
+}

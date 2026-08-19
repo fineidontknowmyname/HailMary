@@ -186,9 +186,10 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
             {session?.user ? (
               <motion.button
                 onClick={() => window.dispatchEvent(new CustomEvent('open-profile'))}
-                className="text-xs font-mono px-4 py-2 rounded-full border transition-colors"
-                style={{ background: theme.cardBg, borderColor: theme.cardBorder, color: theme.heading }}
-                whileHover={{ boxShadow: accentHoverShadow(theme), borderColor: theme.accentBorderStrong }}
+                className="text-xs font-bold px-4 py-2 rounded-full transition-colors"
+                style={{ background: theme.accentText, color: theme.bgBase }}
+                whileHover={{ boxShadow: accentHoverShadow(theme) }}
+                whileTap={{ scale: 0.97 }}
                 transition={{ type: 'spring', stiffness: 400, damping: 28 }}
               >
                 Mission Control
@@ -196,9 +197,10 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
             ) : (
               <motion.button
                 onClick={() => setShowSignIn(true)}
-                className="text-xs font-bold px-4 py-2 rounded-full border transition-colors"
-                style={{ background: theme.bgBase, borderColor: theme.accentText, color: theme.accentText }}
+                className="text-xs font-bold px-4 py-2 rounded-full transition-colors"
+                style={{ background: theme.accentText, color: theme.bgBase }}
                 whileHover={{ boxShadow: accentHoverShadow(theme) }}
+                whileTap={{ scale: 0.97 }}
                 transition={{ type: 'spring', stiffness: 400, damping: 28 }}
               >
                 Sign In

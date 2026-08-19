@@ -24,10 +24,21 @@ export function FilterBar({
   const types = ['course', 'doc', 'video', 'practice', 'project', 'opensource'];
   const depths = ['surface', 'guided', 'deep', 'foundational'];
 
-  function pillStyle(active: boolean, accentColor: string, accentContrastColor: string) {
+  function pillStyle(active: boolean): React.CSSProperties {
     return active
-      ? { background: accentColor, color: accentContrastColor, fontWeight: 700 }
-      : { background: theme.cardBg, color: theme.muted, border: `1px solid ${theme.cardBorder}` };
+      ? {
+          background: theme.accentText,
+          color: theme.bgBase,
+          fontWeight: 700,
+          border: '1px solid transparent',
+          ['--chip-hover' as string]: theme.accentText,
+        }
+      : {
+          background: 'transparent',
+          color: theme.muted,
+          border: `1px solid ${theme.accentBorder}`,
+          ['--chip-hover' as string]: theme.accentSoftBg,
+        };
   }
 
   return (
@@ -52,8 +63,8 @@ export function FilterBar({
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => setSelectedType(null)}
-              className="px-3 py-1 text-xs font-mono rounded transition-colors"
-              style={pillStyle(!selectedType, theme.accentText, theme.bgBase)}
+              className="px-3 py-1 text-xs font-mono rounded transition-colors hover:bg-[var(--chip-hover)]"
+              style={pillStyle(!selectedType)}
             >
               ALL
             </button>
@@ -61,8 +72,8 @@ export function FilterBar({
               <button
                 key={type}
                 onClick={() => setSelectedType(type)}
-                className="px-3 py-1 text-xs font-mono rounded uppercase transition-colors"
-                style={pillStyle(selectedType === type, theme.accentText, theme.bgBase)}
+                className="px-3 py-1 text-xs font-mono rounded uppercase transition-colors hover:bg-[var(--chip-hover)]"
+                style={pillStyle(selectedType === type)}
               >
                 {type}
               </button>
@@ -75,8 +86,8 @@ export function FilterBar({
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => setSelectedDepth(null)}
-              className="px-3 py-1 text-xs font-mono rounded transition-colors"
-              style={pillStyle(!selectedDepth, theme.electricText, '#FFFFFF')}
+              className="px-3 py-1 text-xs font-mono rounded transition-colors hover:bg-[var(--chip-hover)]"
+              style={pillStyle(!selectedDepth)}
             >
               ALL
             </button>
@@ -84,8 +95,8 @@ export function FilterBar({
               <button
                 key={depth}
                 onClick={() => setSelectedDepth(depth)}
-                className="px-3 py-1 text-xs font-mono rounded uppercase transition-colors"
-                style={pillStyle(selectedDepth === depth, theme.electricText, '#FFFFFF')}
+                className="px-3 py-1 text-xs font-mono rounded uppercase transition-colors hover:bg-[var(--chip-hover)]"
+                style={pillStyle(selectedDepth === depth)}
               >
                 {depth}
               </button>

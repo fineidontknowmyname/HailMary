@@ -93,7 +93,7 @@ export function ChallengeModal({ intel, onClose, onSuccess }: ChallengeModalProp
       >
         <div className="flex items-center justify-between p-5 border-b" style={{ borderColor: theme.cardBorder, background: theme.bgBase }}>
           <div className="flex items-center gap-3">
-            <BrainCircuit className="w-5 h-5" style={{ color: theme.electricText }} />
+            <BrainCircuit className="w-5 h-5" style={{ color: theme.accentText }} />
             <div>
               <h3 className="font-bold tracking-tight" style={{ color: theme.heading }}>Feynman Checkpoint</h3>
               <p className="text-xs font-mono" style={{ color: theme.muted }}>Verify your understanding</p>
@@ -114,7 +114,7 @@ export function ChallengeModal({ intel, onClose, onSuccess }: ChallengeModalProp
             transition={{ duration: 0.18 }}
           >
           {step === 'loading_challenge' && (
-            <div className="flex flex-col items-center justify-center py-12" style={{ color: theme.electricText }}>
+            <div className="flex flex-col items-center justify-center py-12" style={{ color: theme.accentText }}>
               <Loader2 className="w-8 h-8 animate-spin mb-4" />
               <span className="font-mono text-sm animate-pulse">Analyzing material & generating challenge...</span>
             </div>
@@ -140,7 +140,7 @@ export function ChallengeModal({ intel, onClose, onSuccess }: ChallengeModalProp
                 type="submit"
                 disabled={!response.trim() || step === 'evaluating'}
                 className="flex items-center justify-center gap-2 w-full font-bold py-3 rounded-xl disabled:opacity-50 transition-colors"
-                style={{ background: theme.electricText, color: '#FFFFFF' }}
+                style={{ background: theme.accentText, color: theme.bgBase }}
               >
                 {step === 'evaluating' ? (
                   <><Loader2 className="w-5 h-5 animate-spin" /> Evaluating Response...</>

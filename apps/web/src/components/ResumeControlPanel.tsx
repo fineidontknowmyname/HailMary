@@ -373,7 +373,7 @@ export function ResumeControlPanel({
               <div className="text-xs line-clamp-2 mb-3" style={{ color: theme.muted }}>{proj.raw_notes}</div>
               <button
                 className="w-full py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all border"
-                style={{ background: theme.cardBg, borderColor: theme.cardBorder, color: theme.electricText }}
+                style={{ background: theme.cardBg, borderColor: theme.cardBorder, color: theme.accentText }}
               >
                 <Sparkles className="h-3.5 w-3.5" />
                 Polish with AI

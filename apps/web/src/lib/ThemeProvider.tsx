@@ -27,6 +27,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   const theme = mode === 'dark' ? DARK_THEME : LIGHT_THEME;
 
+  useEffect(() => {
+    document.documentElement.style.setProperty('--placeholder-color', theme.muted);
+  }, [theme]);
+
   return (
     <ThemeContext.Provider
       value={{ mode, theme, toggleMode: () => setMode((m) => (m === 'dark' ? 'light' : 'dark')) }}
