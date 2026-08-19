@@ -11,7 +11,7 @@ const PUBLIC_PROJECT_FIELDS =
 
 export const PortfolioController = {
   getPublicPortfolio: catchAsync(async (req: Request, res: Response) => {
-    const { username } = req.params;
+    const username = req.params.username.trim();
 
     const { data: profile, error: profileError } = await supabase
       .from('user_profiles')

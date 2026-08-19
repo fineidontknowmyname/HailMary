@@ -25,6 +25,9 @@ function pickUpdatableFields(body: Record<string, unknown>) {
   for (const field of UPDATABLE_PROFILE_FIELDS) {
     if (field in body) updates[field] = body[field];
   }
+  if (typeof updates.username === 'string') {
+    updates.username = updates.username.trim();
+  }
   return updates;
 }
 
