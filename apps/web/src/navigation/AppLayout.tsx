@@ -1,10 +1,13 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { Sun, Moon } from 'lucide-react';
 import { Sidebar } from './Sidebar';
 import { useAuth } from '../auth/useAuth';
 import { MFAChallenge } from '../components/MFAChallenge';
 import { SignInModal } from '../components/SignInModal';
 import { supabase } from '../lib/supabase';
+import { FONT_HEADING, NOISE_BG, DOT_GRID_BG, accentHoverShadow } from '../lib/theme';
+import { useAppTheme } from '../lib/ThemeProvider';
 
 interface AppLayoutProps {
   /** The page content rendered to the right of the sidebar. */
@@ -33,6 +36,7 @@ interface AppLayoutProps {
  */
 export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const { session } = useAuth();
+  const { theme, mode, toggleMode } = useAppTheme();
   const [needsMFA, setNeedsMFA] = useState(false);
   const [showSignIn, setShowSignIn] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -94,19 +98,38 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   }, [session]);
 
   return (
-    <div className="flex h-screen w-full bg-[#0d1117] text-white overflow-hidden">
-      {/* ── Global Sign-In Modal ──────────────────────────────────── */}
+    <div className="relative flex h-screen w-full overflow-hidden transition-colors duration-300" style={{ background: theme.bgBase, color: theme.heading }}>
+      {mode === 'dark' && (
+        <div className="pointer-events-none fixed inset-0 z-0">
+          <div
+            className="absolute -top-1/4 -left-1/4 h-[70vh] w-[70vh]"
+            style={{
+              background: `radial-gradient(circle, rgba(34,211,238,0.14) 0%, rgba(34,211,238,0.04) 40%, transparent 70%)`,
+              filter: 'blur(40px)',
+            }}
+          />
+          <div
+            className="absolute -top-1/4 -left-1/4 h-[70vh] w-[70vh]"
+            style={{
+              backgroundImage: DOT_GRID_BG,
+              backgroundSize: '28px 28px',
+              maskImage: 'radial-gradient(circle, black 0%, transparent 65%)',
+              WebkitMaskImage: 'radial-gradient(circle, black 0%, transparent 65%)',
+              opacity: 0.3,
+            }}
+          />
+          <div className="absolute inset-0" style={{ backgroundImage: NOISE_BG }} />
+        </div>
+      )}
+
       <SignInModal isOpen={showSignIn} onClose={() => setShowSignIn(false)} />
 
-      {/* ── MFA Overlay ─────────────────────────────────────────────── */}
       {needsMFA && (
         <MFAChallenge onSuccess={() => setNeedsMFA(false)} />
       )}
 
-      {/* ── Sidebar ─────────────────────────────────────────────────── */}
       <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
 
-      {/* ── Mobile overlay — animated with AnimatePresence ─────────── */}
       <AnimatePresence>
         {isSidebarOpen && (
           <motion.div
@@ -122,14 +145,15 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         )}
       </AnimatePresence>
 
-      {/* ── Main content area (Right Column) ────────────────────────── */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* Global Shell Header */}
-        <header className="h-16 px-6 border-b border-slate-800 flex items-center justify-between shrink-0">
-          {/* Left Side */}
+      <div className="relative z-10 flex-1 flex flex-col min-w-0 overflow-hidden">
+        <header
+          className="h-16 px-6 border-b flex items-center justify-between shrink-0 backdrop-blur-xl transition-colors duration-300"
+          style={{ borderColor: theme.cardBorder, background: theme.headerBg }}
+        >
           <div className="flex items-center gap-4">
             <button
-              className="cursor-pointer p-2 -ml-2 text-emerald-400 hover:text-emerald-300 transition-colors"
+              className="cursor-pointer p-2 -ml-2 transition-colors"
+              style={{ color: theme.accentText }}
               onClick={() => setIsSidebarOpen(true)}
               aria-label="Open navigation menu"
             >
@@ -137,46 +161,61 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </button>
-            <div className="font-black text-xl tracking-tight uppercase text-white">
-              Project <span className="text-[#4fffb0]">Hail Mary</span>
+            <div className="font-bold text-xl tracking-tight" style={{ fontFamily: FONT_HEADING, color: theme.heading }}>
+              Hail<span style={{ color: theme.accentText }}>Mary</span>
             </div>
           </div>
 
-          {/* Right Side */}
-          <div className="flex items-center gap-4">
-            <span className="text-xs font-mono text-[#7a849a] hidden sm:block">
+          <div className="flex items-center gap-3">
+            <span className="text-xs font-mono hidden sm:block" style={{ color: theme.muted }}>
               49 of 49 intel
             </span>
+
+            <motion.button
+              onClick={toggleMode}
+              aria-label={mode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+              className="flex h-9 w-9 items-center justify-center rounded-full border transition-colors"
+              style={{ borderColor: theme.cardBorder, color: theme.accentText, background: theme.cardBg }}
+              whileTap={{ scale: 0.9 }}
+              whileHover={{ scale: 1.06 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+            >
+              {mode === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            </motion.button>
+
             {session?.user ? (
-              <button
+              <motion.button
                 onClick={() => window.dispatchEvent(new CustomEvent('open-profile'))}
-                className="text-xs font-mono px-4 py-2 bg-[#1e2535] border border-[#2a3145] text-white rounded-xl hover:border-[#4fffb0]/50 transition-all"
+                className="text-xs font-mono px-4 py-2 rounded-full border transition-colors"
+                style={{ background: theme.cardBg, borderColor: theme.cardBorder, color: theme.heading }}
+                whileHover={{ boxShadow: accentHoverShadow(theme), borderColor: theme.accentBorderStrong }}
+                transition={{ type: 'spring', stiffness: 400, damping: 28 }}
               >
                 Mission Control
-              </button>
+              </motion.button>
             ) : (
-              <button
+              <motion.button
                 onClick={() => setShowSignIn(true)}
-                className="text-xs font-mono px-4 py-2 bg-[#4fffb0] text-[#0b0e14] font-bold rounded-xl hover:bg-[#3de89e] transition-colors"
+                className="text-xs font-bold px-4 py-2 rounded-full border transition-colors"
+                style={{ background: theme.bgBase, borderColor: theme.accentText, color: theme.accentText }}
+                whileHover={{ boxShadow: accentHoverShadow(theme) }}
+                transition={{ type: 'spring', stiffness: 400, damping: 28 }}
               >
                 Sign In
-              </button>
+              </motion.button>
             )}
           </div>
         </header>
 
-        {/* Page Content */}
         <main
           id="main-content"
           tabIndex={-1}
           className="flex-1 overflow-y-auto"
         >
-          {/* Inner wrapper — constrains max width and adds consistent padding */}
           <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-6 md:py-8">
-            {/* Block main children if MFA is required */}
             {needsMFA ? (
               <div className="flex h-full min-h-[50vh] flex-col items-center justify-center opacity-50">
-                <p className="text-sm font-mono text-[#7a849a]">
+                <p className="text-sm font-mono" style={{ color: theme.muted }}>
                   Awaiting Two-Factor Authentication...
                 </p>
               </div>

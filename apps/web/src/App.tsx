@@ -18,8 +18,11 @@ import { useAuth } from './auth/useAuth';
 import { useAuthStore } from './auth/authStore';
 import type { Intel } from '@hailmary/types';
 import { staggerContainer, staggerItem, fadeUp } from './lib/motion';
+import { FONT_HEADING, GLASS_CARD_CLASS, glassCardStyle, accentHoverShadow } from './lib/theme';
+import { useAppTheme } from './lib/ThemeProvider';
 
 export default function App() {
+  const { theme } = useAppTheme();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState<string | null>(null);
   const [selectedDepth, setSelectedDepth] = useState<string | null>(null);
@@ -57,13 +60,11 @@ export default function App() {
     });
   }, [intel, searchQuery, selectedType, selectedDepth]);
 
-
-
   if (!initialized) {
     return (
-      <div className="min-h-screen bg-[#0b0e14] flex items-center justify-center">
-        <div className="font-black text-2xl animate-pulse text-white">
-          Project <span className="text-[#4fffb0]">Hail Mary</span>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: theme.bgBase }}>
+        <div className="font-bold text-2xl animate-pulse" style={{ fontFamily: FONT_HEADING, color: theme.heading }}>
+          Hail<span style={{ color: theme.accentText }}>Mary</span>
         </div>
       </div>
     );
@@ -74,27 +75,29 @@ export default function App() {
   }
 
   return (
-    <div className="h-full bg-[#0b0e14] text-white selection:bg-[#4fffb0] selection:text-black">
+    <div className="h-full" style={{ color: theme.heading }}>
 
       <SignInModal isOpen={showSignIn} onClose={() => setShowSignIn(false)} />
 
-
-      <div className="max-w-3xl mx-auto px-6 pt-16 pb-10 text-center">
-        <div className="inline-flex items-center gap-2 bg-[#111520] border border-[#1e2535] rounded-full px-4 py-2 text-xs font-mono text-[#4fffb0] mb-8">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#4fffb0] animate-pulse" />
+      <div className={`max-w-3xl mx-auto px-6 sm:px-10 py-10 sm:py-12 text-center ${GLASS_CARD_CLASS}`} style={glassCardStyle(theme)}>
+        <div
+          className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-mono mb-8"
+          style={{ background: theme.accentSoftBg, border: `1px solid ${theme.cardBorder}`, color: theme.accentText }}
+        >
+          <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: theme.accentText }} />
           {isLoggedIn
             ? `Welcome back, ${user?.email?.split('@')[0]}`
             : '100% free · no sign-up required to browse'}
         </div>
 
-        <h1 className="text-4xl sm:text-5xl font-black tracking-tight leading-tight mb-4">
+        <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight leading-tight mb-4" style={{ fontFamily: FONT_HEADING }}>
           Every free dev resource.<br/>
-          <span className="text-[#4fffb0]">
+          <span style={{ background: `linear-gradient(90deg, ${theme.accentText}, ${theme.electricText})`, WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' }}>
             <TextReveal text="One place." delay={0.3} />
           </span>
         </h1>
 
-        <p className="text-[#7a849a] text-lg leading-relaxed mb-8 max-w-xl mx-auto">
+        <p className="text-lg leading-relaxed mb-8 max-w-xl mx-auto" style={{ color: theme.body }}>
           Courses, docs, YouTube tutorials, coding problems, and open source —
           curated for developers who want to learn deeply.
         </p>
@@ -105,58 +108,64 @@ export default function App() {
             placeholder="Search by topic, language, or concept…"
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            className="w-full bg-[#111520] border border-[#1e2535] rounded-full px-6 py-4 text-sm text-white placeholder-[#7a849a] outline-none focus:border-[#4fffb0] focus:ring-2 focus:ring-[#4fffb0]/10 transition-all font-mono"
+            className="w-full rounded-full px-6 py-4 text-sm outline-none transition-all font-mono"
+            style={{ background: theme.inputBg, border: `1px solid ${theme.inputBorder}`, color: theme.heading }}
+            onFocus={(e) => { e.currentTarget.style.boxShadow = accentHoverShadow(theme); e.currentTarget.style.borderColor = theme.accentBorderStrong; }}
+            onBlur={(e) => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = theme.inputBorder; }}
           />
-          <svg className="absolute right-5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#7a849a]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+          <svg className="absolute right-5 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: theme.muted }} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
             <circle cx="11" cy="11" r="8"/>
             <path strokeLinecap="round" d="m21 21-4.35-4.35"/>
           </svg>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 pb-6">
+      <div className="max-w-7xl mx-auto px-6 pt-8 pb-6">
         <motion.div
           className="flex gap-4 justify-center flex-wrap mb-8"
           variants={staggerContainer}
           initial="initial"
           animate="animate"
         >
-          {/* Numeric stats use AnimatedNumber for count-up; text stats render plain */}
           <motion.div
-            className="bg-[#111520] border border-[#1e2535] rounded-xl px-5 py-3 text-center"
+            className={`px-5 py-3 text-center ${GLASS_CARD_CLASS}`}
+            style={glassCardStyle(theme)}
             variants={staggerItem}
           >
-            <div className="text-xl font-black text-[#4fffb0]">
+            <div className="text-xl font-bold" style={{ color: theme.accentText, fontFamily: FONT_HEADING }}>
               <AnimatedNumber value={intel.length} suffix="+" />
             </div>
-            <div className="text-xs font-mono text-[#7a849a] uppercase tracking-wider">Intel Pieces</div>
+            <div className="text-xs font-mono uppercase tracking-wider" style={{ color: theme.muted }}>Intel Pieces</div>
           </motion.div>
 
           <motion.div
-            className="bg-[#111520] border border-[#1e2535] rounded-xl px-5 py-3 text-center"
+            className={`px-5 py-3 text-center ${GLASS_CARD_CLASS}`}
+            style={glassCardStyle(theme)}
             variants={staggerItem}
           >
-            <div className="text-xl font-black text-[#4fffb0]">100%</div>
-            <div className="text-xs font-mono text-[#7a849a] uppercase tracking-wider">Free</div>
+            <div className="text-xl font-bold" style={{ color: theme.accentText, fontFamily: FONT_HEADING }}>100%</div>
+            <div className="text-xs font-mono uppercase tracking-wider" style={{ color: theme.muted }}>Free</div>
           </motion.div>
 
           <motion.div
-            className="bg-[#111520] border border-[#1e2535] rounded-xl px-5 py-3 text-center"
+            className={`px-5 py-3 text-center ${GLASS_CARD_CLASS}`}
+            style={glassCardStyle(theme)}
             variants={staggerItem}
           >
-            <div className="text-xl font-black text-[#4fffb0]">ZPD</div>
-            <div className="text-xs font-mono text-[#7a849a] uppercase tracking-wider">Optimized</div>
+            <div className="text-xl font-bold" style={{ color: theme.accentText, fontFamily: FONT_HEADING }}>ZPD</div>
+            <div className="text-xs font-mono uppercase tracking-wider" style={{ color: theme.muted }}>Optimized</div>
           </motion.div>
 
           {isLoggedIn && (
             <motion.div
-              className="bg-[#111520] border border-[#1e2535] rounded-xl px-5 py-3 text-center"
+              className={`px-5 py-3 text-center ${GLASS_CARD_CLASS}`}
+              style={glassCardStyle(theme)}
               variants={staggerItem}
             >
-              <div className="text-xl font-black text-[#4fffb0]">
+              <div className="text-xl font-bold" style={{ color: theme.accentText, fontFamily: FONT_HEADING }}>
                 <AnimatedNumber value={completed.size} />
               </div>
-              <div className="text-xs font-mono text-[#7a849a] uppercase tracking-wider">Missions Done</div>
+              <div className="text-xs font-mono uppercase tracking-wider" style={{ color: theme.muted }}>Missions Done</div>
             </motion.div>
           )}
         </motion.div>
@@ -200,7 +209,8 @@ export default function App() {
           ) : filteredIntel.length === 0 ? (
             <motion.div
               key="empty"
-              className="text-center py-24 text-[#7a849a] font-mono text-sm border border-[#1e2535] rounded-xl bg-[#111520]"
+              className={`text-center py-24 font-mono text-sm ${GLASS_CARD_CLASS}`}
+              style={{ ...glassCardStyle(theme), color: theme.muted }}
               variants={fadeUp} initial="initial" animate="animate"
             >
               <div className="text-4xl mb-4">🔍</div>
@@ -227,9 +237,9 @@ export default function App() {
         </AnimatePresence>
       </div>
 
-      <footer className="border-t border-[#1e2535] py-8 text-center text-xs font-mono text-[#7a849a]">
+      <footer className="border-t py-8 text-center text-xs font-mono" style={{ borderColor: theme.cardBorder, color: theme.muted }}>
         Project Hail Mary · All intel is free ·{' '}
-        <span className="text-[#4fffb0]">Built for serious developers</span>
+        <span style={{ color: theme.accentText }}>Built for serious developers</span>
       </footer>
 
       <AnimatePresence>
@@ -253,10 +263,10 @@ export default function App() {
 
       <AnimatePresence>
         {activeResource && (
-          <SessionManager 
-            resource={activeResource} 
+          <SessionManager
+            resource={activeResource}
             user={user}
-            onClose={() => setActiveResource(null)} 
+            onClose={() => setActiveResource(null)}
           />
         )}
       </AnimatePresence>

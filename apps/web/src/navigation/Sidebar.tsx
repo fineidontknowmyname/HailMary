@@ -4,22 +4,19 @@ import { X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { NAV_GROUPS, type NavItem } from './navConfig';
 import { sidebarVariants, sidebarTransition } from '../lib/motion';
-
-// ─── Constants ────────────────────────────────────────────────────────────────
-const ACCENT = '#4fffb0';
-
-// ─── Sub-components ───────────────────────────────────────────────────────────
+import { FONT_HEADING, type AppTheme } from '../lib/theme';
+import { useAppTheme } from '../lib/ThemeProvider';
 
 interface NavLinkItemProps {
   item: NavItem;
+  theme: AppTheme;
   onClick?: () => void;
 }
 
-const NavLinkItem: React.FC<NavLinkItemProps> = ({ item, onClick }) => {
-  const { icon: Icon, label, path } = item;
+const NavLinkItem: React.FC<NavLinkItemProps> = ({ item, theme, onClick }) => {
+  const { icon: Icon, label, path, description } = item;
   const location = useLocation();
 
-  // Exact match for root, prefix match for sub-routes
   const isActive =
     path === '/'
       ? location.pathname === '/'
@@ -30,20 +27,27 @@ const NavLinkItem: React.FC<NavLinkItemProps> = ({ item, onClick }) => {
       to={path}
       onClick={onClick}
       aria-current={isActive ? 'page' : undefined}
-      className={`group flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-lg transition-colors duration-150 outline-none focus-visible:ring-2 focus-visible:ring-[#4fffb0]/50 ${
-        isActive
-          ? 'text-white bg-white/10'
-          : 'text-slate-400 hover:text-white hover:bg-white/5'
-      }`}
+      title={description}
+      className="group relative flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-xl transition-colors duration-150 outline-none focus-visible:ring-2"
+      style={{
+        color: isActive ? theme.heading : theme.muted,
+        background: isActive ? theme.accentSoftBg : 'transparent',
+      }}
     >
+      {isActive && (
+        <span
+          className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-[3px] rounded-full"
+          style={{ background: theme.accentText }}
+        />
+      )}
       <motion.span
-        className="shrink-0"
-        whileHover={{ x: 2, scale: 1.1 }}
+        className="shrink-0 flex items-center justify-center"
+        whileHover={{ scale: 1.12 }}
         transition={{ type: 'spring', stiffness: 400, damping: 20 }}
       >
         <Icon
           className="h-[18px] w-[18px]"
-          style={{ color: isActive ? ACCENT : undefined }}
+          style={{ color: isActive ? theme.accentText : undefined }}
           strokeWidth={isActive ? 2.2 : 1.8}
         />
       </motion.span>
@@ -52,50 +56,59 @@ const NavLinkItem: React.FC<NavLinkItemProps> = ({ item, onClick }) => {
   );
 };
 
-// ─── Sidebar Nav Content (shared between desktop + mobile drawer) ─────────────
-
 interface SidebarNavContentProps {
+  theme: AppTheme;
   onItemClick?: () => void;
 }
 
-const SidebarNavContent: React.FC<SidebarNavContentProps> = ({ onItemClick }) => (
+const SidebarNavContent: React.FC<SidebarNavContentProps> = ({ theme, onItemClick }) => (
   <nav className="flex flex-col gap-5 px-3 py-4" aria-label="Global navigation">
     {NAV_GROUPS.map((group, gi) => (
       <div key={gi} className="flex flex-col gap-0.5">
         {group.heading && (
-          <p className="text-[10px] uppercase tracking-widest font-semibold text-slate-500 mb-3 mt-8 px-4 select-none">
+          <p
+            className="text-[10px] uppercase tracking-widest font-semibold mb-3 mt-8 px-4 select-none"
+            style={{ color: theme.dim }}
+          >
             {group.heading}
           </p>
         )}
         {group.items.map((item) => (
-          <NavLinkItem key={item.key} item={item} onClick={onItemClick} />
+          <NavLinkItem key={item.key} item={item} theme={theme} onClick={onItemClick} />
         ))}
       </div>
     ))}
   </nav>
 );
 
-
-// ─── Bottom user strip ────────────────────────────────────────────────────────
-
-const SidebarFooter: React.FC = () => (
-  <div className="mt-auto border-t border-zinc-800/70 px-4 py-3">
-    <div className="flex items-center gap-2 rounded-xl px-2 py-2">
+const SidebarFooter: React.FC<{ theme: AppTheme }> = ({ theme }) => (
+  <div className="mt-auto border-t px-4 py-4" style={{ borderColor: theme.cardBorder }}>
+    <div className="flex items-center gap-2 rounded-xl px-2 py-2 mb-3">
       <span
         className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-bold"
-        style={{ background: 'rgba(79,255,176,0.12)', color: ACCENT }}
+        style={{ background: theme.accentSoftBg, color: theme.accentText }}
       >
         U
       </span>
       <div className="flex flex-col min-w-0">
-        <span className="text-xs font-semibold text-white truncate">Mission Control</span>
-        <span className="text-[10px] font-mono text-[#3d4760] truncate">v1.0 · Beta</span>
+        <span className="text-xs font-semibold truncate" style={{ color: theme.heading }}>Mission Control</span>
+        <span className="text-[10px] font-mono truncate" style={{ color: theme.dim }}>v1.0 · Beta</span>
       </div>
+    </div>
+
+    <div className="flex items-end gap-[3px] h-4 px-2" aria-hidden="true">
+      {[6, 11, 8, 14, 7, 10, 5].map((h, i) => (
+        <motion.span
+          key={i}
+          className="w-[3px] rounded-full"
+          style={{ background: theme.accentText }}
+          animate={{ height: [h, h * 0.35, h] }}
+          transition={{ duration: 1.1 + (i % 3) * 0.2, repeat: Infinity, ease: 'easeInOut', delay: i * 0.08 }}
+        />
+      ))}
     </div>
   </div>
 );
-
-// ─── Main Sidebar Component ───────────────────────────────────────────────────
 
 interface SidebarProps {
   isOpen: boolean;
@@ -103,33 +116,38 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
+  const { theme } = useAppTheme();
+
   return (
     <AnimatePresence>
       {isOpen && (
         <motion.aside
           key="sidebar"
-          className="fixed inset-y-0 left-0 z-50 w-64 bg-[#0b0f19] border-r border-white/10 shadow-2xl flex flex-col"
+          className="fixed inset-y-0 left-0 z-50 w-64 border-r flex flex-col backdrop-blur-xl transition-colors duration-300"
+          style={{ background: theme.bgPanel, borderColor: theme.cardBorder, boxShadow: theme.shadowPanel }}
           variants={sidebarVariants}
           initial="closed"
           animate="open"
           exit="closed"
           transition={sidebarTransition}
         >
-          <div className="flex items-center justify-between px-6 py-5 border-b border-white/5">
-            <span className="text-sm font-bold uppercase tracking-wider text-white">Menu</span>
+          <div className="flex items-center justify-between px-6 py-5 border-b" style={{ borderColor: theme.cardBorder }}>
+            <span className="text-sm font-bold uppercase tracking-wider" style={{ fontFamily: FONT_HEADING, color: theme.heading }}>Menu</span>
             <motion.button
               onClick={() => setIsOpen(false)}
               aria-label="Close navigation menu"
-              className="flex items-center justify-center h-8 w-8 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-colors duration-150"
+              className="flex items-center justify-center h-8 w-8 rounded-lg transition-colors duration-150"
+              style={{ background: theme.accentSoftBg, color: theme.muted }}
               whileTap={{ scale: 0.88 }}
+              whileHover={{ color: theme.heading }}
             >
               <X className="h-5 w-5" />
             </motion.button>
           </div>
           <div className="flex-1 overflow-y-auto overflow-x-hidden">
-            <SidebarNavContent onItemClick={() => setIsOpen(false)} />
+            <SidebarNavContent theme={theme} onItemClick={() => setIsOpen(false)} />
           </div>
-          <SidebarFooter />
+          <SidebarFooter theme={theme} />
         </motion.aside>
       )}
     </AnimatePresence>
