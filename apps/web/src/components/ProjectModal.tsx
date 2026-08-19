@@ -298,6 +298,7 @@ export function ProjectModal({ project, onClose, onSaved }: ProjectModalProps) {
           </div>
           <button
             onClick={onClose}
+            aria-label="Close modal"
             className="p-2 rounded-lg transition-all"
             style={{ color: theme.muted }}
           >

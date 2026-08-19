@@ -21,7 +21,7 @@ importers:
         specifier: workspace:*
         version: link:../../packages/types
       '@supabase/supabase-js':
-        specifier: ^2.39.0
+        specifier: ^2.101.1
         version: 2.101.1
       '@upstash/redis':
         specifier: ^1.37.0

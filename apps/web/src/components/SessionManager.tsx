@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { backdropVariants, modalVariants, modalTransition } from '../lib/motion';
 import { api } from '../lib/api';
@@ -31,6 +31,14 @@ export default function SessionManager({ resource, onClose, user }: SessionManag
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showAITutor, setShowAITutor] = useState(false);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && step !== 'active') onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose, step]);
 
   const handleStartSession = async () => {
     setLoading(true);
@@ -96,7 +104,7 @@ export default function SessionManager({ resource, onClose, user }: SessionManag
           exit="exit"
           transition={modalTransition}
         >
-          <button onClick={onClose} className="absolute top-4 right-4 transition-colors" style={{ color: theme.muted }}>✕</button>
+          <button onClick={onClose} aria-label="Close modal" className="absolute top-4 right-4 transition-colors" style={{ color: theme.muted }}>✕</button>
           <h2 className="text-xl font-bold mb-4" style={{ color: theme.heading }}>Authentication Required</h2>
           <p className="text-sm mb-6" style={{ color: theme.muted }}>Please sign in to track study sessions.</p>
           <button
@@ -130,7 +138,7 @@ export default function SessionManager({ resource, onClose, user }: SessionManag
         transition={modalTransition}
       >
         {step !== 'active' && (
-          <button onClick={onClose} className="absolute top-4 right-4 transition-colors" style={{ color: theme.muted }}>
+          <button onClick={onClose} aria-label="Close modal" className="absolute top-4 right-4 transition-colors" style={{ color: theme.muted }}>
             ✕
           </button>
         )}

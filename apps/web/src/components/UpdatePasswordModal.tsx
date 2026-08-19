@@ -115,6 +115,18 @@ export default function UpdatePasswordModal({ onSuccess }: UpdatePasswordModalPr
   const [countdown, setCountdown] = useState(3)
 
   useEffect(() => {
+    if (phase === 'loading' || phase === 'success') return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setPasswordRecoveryPending(false)
+        navigate('/', { replace: true })
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [phase, setPasswordRecoveryPending, navigate])
+
+  useEffect(() => {
     if (confirmPassword.length > 0) {
       setMatchError(newPassword !== confirmPassword)
     } else {

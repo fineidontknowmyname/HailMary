@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { X, Send, Bot, AlertCircle, Loader2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { api } from '../lib/api';
@@ -17,6 +17,14 @@ export function DoubtSolverModal({ intel, onClose }: DoubtSolverModalProps) {
   const [answer, setAnswer] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -76,6 +84,7 @@ export function DoubtSolverModal({ intel, onClose }: DoubtSolverModalProps) {
           </div>
           <button
             onClick={onClose}
+            aria-label="Close modal"
             className="transition-colors p-1"
             style={{ color: theme.muted }}
           >

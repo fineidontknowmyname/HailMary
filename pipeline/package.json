@@ -7,7 +7,6 @@
     "dev": "node --watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "scrape": "node dist/jobs/scraper.js",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {

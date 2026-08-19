@@ -26,6 +26,14 @@ export function ChallengeModal({ intel, onClose, onSuccess }: ChallengeModalProp
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
+  useEffect(() => {
     let isMounted = true;
 
     const fetchChallenge = async () => {
@@ -99,7 +107,7 @@ export function ChallengeModal({ intel, onClose, onSuccess }: ChallengeModalProp
               <p className="text-xs font-mono" style={{ color: theme.muted }}>Verify your understanding</p>
             </div>
           </div>
-          <button onClick={onClose} className="transition-colors p-1" style={{ color: theme.muted }}>
+          <button onClick={onClose} aria-label="Close modal" className="transition-colors p-1" style={{ color: theme.muted }}>
             <X className="w-5 h-5" />
           </button>
         </div>
