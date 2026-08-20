@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { api } from '../lib/api';
 import { useAppTheme } from '../lib/ThemeProvider';
+import { useAuth } from '../auth/useAuth';
 
 export default function ContributeResource() {
   const { theme } = useAppTheme();
+  const { isLoggedIn } = useAuth();
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
@@ -42,6 +44,15 @@ export default function ContributeResource() {
     border: `1px solid ${theme.inputBorder}`,
     color: theme.heading,
   };
+
+  if (!isLoggedIn) {
+    return (
+      <div className="max-w-2xl mx-auto p-8 mt-10 rounded-xl border text-center" style={{ background: theme.bgPanel, borderColor: theme.cardBorder }}>
+        <h1 className="text-3xl font-bold mb-2" style={{ color: theme.heading }}>Contribute a Resource</h1>
+        <p style={{ color: theme.muted }}>Sign in to help the community by sharing high-quality tutorials, docs, or tools.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-2xl mx-auto p-8 mt-10 rounded-xl border" style={{ background: theme.bgPanel, borderColor: theme.cardBorder }}>

@@ -10,6 +10,7 @@ export const IntelService = {
     const { data, error } = await supabase
       .from('resources') // Keeping the actual DB table name as 'resources' per the schema
       .select('*')
+      .eq('status', 'approved')
       .order('title', { ascending: true });
 
     if (error) {
