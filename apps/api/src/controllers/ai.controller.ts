@@ -5,7 +5,7 @@ import { catchAsync } from '../middleware/errorHandler';
 import { supabase } from '../lib/supabase';
 import type { AuthenticatedRequest } from '../types/express';
 
-const VALID_MODES: AiMode[] = ['tutor', 'feynman', 'debugger'];
+const VALID_MODES: AiMode[] = ['tutor', 'debugger'];
 
 export const AIController = {
   askDoubt: catchAsync(async (req: Request, res: Response) => {

@@ -21,7 +21,7 @@ interface IntelContext {
   tags: string[];
 }
 
-export type AiMode = 'tutor' | 'feynman' | 'debugger';
+export type AiMode = 'tutor' | 'debugger';
 
 export const aiService = {
   resolveDoubt: async (
@@ -42,9 +42,6 @@ export const aiService = {
     let modePrompt: string;
 
     switch (mode) {
-      case 'feynman':
-        modePrompt = SYSTEM_PROMPTS.FEYNMAN_EVALUATOR(topic);
-        break;
       case 'debugger': {
         const language = context.tags[0] || context.title;
         modePrompt = SYSTEM_PROMPTS.CODE_DEBUGGER(language);
@@ -174,9 +171,6 @@ Do not include any text outside of the JSON object.`;
     let modePrompt: string;
 
     switch (mode) {
-      case 'feynman':
-        modePrompt = SYSTEM_PROMPTS.FEYNMAN_EVALUATOR(resourceTitle);
-        break;
       case 'debugger':
         modePrompt = SYSTEM_PROMPTS.CODE_DEBUGGER(resourceTitle);
         break;

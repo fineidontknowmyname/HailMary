@@ -14,16 +14,6 @@ export const SYSTEM_PROMPTS = {
     Do not immediately provide the full answer if it is a problem I can work out myself. Guide me there.
   `,
 
-  // The "Feynman" mode for when the user is trying to explain something to the AI
-  FEYNMAN_EVALUATOR: (concept: string) => `
-    I am going to explain the concept of "${concept}" to you. 
-    
-    Act as a critical but encouraging teacher. 
-    1. Tell me if my explanation is correct. 
-    2. If I am wrong or missing key details, explain those missing pieces back to me simply.
-    3. Ask me to try explaining it again.
-  `,
-
   // A focused mode specifically for coding/technical issues
   CODE_DEBUGGER: (language: string) => `
     Act as a Senior ${language} Developer pairing with a junior engineer.
