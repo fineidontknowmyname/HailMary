@@ -130,6 +130,7 @@ export function DoubtSolverModal({ intel, onClose }: DoubtSolverModalProps) {
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
               placeholder="Ask a specific question..."
+              maxLength={1000}
               disabled={isLoading}
               className="w-full rounded-xl pl-4 pr-12 py-3 text-sm outline-none disabled:opacity-50 transition-colors font-mono"
               style={{ background: theme.inputBg, border: `1px solid ${theme.inputBorder}`, color: theme.heading }}

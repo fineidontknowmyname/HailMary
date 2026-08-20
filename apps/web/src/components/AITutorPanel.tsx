@@ -171,6 +171,7 @@ export default function AITutorPanel({ resource, user, onClose }: AITutorPanelPr
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ask your question..."
+            maxLength={1000}
             disabled={loading}
             className="w-full rounded-xl pl-4 pr-12 py-3 text-sm outline-none transition-all disabled:opacity-50"
             style={{ background: theme.inputBg, border: `1px solid ${theme.inputBorder}`, color: theme.heading }}

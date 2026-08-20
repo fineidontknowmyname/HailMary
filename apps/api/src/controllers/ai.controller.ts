@@ -6,15 +6,24 @@ import { supabase } from '../lib/supabase';
 import type { AuthenticatedRequest } from '../types/express';
 
 const VALID_MODES: AiMode[] = ['tutor', 'debugger'];
+const MAX_QUESTION_LENGTH = 1000;
+const MAX_RESPONSE_LENGTH = 2000;
 
 export const AIController = {
   askDoubt: catchAsync(async (req: Request, res: Response) => {
     const { intelId, question, context, mode } = req.body;
 
     if (!intelId || !question || !context) {
-      return res.status(400).json({ 
-        success: false, 
-        error: 'Missing required parameters. Need intelId, question, and context.' 
+      return res.status(400).json({
+        success: false,
+        error: 'Missing required parameters. Need intelId, question, and context.'
+      });
+    }
+
+    if (typeof question !== 'string' || question.length > MAX_QUESTION_LENGTH) {
+      return res.status(400).json({
+        success: false,
+        error: `question must be ${MAX_QUESTION_LENGTH} characters or fewer`,
       });
     }
 
@@ -41,6 +50,13 @@ export const AIController = {
 
     if (!intelId || !challenge || !response || !context) {
       return res.status(400).json({ success: false, error: 'Missing required evaluation parameters' });
+    }
+
+    if (typeof response !== 'string' || response.length > MAX_RESPONSE_LENGTH) {
+      return res.status(400).json({
+        success: false,
+        error: `response must be ${MAX_RESPONSE_LENGTH} characters or fewer`,
+      });
     }
 
     const evaluation = await aiService.evaluateFeynman(context, challenge, response);

@@ -1,8 +1,11 @@
 import { Router, type Request } from 'express';
 import { supabase } from '../lib/supabase';
 import { requireAuth } from '../middleware/auth';
+import { aiRateLimit } from '../middleware/aiRateLimit';
 import { aiService } from '../services/aiService';
 import type { AuthenticatedRequest } from '../types/express';
+
+const MAX_MESSAGE_LENGTH = 1000;
 
 const router = Router();
 
@@ -95,9 +98,16 @@ router.post('/end', async (req: Request, res) => {
   }
 });
 
-router.post('/ai-tutor', async (req: Request, res) => {
+router.post('/ai-tutor', aiRateLimit, async (req: Request, res) => {
   const user_id = (req as AuthenticatedRequest).user.id;
   const { resource_id, resource_title, user_message } = req.body;
+
+  if (typeof user_message !== 'string' || !user_message.trim()) {
+    return res.status(400).json({ error: 'user_message is required' });
+  }
+  if (user_message.length > MAX_MESSAGE_LENGTH) {
+    return res.status(400).json({ error: `user_message must be ${MAX_MESSAGE_LENGTH} characters or fewer` });
+  }
 
   try {
     const ai_response = await aiService.tutorSession(resource_title, user_message);

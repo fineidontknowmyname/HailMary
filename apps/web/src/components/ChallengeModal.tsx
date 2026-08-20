@@ -140,6 +140,7 @@ export function ChallengeModal({ intel, onClose, onSuccess }: ChallengeModalProp
                 onChange={(e) => setResponse(e.target.value)}
                 disabled={step === 'evaluating'}
                 placeholder="Explain it simply, as if teaching a beginner..."
+                maxLength={2000}
                 className="w-full h-40 rounded-xl p-4 text-sm outline-none transition-colors resize-none font-mono"
                 style={{ background: theme.inputBg, border: `1px solid ${theme.inputBorder}`, color: theme.heading }}
               />
