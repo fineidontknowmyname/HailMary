@@ -12,25 +12,7 @@ import type { HailMaryResumeData } from '../components/pdf-engine/types';
 import { ResumeControlPanel } from '../components/ResumeControlPanel';
 import { useAppTheme } from '../lib/ThemeProvider';
 
-type ProfileRow = Partial<UserProfile> & {
-  full_name?: string | null;
-  email?: string | null;
-  phone?: string | null;
-  github_link?: string | null;
-  linkedin_link?: string | null;
-};
-
-type ExperienceRow = HailMaryExperience & {
-  bullets?: string[] | null;
-  company_name?: string | null;
-};
-
-type ProjectRow = HailMaryProject & {
-  bullets?: string[] | null;
-};
-
-function toBullets(bullets?: string[] | null, rawNotes?: string | null) {
-  if (bullets?.length) return bullets.filter(Boolean);
+function toBullets(rawNotes?: string | null) {
   return rawNotes ? [rawNotes] : [];
 }
 
@@ -41,15 +23,12 @@ function mapToResumeData(
   projects: HailMaryProject[],
   fallbackEmail?: string | null
 ): HailMaryResumeData {
-  const profileRow = profile as ProfileRow;
-
   return {
     identity: {
-      fullName: profileRow.full_name || profile.name || profile.username || 'Unknown Developer',
-      email: profileRow.email || fallbackEmail || '',
-      phone: profileRow.phone || '',
-      githubUrl: profileRow.github_link || profile.github_url || '',
-      linkedinUrl: profileRow.linkedin_link || profile.linkedin_url || '',
+      fullName: profile.name || profile.username || 'Unknown Developer',
+      email: fallbackEmail || '',
+      githubUrl: profile.github_url || '',
+      linkedinUrl: profile.linkedin_url || '',
       websiteUrl: profile.website_url || '',
     },
     education: education.map((edu) => ({
@@ -59,30 +38,22 @@ function mapToResumeData(
       startDate: edu.start_year || '',
       endDate: edu.end_year || 'Present',
     })),
-    experience: experience.map((exp) => {
-      const expRow = exp as ExperienceRow;
-
-      return {
-        company: expRow.company_name || exp.company,
-        role: exp.role,
-        startDate: exp.start_year || '',
-        endDate: exp.end_year || 'Present',
-        bullets: toBullets(expRow.bullets, exp.raw_notes),
-      };
-    }),
+    experience: experience.map((exp) => ({
+      company: exp.company,
+      role: exp.role,
+      startDate: exp.start_year || '',
+      endDate: exp.end_year || 'Present',
+      bullets: toBullets(exp.raw_notes),
+    })),
     projects: projects
       .filter((proj) => proj.sync_to_resume)
-      .map((proj) => {
-        const projRow = proj as ProjectRow;
-
-        return {
-          title: proj.title,
-          techStack: proj.tech_stack || [],
-          githubUrl: proj.github_url || '',
-          liveUrl: proj.live_url || '',
-          bullets: toBullets(projRow.bullets, proj.raw_notes),
-        };
-      }),
+      .map((proj) => ({
+        title: proj.title,
+        techStack: proj.tech_stack || [],
+        githubUrl: proj.github_url || '',
+        liveUrl: proj.live_url || '',
+        bullets: toBullets(proj.raw_notes),
+      })),
   };
 }
 
@@ -119,9 +90,6 @@ export default function ResumeBuilder() {
           api.get<HailMaryExperience[]>('/api/experience'),
           api.get<HailMaryProject[]>('/api/projects'),
         ]);
-
-        // Debug: verify profile data reaches the component
-        console.log('[ResumeBuilder] Fetched Profile:', profData);
 
         const liveProfile = profData || { user_id: user!.id };
 
