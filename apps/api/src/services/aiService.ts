@@ -72,7 +72,7 @@ Resource context:
           { role: 'system', content: systemPrompt },
           { role: 'user', content: question }
         ],
-        model: 'llama-3.1-8b-instant',
+        model: 'openai/gpt-oss-20b',
         temperature: 0.4,
         max_tokens: 600,
       }, { signal: controller.signal });
@@ -115,9 +115,9 @@ Tags: ${context.tags.join(', ')}`;
     try {
       const completion = await groq.chat.completions.create({
         messages: [{ role: 'system', content: systemPrompt }],
-        model: 'llama-3.1-8b-instant',
+        model: 'openai/gpt-oss-20b',
         temperature: 0.5,
-        max_tokens: 100,
+        max_tokens: 350,
       }, { signal: controller.signal });
 
       clearTimeout(timeout);
@@ -148,18 +148,24 @@ You MUST respond in strict JSON format with exactly two keys:
 
 Do not include any text outside of the JSON object.`;
 
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000);
+
     try {
       const completion = await groq.chat.completions.create({
         messages: [{ role: 'system', content: systemPrompt }],
-        model: 'llama-3.1-8b-instant',
+        model: 'openai/gpt-oss-20b',
         temperature: 0.1,
         response_format: { type: 'json_object' },
-        max_tokens: 150,
-      });
+        max_tokens: 300,
+      }, { signal: controller.signal });
+
+      clearTimeout(timeout);
 
       const resultText = completion.choices[0]?.message?.content || '{"passed":true,"feedback":"Good effort."}';
       return JSON.parse(resultText);
     } catch {
+      clearTimeout(timeout);
       return { passed: true, feedback: 'Validation bypassed due to server load. Good work.' };
     }
   },
@@ -193,9 +199,9 @@ Keep responses under 3 short paragraphs. Use markdown for code snippets.`;
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userMessage }
         ],
-        model: 'llama-3.1-8b-instant',
+        model: 'openai/gpt-oss-20b',
         temperature: 0.6,
-        max_tokens: 300,
+        max_tokens: 700,
       }, { signal: controller.signal });
 
       clearTimeout(timeout);

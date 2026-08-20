@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, type ReactNode } from 'react';
+import { useState, useRef, useEffect, useCallback, type ReactNode } from 'react';
 import type { Intel } from '@hailmary/types';
 import { api } from '../lib/api';
 import { useAppTheme } from '../lib/ThemeProvider';
@@ -69,6 +69,16 @@ export default function AITutorPanel({ resource, user, onClose }: AITutorPanelPr
     scrollToBottom();
   }, [messages]);
 
+  const handleClose = useCallback(() => onClose(), [onClose]);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') handleClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [handleClose]);
+
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || loading || !user) return;
@@ -112,7 +122,8 @@ export default function AITutorPanel({ resource, user, onClose }: AITutorPanelPr
           <p className="text-xs truncate max-w-[250px]" style={{ color: theme.accentText }}>{resource.title}</p>
         </div>
         <button
-          onClick={onClose}
+          onClick={handleClose}
+          aria-label="Close AI tutor panel"
           className="transition-colors"
           style={{ color: theme.muted }}
         >
