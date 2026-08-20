@@ -11,6 +11,7 @@ import { EMPTY_FORM } from '../types/project';
 import { backdropVariants, modalVariants, modalTransition } from '../lib/motion';
 import { useAppTheme } from '../lib/ThemeProvider';
 import type { AppTheme } from '../lib/theme';
+import { useModalFocusTrap } from '../hooks/useModalFocusTrap';
 
 function ModalLabel({ children, theme }: { children: React.ReactNode; theme: AppTheme }) {
   return (
@@ -220,6 +221,7 @@ export function ProjectModal({ project, onClose, onSaved }: ProjectModalProps) {
 
   const [saving, setSaving] = useState(false);
   const [error,  setError]  = useState<string | null>(null);
+  const modalRef = useModalFocusTrap<HTMLDivElement>();
 
   useEffect(() => {
     function onKey(e: globalThis.KeyboardEvent) {
@@ -276,6 +278,11 @@ export function ProjectModal({ project, onClose, onSaved }: ProjectModalProps) {
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <motion.div
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="project-modal-title"
+        tabIndex={-1}
         className="relative w-full max-w-2xl max-h-[92vh] overflow-y-auto rounded-2xl border flex flex-col backdrop-blur-xl"
         style={{ background: theme.bgPanel, borderColor: theme.cardBorder, boxShadow: theme.shadowPanel }}
         variants={modalVariants}
@@ -289,7 +296,7 @@ export function ProjectModal({ project, onClose, onSaved }: ProjectModalProps) {
           style={{ borderColor: theme.cardBorder, background: theme.headerBg }}
         >
           <div>
-            <h2 className="text-base font-bold" style={{ color: theme.heading }}>
+            <h2 id="project-modal-title" className="text-base font-bold" style={{ color: theme.heading }}>
               {isEdit ? 'Edit Project' : 'New Project'}
             </h2>
             <p className="text-xs font-mono mt-0.5" style={{ color: theme.muted }}>

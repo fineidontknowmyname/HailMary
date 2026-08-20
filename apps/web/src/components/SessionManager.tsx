@@ -5,14 +5,13 @@ import { api } from '../lib/api';
 import type { Intel } from '@hailmary/types';
 import AITutorPanel from './AITutorPanel';
 import { useAppTheme } from '../lib/ThemeProvider';
+import { useModalFocusTrap } from '../hooks/useModalFocusTrap';
 
 interface SessionStartResponse {
-  success: boolean;
   sessionId: string;
 }
 
 interface SessionEndResponse {
-  success: boolean;
   isMilestone: boolean;
   totalSessions: number;
   needsAITutor: boolean;
@@ -31,6 +30,7 @@ export default function SessionManager({ resource, onClose, user }: SessionManag
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showAITutor, setShowAITutor] = useState(false);
+  const modalRef = useModalFocusTrap<HTMLDivElement>();
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -47,11 +47,9 @@ export default function SessionManager({ resource, onClose, user }: SessionManag
         resource_id: resource.id,
         planned_minutes: plannedMinutes
       });
-      if (data.success) {
-        setSessionId(data.sessionId);
-        setStep('active');
-        window.open(resource.link, '_blank');
-      }
+      setSessionId(data.sessionId);
+      setStep('active');
+      window.open(resource.link, '_blank');
     } catch (error) {
       console.error('Failed to start session', error);
     } finally {
@@ -96,6 +94,11 @@ export default function SessionManager({ resource, onClose, user }: SessionManag
         transition={{ duration: 0.18 }}
       >
         <motion.div
+          ref={modalRef}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="session-auth-title"
+          tabIndex={-1}
           className="rounded-2xl w-full max-w-md p-6 relative text-center border backdrop-blur-xl"
           style={{ background: theme.bgPanel, borderColor: theme.cardBorder, boxShadow: theme.shadowPanel }}
           variants={modalVariants}
@@ -105,7 +108,7 @@ export default function SessionManager({ resource, onClose, user }: SessionManag
           transition={modalTransition}
         >
           <button onClick={onClose} aria-label="Close modal" className="absolute top-4 right-4 transition-colors" style={{ color: theme.muted }}>✕</button>
-          <h2 className="text-xl font-bold mb-4" style={{ color: theme.heading }}>Authentication Required</h2>
+          <h2 id="session-auth-title" className="text-xl font-bold mb-4" style={{ color: theme.heading }}>Authentication Required</h2>
           <p className="text-sm mb-6" style={{ color: theme.muted }}>Please sign in to track study sessions.</p>
           <button
             onClick={onClose}
@@ -129,6 +132,11 @@ export default function SessionManager({ resource, onClose, user }: SessionManag
       transition={{ duration: 0.18 }}
     >
       <motion.div
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="session-modal-title"
+        tabIndex={-1}
         className="rounded-2xl w-full max-w-md p-6 relative border backdrop-blur-xl"
         style={{ background: theme.bgPanel, borderColor: theme.cardBorder, boxShadow: theme.shadowPanel }}
         variants={modalVariants}
@@ -153,7 +161,7 @@ export default function SessionManager({ resource, onClose, user }: SessionManag
           >
             {step === 'launch' && (
               <div className="text-center">
-                <h2 className="text-2xl font-bold mb-2" style={{ color: theme.heading }}>Set your intent.</h2>
+                <h2 id="session-modal-title" className="text-2xl font-bold mb-2" style={{ color: theme.heading }}>Set your intent.</h2>
                 <p className="text-sm mb-6" style={{ color: theme.muted }}>
                   How long are you committing to <strong style={{ color: theme.heading }}>{resource.title}</strong> right now?
                 </p>
@@ -192,7 +200,7 @@ export default function SessionManager({ resource, onClose, user }: SessionManag
                   className="w-16 h-16 border-4 border-t-transparent rounded-full animate-spin mx-auto mb-4"
                   style={{ borderColor: theme.accentText, borderTopColor: 'transparent' }}
                 />
-                <h2 className="text-xl font-bold mb-2" style={{ color: theme.heading }}>Session in Progress</h2>
+                <h2 id="session-modal-title" className="text-xl font-bold mb-2" style={{ color: theme.heading }}>Session in Progress</h2>
                 <p className="text-sm mb-6" style={{ color: theme.muted }}>You are currently studying {resource.title}.</p>
                 <button
                   onClick={() => setStep('reflect')}
@@ -206,7 +214,7 @@ export default function SessionManager({ resource, onClose, user }: SessionManag
 
             {step === 'reflect' && (
               <div className="text-center">
-                <h2 className="text-2xl font-bold mb-2" style={{ color: theme.heading }}>Welcome back.</h2>
+                <h2 id="session-modal-title" className="text-2xl font-bold mb-2" style={{ color: theme.heading }}>Welcome back.</h2>
                 <p className="text-sm mb-6" style={{ color: theme.muted }}>How did that session go?</p>
 
                 <div className="flex flex-col gap-3">

@@ -5,6 +5,7 @@ import { api } from '../lib/api';
 import type { Intel } from '@hailmary/types';
 import { backdropVariants, modalVariants, modalTransition } from '../lib/motion';
 import { useAppTheme } from '../lib/ThemeProvider';
+import { useModalFocusTrap } from '../hooks/useModalFocusTrap';
 
 interface ChallengeModalProps {
   intel: Intel;
@@ -24,6 +25,7 @@ export function ChallengeModal({ intel, onClose, onSuccess }: ChallengeModalProp
   const [response, setResponse] = useState('');
   const [evaluation, setEvaluation] = useState<EvaluationResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const modalRef = useModalFocusTrap<HTMLDivElement>();
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -91,6 +93,11 @@ export function ChallengeModal({ intel, onClose, onSuccess }: ChallengeModalProp
       transition={{ duration: 0.18 }}
     >
       <motion.div
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="challenge-modal-title"
+        tabIndex={-1}
         className="rounded-2xl w-full max-w-2xl overflow-hidden flex flex-col border backdrop-blur-xl"
         style={{ background: theme.bgPanel, borderColor: theme.cardBorder, boxShadow: theme.shadowPanel }}
         variants={modalVariants}
@@ -103,7 +110,7 @@ export function ChallengeModal({ intel, onClose, onSuccess }: ChallengeModalProp
           <div className="flex items-center gap-3">
             <BrainCircuit className="w-5 h-5" style={{ color: theme.accentText }} />
             <div>
-              <h3 className="font-bold tracking-tight" style={{ color: theme.heading }}>Feynman Checkpoint</h3>
+              <h3 id="challenge-modal-title" className="font-bold tracking-tight" style={{ color: theme.heading }}>Feynman Checkpoint</h3>
               <p className="text-xs font-mono" style={{ color: theme.muted }}>Verify your understanding</p>
             </div>
           </div>

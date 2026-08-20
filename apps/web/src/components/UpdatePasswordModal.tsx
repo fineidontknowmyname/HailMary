@@ -5,6 +5,7 @@ import { useAuth } from '../auth/useAuth'
 import { useNavigate } from 'react-router-dom'
 import { useAppTheme } from '../lib/ThemeProvider'
 import type { AppTheme } from '../lib/theme'
+import { useModalFocusTrap } from '../hooks/useModalFocusTrap'
 
 interface StrengthResult {
   score: 0 | 1 | 2 | 3 | 4
@@ -113,6 +114,7 @@ export default function UpdatePasswordModal({ onSuccess }: UpdatePasswordModalPr
   const [matchError,      setMatchError]      = useState(false)
   const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const [countdown, setCountdown] = useState(3)
+  const modalRef = useModalFocusTrap<HTMLDivElement>()
 
   useEffect(() => {
     if (phase === 'loading' || phase === 'success') return
@@ -189,13 +191,13 @@ export default function UpdatePasswordModal({ onSuccess }: UpdatePasswordModalPr
 
   if (phase === 'success') {
     return (
-      <div
-        className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
-        role="dialog"
-        aria-modal="true"
-        aria-label="Password updated"
-      >
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
         <div
+          ref={modalRef}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Password updated"
+          tabIndex={-1}
           className="rounded-2xl w-full max-w-md mx-4 p-10 flex flex-col items-center gap-5 text-center border backdrop-blur-xl animate-[fadeSlideUp_0.25s_ease]"
           style={{ background: theme.bgPanel, borderColor: theme.cardBorder, boxShadow: theme.shadowPanel }}
         >
@@ -234,13 +236,13 @@ export default function UpdatePasswordModal({ onSuccess }: UpdatePasswordModalPr
   }
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="update-password-title"
-    >
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
       <div
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="update-password-title"
+        tabIndex={-1}
         className="rounded-2xl w-full max-w-md mx-4 p-8 relative border backdrop-blur-xl"
         style={{ background: theme.bgPanel, borderColor: theme.cardBorder, boxShadow: theme.shadowPanel }}
       >

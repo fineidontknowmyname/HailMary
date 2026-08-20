@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useId } from 'react'
 import { User } from 'lucide-react'
 import { useAuth } from '../auth/useAuth'
 import { fetchProfile, upsertProfile } from '../lib/profile'
@@ -49,11 +49,13 @@ function Field({ label, value, onChange, placeholder, type = 'text', theme }: {
   label: string; value: string; onChange: (v: string) => void
   placeholder?: string; type?: string; theme: AppTheme
 }) {
+  const id = useId();
   return (
     <div>
-      <label className="block text-xs font-mono mb-2" style={{ color: theme.muted }}>{label}</label>
+      <label htmlFor={id} className="block text-xs font-mono mb-2" style={{ color: theme.muted }}>{label}</label>
       {type === 'textarea' ? (
         <textarea
+          id={id}
           value={value} onChange={e => onChange(e.target.value)}
           placeholder={placeholder} rows={3}
           className="w-full rounded-xl px-4 py-3 text-sm outline-none transition-colors resize-none"
@@ -61,6 +63,7 @@ function Field({ label, value, onChange, placeholder, type = 'text', theme }: {
         />
       ) : (
         <input
+          id={id}
           type={type} value={value} onChange={e => onChange(e.target.value)}
           placeholder={placeholder}
           className="w-full rounded-xl px-4 py-3 text-sm outline-none transition-colors"

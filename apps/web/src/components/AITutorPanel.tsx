@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback, type ReactNode } from 'react'
 import type { Intel } from '@hailmary/types';
 import { api } from '../lib/api';
 import { useAppTheme } from '../lib/ThemeProvider';
+import { useModalFocusTrap } from '../hooks/useModalFocusTrap';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -15,7 +16,6 @@ interface AITutorPanelProps {
 }
 
 interface AiTutorResponse {
-  success: boolean;
   ai_response: string;
 }
 
@@ -60,6 +60,7 @@ export default function AITutorPanel({ resource, user, onClose }: AITutorPanelPr
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const modalRef = useModalFocusTrap<HTMLDivElement>();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -95,11 +96,7 @@ export default function AITutorPanel({ resource, user, onClose }: AITutorPanelPr
         user_message: userMessage
       });
 
-      if (data.success) {
-        setMessages(prev => [...prev, { role: 'assistant', content: data.ai_response }]);
-      } else {
-        setMessages(prev => [...prev, { role: 'assistant', content: "Sorry, I'm having trouble connecting to my brain. Please try again." }]);
-      }
+      setMessages(prev => [...prev, { role: 'assistant', content: data.ai_response }]);
     } catch (error) {
       console.error('AI Tutor Error:', error);
       setMessages(prev => [...prev, { role: 'assistant', content: 'An error occurred. Please try again.' }]);
@@ -110,13 +107,18 @@ export default function AITutorPanel({ resource, user, onClose }: AITutorPanelPr
 
   return (
     <div
+      ref={modalRef}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="ai-tutor-panel-title"
+      tabIndex={-1}
       className="fixed inset-y-0 right-0 w-96 border-l z-50 flex flex-col transform transition-transform duration-300 backdrop-blur-xl"
       style={{ background: theme.bgPanel, borderColor: theme.cardBorder, boxShadow: theme.shadowPanel }}
     >
 
       <div className="flex items-center justify-between p-4 border-b" style={{ borderColor: theme.cardBorder, background: theme.bgBase }}>
         <div>
-          <h3 className="font-bold text-lg flex items-center gap-2" style={{ color: theme.heading }}>
+          <h3 id="ai-tutor-panel-title" className="font-bold text-lg flex items-center gap-2" style={{ color: theme.heading }}>
             <span className="text-xl">🤖</span> AI Tutor
           </h3>
           <p className="text-xs truncate max-w-[250px]" style={{ color: theme.accentText }}>{resource.title}</p>

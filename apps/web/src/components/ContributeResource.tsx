@@ -72,8 +72,9 @@ export default function ContributeResource() {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
-          <label className="block text-sm font-medium mb-2" style={{ color: theme.body }}>Resource Title</label>
+          <label htmlFor="contribute-title" className="block text-sm font-medium mb-2" style={{ color: theme.body }}>Resource Title</label>
           <input
+            id="contribute-title"
             type="text"
             required
             value={formData.title}
@@ -85,8 +86,9 @@ export default function ContributeResource() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-2" style={{ color: theme.body }}>URL / Link</label>
+          <label htmlFor="contribute-link" className="block text-sm font-medium mb-2" style={{ color: theme.body }}>URL / Link</label>
           <input
+            id="contribute-link"
             type="url"
             required
             value={formData.link}
@@ -98,8 +100,9 @@ export default function ContributeResource() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-2" style={{ color: theme.body }}>Resource Type</label>
+          <label htmlFor="contribute-type" className="block text-sm font-medium mb-2" style={{ color: theme.body }}>Resource Type</label>
           <select
+            id="contribute-type"
             value={formData.type}
             onChange={(e) => setFormData({...formData, type: e.target.value})}
             className="w-full rounded-lg px-4 py-3 outline-none transition-colors"
@@ -114,8 +117,9 @@ export default function ContributeResource() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-2" style={{ color: theme.body }}>Short Description</label>
+          <label htmlFor="contribute-description" className="block text-sm font-medium mb-2" style={{ color: theme.body }}>Short Description</label>
           <textarea
+            id="contribute-description"
             required
             rows={3}
             value={formData.description}

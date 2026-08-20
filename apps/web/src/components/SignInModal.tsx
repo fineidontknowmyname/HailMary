@@ -5,6 +5,7 @@ import { useAuthStore } from '../auth/authStore';
 import { backdropVariants, modalVariants, modalTransition } from '../lib/motion';
 import { FONT_DISPLAY } from '../lib/theme';
 import { useAppTheme } from '../lib/ThemeProvider';
+import { useModalFocusTrap } from '../hooks/useModalFocusTrap';
 
 interface SignInModalProps {
   isOpen: boolean;
@@ -51,6 +52,8 @@ export function SignInModal({ isOpen, onClose }: SignInModalProps) {
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) handleClose();
   };
+
+  const modalRef = useModalFocusTrap<HTMLDivElement>(isOpen);
 
   // Escape key to close
   useEffect(() => {
@@ -128,9 +131,6 @@ export function SignInModal({ isOpen, onClose }: SignInModalProps) {
     <motion.div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
       onClick={handleBackdropClick}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="auth-modal-title"
       variants={backdropVariants}
       initial="initial"
       animate="animate"
@@ -138,6 +138,11 @@ export function SignInModal({ isOpen, onClose }: SignInModalProps) {
       transition={{ duration: 0.18 }}
     >
       <motion.div
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="auth-modal-title"
+        tabIndex={-1}
         className="relative w-full max-w-[420px] mx-4 overflow-hidden rounded-2xl border backdrop-blur-xl"
         style={{ borderColor: theme.cardBorder, background: theme.bgPanel, boxShadow: theme.shadowPanel }}
         variants={modalVariants}
@@ -219,6 +224,7 @@ export function SignInModal({ isOpen, onClose }: SignInModalProps) {
                   <path strokeLinecap="round" d="m2 7 10 6 10-6" />
                 </svg>
               </div>
+              <label htmlFor="auth-email" className="sr-only">Email</label>
               <input
                 id="auth-email"
                 type="email"
@@ -241,6 +247,7 @@ export function SignInModal({ isOpen, onClose }: SignInModalProps) {
                   <path strokeLinecap="round" d="M7 11V7a5 5 0 0 1 10 0v4" />
                 </svg>
               </div>
+              <label htmlFor="auth-password" className="sr-only">Password</label>
               <input
                 id="auth-password"
                 type={showPassword ? 'text' : 'password'}

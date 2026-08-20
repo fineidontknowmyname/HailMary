@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import {
   ChevronDown, ChevronRight, Plus, Trash2,
   User, GraduationCap, Briefcase, FolderKanban, Sparkles, Loader2, RefreshCw
@@ -50,10 +50,12 @@ function SectionCard({ title, icon, defaultOpen = false, children, theme }: { ti
 }
 
 function TextInput({ label, value, onChange, placeholder = '', theme }: { label: string, value: string, onChange: (v: string) => void, placeholder?: string, theme: AppTheme }) {
+  const id = useId();
   return (
     <div className="mb-3">
-      <label className="block text-xs font-mono mb-1.5" style={{ color: theme.muted }}>{label}</label>
+      <label htmlFor={id} className="block text-xs font-mono mb-1.5" style={{ color: theme.muted }}>{label}</label>
       <input
+        id={id}
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -66,10 +68,12 @@ function TextInput({ label, value, onChange, placeholder = '', theme }: { label:
 }
 
 function TextArea({ label, value, onChange, placeholder = '', theme }: { label: string, value: string, onChange: (v: string) => void, placeholder?: string, theme: AppTheme }) {
+  const id = useId();
   return (
     <div className="mb-3">
-      <label className="block text-xs font-mono mb-1.5" style={{ color: theme.muted }}>{label}</label>
+      <label htmlFor={id} className="block text-xs font-mono mb-1.5" style={{ color: theme.muted }}>{label}</label>
       <textarea
+        id={id}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}

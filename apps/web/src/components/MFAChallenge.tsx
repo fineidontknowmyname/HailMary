@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '../auth/useAuth';
 import { useAppTheme } from '../lib/ThemeProvider';
+import { useModalFocusTrap } from '../hooks/useModalFocusTrap';
 
 interface Props {
   onSuccess: () => void;
@@ -11,6 +12,7 @@ interface Props {
 export function MFAChallenge({ onSuccess }: Props) {
   const { session } = useAuth();
   const { theme } = useAppTheme();
+  const modalRef = useModalFocusTrap<HTMLDivElement>();
   const [code, setCode] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -64,6 +66,11 @@ export function MFAChallenge({ onSuccess }: Props) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md">
       <div
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="mfa-modal-title"
+        tabIndex={-1}
         className="rounded-2xl w-full max-w-sm mx-4 p-8 relative border backdrop-blur-xl"
         style={{ background: theme.bgPanel, borderColor: theme.cardBorder, boxShadow: theme.shadowPanel }}
       >
@@ -88,7 +95,7 @@ export function MFAChallenge({ onSuccess }: Props) {
               />
             </svg>
           </div>
-          <h2 className="text-xl font-bold mb-2" style={{ color: theme.heading }}>Two-Factor Authentication</h2>
+          <h2 id="mfa-modal-title" className="text-xl font-bold mb-2" style={{ color: theme.heading }}>Two-Factor Authentication</h2>
           <p className="text-sm" style={{ color: theme.muted }}>
             Please enter the 6-digit code from your authenticator app to continue.
           </p>
