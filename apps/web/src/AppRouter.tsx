@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { Routes, Route, Outlet, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'motion/react';
 import { AppLayout } from './navigation/AppLayout';
@@ -68,6 +68,39 @@ function PlaceholderPage({ title }: { title: string }) {
   );
 }
 
+function RequireAuth({ children, title }: { children: React.ReactNode; title: string }) {
+  const { isLoggedIn } = useAuth();
+  const { theme } = useAppTheme();
+
+  useEffect(() => {
+    if (!isLoggedIn) window.dispatchEvent(new Event('open-auth-modal'));
+  }, [isLoggedIn]);
+
+  if (isLoggedIn) return <>{children}</>;
+
+  return (
+    <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 text-center">
+      <div
+        className="flex h-16 w-16 items-center justify-center rounded-2xl border"
+        style={{ background: theme.cardBg, borderColor: theme.cardBorder }}
+      >
+        <span className="text-2xl">🔒</span>
+      </div>
+      <h1 className="text-2xl font-black" style={{ color: theme.heading }}>{title}</h1>
+      <p className="font-mono text-sm" style={{ color: theme.muted }}>
+        Sign in or sign up to access this module.
+      </p>
+      <button
+        onClick={() => window.dispatchEvent(new Event('open-auth-modal'))}
+        className="inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-xs font-mono"
+        style={{ borderColor: theme.accentBorder, background: theme.accentSoftBg, color: theme.accentText }}
+      >
+        Sign in / Sign up →
+      </button>
+    </div>
+  );
+}
+
 function DashboardLayout() {
   return (
     <AppLayout>
@@ -123,9 +156,11 @@ export function AppRouter() {
               path="/mock-tests/*"
               element={
                 <PageWrapper>
-                  <div className="-mx-4 sm:-mx-6 lg:-mx-8 -my-6 md:-my-8">
-                    <AssessmentEngine variant="mock" />
-                  </div>
+                  <RequireAuth title="Mock Tests">
+                    <div className="-mx-4 sm:-mx-6 lg:-mx-8 -my-6 md:-my-8">
+                      <AssessmentEngine variant="mock" />
+                    </div>
+                  </RequireAuth>
                 </PageWrapper>
               }
             />
@@ -133,9 +168,11 @@ export function AppRouter() {
               path="/aptitude"
               element={
                 <PageWrapper>
-                  <div className="-mx-4 sm:-mx-6 lg:-mx-8 -my-6 md:-my-8">
-                    <AssessmentEngine variant="codevita" />
-                  </div>
+                  <RequireAuth title="Competitive Aptitude">
+                    <div className="-mx-4 sm:-mx-6 lg:-mx-8 -my-6 md:-my-8">
+                      <AssessmentEngine variant="codevita" />
+                    </div>
+                  </RequireAuth>
                 </PageWrapper>
               }
             />

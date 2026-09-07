@@ -91,7 +91,6 @@ const SidebarFooter: React.FC<{ theme: AppTheme }> = ({ theme }) => (
         U
       </span>
       <div className="flex flex-col min-w-0">
-        <span className="text-xs font-semibold truncate" style={{ color: theme.heading }}>Mission Control</span>
         <span className="text-[10px] font-mono truncate" style={{ color: theme.dim }}>v1.0 · Beta</span>
       </div>
     </div>

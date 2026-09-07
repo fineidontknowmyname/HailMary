@@ -167,10 +167,6 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           </div>
 
           <div className="flex items-center gap-3">
-            <span className="text-xs font-mono hidden sm:block" style={{ color: theme.muted }}>
-              49 of 49 intel
-            </span>
-
             <motion.button
               onClick={toggleMode}
               aria-label={mode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
@@ -183,18 +179,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
               {mode === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </motion.button>
 
-            {session?.user ? (
-              <motion.button
-                onClick={() => window.dispatchEvent(new CustomEvent('open-profile'))}
-                className="text-xs font-bold px-4 py-2 rounded-full transition-colors"
-                style={{ background: theme.accentText, color: theme.bgBase }}
-                whileHover={{ boxShadow: accentHoverShadow(theme) }}
-                whileTap={{ scale: 0.97 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 28 }}
-              >
-                Mission Control
-              </motion.button>
-            ) : (
+            {!session?.user && (
               <motion.button
                 onClick={() => setShowSignIn(true)}
                 className="text-xs font-bold px-4 py-2 rounded-full transition-colors"

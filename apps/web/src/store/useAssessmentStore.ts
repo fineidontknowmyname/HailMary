@@ -3,6 +3,20 @@ import { devtools } from 'zustand/middleware';
 import { mockQuestions, type RawQuestion } from '../data/mockQuestions';
 import { codevitaQuestions } from '../data/codevitaQuestions';
 
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+interface AnswerKeyEntry {
+  correctAnswerIndex: number;
+  explanation: string;
+}
+
 export interface SafeQuestion {
   id: string;
   section: string;
@@ -46,6 +60,7 @@ export interface AssessmentState {
   status: AssessmentStatus;
   assessmentType: 'mock' | 'codevita' | null;
   questions: SafeQuestion[];
+  answerKey: AnswerKeyEntry[];
   answers: (number | null)[];
   currentQuestionIndex: number;
   timeLeftSeconds: number;
@@ -70,6 +85,7 @@ const initialState = {
   status: 'idle' as AssessmentStatus,
   assessmentType: null as 'mock' | 'codevita' | null,
   questions: [],
+  answerKey: [],
   answers: [],
   currentQuestionIndex: 0,
   timeLeftSeconds: MOCK_DURATION_SECONDS,
@@ -94,22 +110,36 @@ export const useAssessmentStore = create<AssessmentState>()(
           time = CODEVITA_DURATION_SECONDS;
         }
 
-        const safeQuestions: SafeQuestion[] = rawData.map((q: RawQuestion) => {
+        const prepared = shuffle(rawData).map((q: RawQuestion) => {
+          const originalOptions = q.options || [];
+          const order = shuffle(originalOptions.map((_, idx) => idx));
           return {
-            id: String(q.id),
-            section: q.section || q.cat || 'general',
-            question_text: q.text || '',
-            options: q.options || [],
-            difficulty: (q.diff || 'medium') as 'easy' | 'medium' | 'hard',
-            company_tags: [],
-            dataCtx: q.dataCtx
+            raw: q,
+            options: order.map((oi) => originalOptions[oi]),
+            correctAnswerIndex: order.indexOf(q.answer),
           };
         });
+
+        const safeQuestions: SafeQuestion[] = prepared.map(({ raw, options }) => ({
+          id: String(raw.id),
+          section: raw.section || raw.cat || 'general',
+          question_text: raw.text || '',
+          options,
+          difficulty: (raw.diff || 'medium') as 'easy' | 'medium' | 'hard',
+          company_tags: [],
+          dataCtx: raw.dataCtx,
+        }));
+
+        const answerKey: AnswerKeyEntry[] = prepared.map(({ raw, correctAnswerIndex }) => ({
+          correctAnswerIndex,
+          explanation: raw.explanation || '',
+        }));
 
         set({
           status: 'in-progress',
           assessmentType: type,
           questions: safeQuestions,
+          answerKey,
           answers: new Array(safeQuestions.length).fill(null),
           currentQuestionIndex: 0,
           timeLeftSeconds: time,
@@ -168,9 +198,8 @@ export const useAssessmentStore = create<AssessmentState>()(
       },
 
       submitAssessment: () => {
-        const { questions, answers, timeLeftSeconds, assessmentType } = get();
-        
-        const rawData = assessmentType === 'mock' ? mockQuestions : codevitaQuestions;
+        const { questions, answerKey, answers, timeLeftSeconds, assessmentType } = get();
+
         const totalTime = assessmentType === 'mock' ? MOCK_DURATION_SECONDS : CODEVITA_DURATION_SECONDS;
         const timeTakenSeconds = totalTime - timeLeftSeconds;
 
@@ -179,9 +208,9 @@ export const useAssessmentStore = create<AssessmentState>()(
         const gradedAnswers: GradedAnswer[] = [];
 
         questions.forEach((q, i) => {
-          const rawQ = rawData[i]; 
-          const correctAnswerIndex = rawQ ? rawQ.answer : -1;
-          const explanation = rawQ ? rawQ.explanation : '';
+          const key = answerKey[i];
+          const correctAnswerIndex = key ? key.correctAnswerIndex : -1;
+          const explanation = key ? key.explanation : '';
           const selectedOptionIndex = answers[i] ?? -1;
           const isCorrect = selectedOptionIndex !== -1 && selectedOptionIndex === correctAnswerIndex;
 
