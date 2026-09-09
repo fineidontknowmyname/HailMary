@@ -5,6 +5,28 @@ Each entry is what would otherwise have been an inline comment.
 
 ---
 
+## 2026-09-10 — Sign Out on the Profile page
+
+### apps/web/src/pages/ProfilePage.tsx
+
+- `signOut` is pulled from the existing `useAuth()` call; `useNavigate` is added
+  (same router-hook pattern as `components/UpdatePasswordModal.tsx`). ProfilePage
+  always renders inside the Router — via the `/profile` route and via the
+  `App.tsx` `showProfile` render path.
+- `handleSignOut` awaits `signOut()` then `navigate('/', { replace: true })`.
+  Without the redirect the user would land on ProfilePage's own `if (!user)`
+  "sign in to view profile" empty state right after signing out.
+- The button sits in the sticky header row (with `← Back` and the logo), pushed
+  right with `ml-auto`. Restrained styling — bordered pill, `theme.cardBorder` /
+  `theme.muted`, hover to `theme.heading` via inline mouse handlers (the file has
+  no hover classes / CSS module, and other buttons here use the same inline
+  approach). Not an accent-coloured button.
+- This is currently the only reachable logout control; `navigation/TopNav.tsx`
+  has one too but that component is never mounted (`AppLayout` renders its own
+  inline header).
+
+---
+
 ## 2026-09-07 — Auth gate + header cleanup + assessment jumbling
 
 ### apps/web/src/AppRouter.tsx — `RequireAuth`

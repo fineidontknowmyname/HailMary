@@ -1,5 +1,6 @@
 import { useState, useEffect, useId } from 'react'
-import { User } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { User, LogOut } from 'lucide-react'
 import { useAuth } from '../auth/useAuth'
 import { fetchProfile, upsertProfile } from '../lib/profile'
 import type { UserProfile } from '../types/profile'
@@ -92,7 +93,8 @@ function SaveButton({ onClick, saving, saved, theme }: {
 
 export default function ProfilePage({ onBack }: { onBack: () => void }) {
   const { theme } = useAppTheme()
-  const { user, loading: authLoading } = useAuth()
+  const { user, loading: authLoading, signOut } = useAuth()
+  const navigate = useNavigate()
   const [profile, setProfile] = useState<Partial<UserProfile>>({})
   const [loading, setLoading] = useState(true)
   const [saving, setSaving]   = useState<Record<string, boolean>>({})
@@ -133,6 +135,11 @@ export default function ProfilePage({ onBack }: { onBack: () => void }) {
   function set(field: keyof UserProfile) {
     return (value: string | number) =>
       setProfile(prev => ({ ...prev, [field]: value }))
+  }
+
+  async function handleSignOut() {
+    await signOut()
+    navigate('/', { replace: true })
   }
 
   async function saveSection(section: string, fields: Partial<UserProfile>) {
@@ -220,6 +227,16 @@ export default function ProfilePage({ onBack }: { onBack: () => void }) {
           <div className="font-black text-lg">
             Hail<span style={{ color: theme.accentText }}>Mary</span>
           </div>
+          <button
+            onClick={handleSignOut}
+            className="ml-auto inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-mono transition-colors"
+            style={{ borderColor: theme.cardBorder, color: theme.muted }}
+            onMouseEnter={e => { e.currentTarget.style.color = theme.heading }}
+            onMouseLeave={e => { e.currentTarget.style.color = theme.muted }}
+          >
+            <LogOut className="h-3.5 w-3.5" />
+            Sign Out
+          </button>
         </div>
       </div>
 
