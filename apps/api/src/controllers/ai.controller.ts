@@ -80,7 +80,7 @@ export const AIController = {
 
       await knowledgeState.recordFeynman(user.id, topics, evaluation.verifiedBy);
     } else {
-      await knowledgeState.recordStruggle(user.id, topics);
+      await knowledgeState.recordStruggle(user.id, topics, evaluation.misconception);
     }
 
     res.status(200).json({ success: true, data: evaluation });

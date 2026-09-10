@@ -72,7 +72,11 @@ export const knowledgeState = {
     if (error) throw new Error(error.message);
   },
 
-  recordStruggle: async (userId: string, topics: string[]): Promise<void> => {
+  recordStruggle: async (
+    userId: string,
+    topics: string[],
+    misconception: string | null = null
+  ): Promise<void> => {
     const unique = normaliseTopics(topics);
     if (unique.length === 0) return;
 
@@ -87,15 +91,19 @@ export const knowledgeState = {
     );
 
     const now = new Date().toISOString();
-    const rows = unique.map((topic) => ({
-      user_id: userId,
-      topic,
-      status: 'weak',
-      source: 'struggle',
-      last_struggled_at: now,
-      struggle_count: (counts.get(topic) ?? 0) + 1,
-      updated_at: now,
-    }));
+    const rows = unique.map((topic) => {
+      const row: Record<string, unknown> = {
+        user_id: userId,
+        topic,
+        status: 'weak',
+        source: 'struggle',
+        last_struggled_at: now,
+        struggle_count: (counts.get(topic) ?? 0) + 1,
+        updated_at: now,
+      };
+      if (misconception) row.last_misconception = misconception;
+      return row;
+    });
 
     const { error } = await supabase
       .from('learner_knowledge_state')
@@ -107,7 +115,7 @@ export const knowledgeState = {
   listForUser: async (userId: string) => {
     const { data, error } = await supabase
       .from('learner_knowledge_state')
-      .select('topic, status, source, confidence, last_verified_at, last_tested_at, last_struggled_at, struggle_count, difficulty, solved_streak, hard_skips, updated_at')
+      .select('topic, status, source, confidence, last_verified_at, last_tested_at, last_struggled_at, struggle_count, last_misconception, difficulty, solved_streak, hard_skips, updated_at')
       .eq('user_id', userId);
 
     if (error) throw new Error(error.message);
@@ -121,6 +129,7 @@ export const knowledgeState = {
       lastTestedAt: row.last_tested_at,
       lastStruggledAt: row.last_struggled_at,
       struggleCount: row.struggle_count ?? 0,
+      lastMisconception: row.last_misconception ?? null,
       difficulty: row.difficulty,
       solvedStreak: row.solved_streak,
       hardSkips: row.hard_skips,

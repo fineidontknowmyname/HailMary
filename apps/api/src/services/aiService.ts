@@ -27,6 +27,7 @@ const FEYNMAN_FALLBACK = {
   passed: true,
   feedback: "Our grader is temporarily unavailable, so this wasn't checked. It's marked complete but not verified — you can re-verify it later.",
   verifiedBy: 'fallback',
+  misconception: null,
 } as const;
 
 export const aiService = {
@@ -140,18 +141,19 @@ Tags: ${context.tags.join(', ')}`;
     context: IntelContext,
     challenge: string,
     response: string
-  ): Promise<{ passed: boolean; feedback: string; verifiedBy: 'ai' | 'fallback' }> => {
+  ): Promise<{ passed: boolean; feedback: string; verifiedBy: 'ai' | 'fallback'; misconception: string | null }> => {
     const systemPrompt = `You are an expert evaluator. The user is trying to explain a technical concept using the Feynman Technique.
-    
+
 Context: ${context.title}
 Question Asked: ${challenge}
 User's Answer: ${response}
 
 Determine if the user's answer demonstrates a solid fundamental understanding of the concept. It does not need to be perfect, but it must not be fundamentally incorrect.
 
-You MUST respond in strict JSON format with exactly two keys:
+You MUST respond in strict JSON format with exactly these keys:
 "passed": boolean (true if they understand it, false if they don't)
 "feedback": string (1-2 sentences of encouraging feedback or correction)
+"misconception": string or null (when "passed" is false, a short 3-6 word tag naming the specific misunderstanding, e.g. "confuses latency with throughput" or "misses the base case"; null when "passed" is true)
 
 Do not include any text outside of the JSON object.`;
 
@@ -174,7 +176,7 @@ Do not include any text outside of the JSON object.`;
         return FEYNMAN_FALLBACK;
       }
 
-      const parsed = JSON.parse(resultText) as { passed?: unknown; feedback?: unknown };
+      const parsed = JSON.parse(resultText) as { passed?: unknown; feedback?: unknown; misconception?: unknown };
       if (typeof parsed.passed !== 'boolean') {
         return FEYNMAN_FALLBACK;
       }
@@ -185,6 +187,9 @@ Do not include any text outside of the JSON object.`;
           ? parsed.feedback
           : (parsed.passed ? 'Solid explanation.' : 'Not quite — revisit the core idea and try again.'),
         verifiedBy: 'ai',
+        misconception: !parsed.passed && typeof parsed.misconception === 'string' && parsed.misconception.trim()
+          ? parsed.misconception.trim()
+          : null,
       };
     } catch (error) {
       console.error('FEYNMAN EVAL FAILED:', error);

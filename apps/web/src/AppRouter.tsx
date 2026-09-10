@@ -11,6 +11,7 @@ import './AppRouter.css';
 
 const ProfilePage = lazy(() => import('./pages/ProfilePage'));
 const MissionLog = lazy(() => import('./pages/MissionLog'));
+const PathPage = lazy(() => import('./pages/PathPage'));
 const AssessmentEngine = lazy(() => import('./components/AssessmentEngine').then(m => ({ default: m.AssessmentEngine })));
 const TutorialsAndLabs = lazy(() => import('./pages/TutorialsAndLabs'));
 const ContributeResource = lazy(() => import('./components/ContributeResource'));
@@ -146,6 +147,17 @@ export function AppRouter() {
                 <PageWrapper>
                   <RequireAuth title="Mission Log">
                     <MissionLog />
+                  </RequireAuth>
+                </PageWrapper>
+              }
+            />
+
+            <Route
+              path="/path"
+              element={
+                <PageWrapper>
+                  <RequireAuth title="Learning Path">
+                    <PathPage />
                   </RequireAuth>
                 </PageWrapper>
               }

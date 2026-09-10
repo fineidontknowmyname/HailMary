@@ -5,6 +5,7 @@ import { IntelCard } from './components/IntelCard';
 import { SkeletonCard } from './components/SkeletonCard';
 import { SignInModal } from './components/SignInModal';
 import { NextAction } from './components/NextAction';
+import { OnboardingCard } from './components/OnboardingCard';
 import SessionManager from './components/SessionManager';
 import { AnimatedNumber } from './components/ui/AnimatedNumber';
 import { TextReveal } from './components/ui/TextReveal';
@@ -172,6 +173,7 @@ export default function App() {
           )}
         </motion.div>
 
+        {isLoggedIn && <OnboardingCard completedCount={completed.size} />}
         {isLoggedIn && <NextAction onStartResource={setActiveResource} />}
 
         <FilterBar

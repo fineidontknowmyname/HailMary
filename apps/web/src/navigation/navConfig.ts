@@ -2,6 +2,7 @@ import {
   LayoutDashboard,
   UserCircle2,
   Target,
+  Route,
   FolderKanban,
   Layers,
   FileText,
@@ -108,6 +109,13 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     heading: 'Learn',
     items: [
+      {
+        key: 'path',
+        label: 'Learning Path',
+        path: '/path',
+        icon: Route,
+        description: 'Your ordered route through the catalog',
+      },
       {
         key: 'tutorials',
         label: 'Tutorials & Labs',

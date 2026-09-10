@@ -97,6 +97,7 @@ CREATE TABLE learner_knowledge_state (
   last_tested_at    timestamptz,
   last_struggled_at timestamptz,
   struggle_count    integer DEFAULT 0,
+  last_misconception text,
   updated_at        timestamptz DEFAULT now(),
   PRIMARY KEY (user_id, topic)
 );
@@ -233,13 +234,17 @@ CREATE POLICY "Users can manage their own resource tracking" ON user_resources
 CREATE POLICY "Users can manage their own study sessions" ON study_sessions
   FOR ALL USING (auth.uid() = user_id);
 
-CREATE POLICY "users can manage own difficulty" ON learner_knowledge_state
+CREATE POLICY "users can manage own knowledge state" ON learner_knowledge_state
   FOR ALL USING (auth.uid() = user_id);
 
 CREATE POLICY "users can view own path" ON user_paths
   FOR SELECT USING (auth.uid() = user_id);
 CREATE POLICY "users can insert own path" ON user_paths
   FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "users can update own path" ON user_paths
+  FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "users can delete own path" ON user_paths
+  FOR DELETE USING (auth.uid() = user_id);
 
 CREATE POLICY "Users can manage their own AI chats" ON ai_doubts
   FOR ALL USING (auth.uid() = user_id);
@@ -248,6 +253,9 @@ CREATE POLICY "Allow public read access for aptitude" ON aptitude_questions
   FOR SELECT USING (true);
 CREATE POLICY "Allow public read access for mock tests" ON mock_test_questions
   FOR SELECT USING (true);
+
+CREATE POLICY "Users can manage their own assessment results" ON assessment_results
+  FOR ALL USING (auth.uid() = user_id);
 
 CREATE POLICY "Users can manage their own projects" ON hailmary_projects
   FOR ALL USING (auth.uid() = user_id);

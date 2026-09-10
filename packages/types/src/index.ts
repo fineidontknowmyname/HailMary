@@ -11,6 +11,7 @@ export interface Intel {
   understanding: string | null;
   tags: string[];
   domains: string[];
+  difficulty?: string | null;
   video_id?: string;
   playlist_id?: string;
 }
@@ -50,6 +51,7 @@ export interface KnowledgeStateEntry {
   lastTestedAt: string | null;
   lastStruggledAt: string | null;
   struggleCount: number;
+  lastMisconception: string | null;
   difficulty: string | null;
   solvedStreak: number;
   hardSkips: number;
@@ -59,6 +61,17 @@ export interface KnowledgeStateEntry {
 export interface SectionRecommendation {
   section: string;
   resources: Intel[];
+}
+
+export interface LearningPath {
+  id: string;
+  user_id: string;
+  domain: string;
+  language: string | null;
+  level: string | null;
+  goal: string | null;
+  path_order: string[];
+  created_at: string;
 }
 
 export type NextAction =

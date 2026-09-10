@@ -18,6 +18,7 @@ interface EvaluationResult {
   passed: boolean;
   feedback: string;
   verifiedBy?: 'ai' | 'fallback' | null;
+  misconception?: string | null;
 }
 
 export function ChallengeModal({ intel, onClose, onSuccess, mode = 'initial' }: ChallengeModalProps) {
@@ -194,6 +195,15 @@ export function ChallengeModal({ intel, onClose, onSuccess, mode = 'initial' }: 
                       ? 'Marked Complete — Not Verified'
                       : 'Mission Accomplished'}
                 </h3>
+
+                {!evaluation.passed && evaluation.misconception && (
+                  <span
+                    className="mb-3 inline-block rounded-full border px-3 py-1 text-xs font-mono"
+                    style={{ borderColor: 'rgba(239,68,68,0.4)', color: '#f87171' }}
+                  >
+                    {evaluation.misconception}
+                  </span>
+                )}
 
                 <p className="mb-8 max-w-md leading-relaxed" style={{ color: theme.muted }}>
                   {evaluation.feedback}
