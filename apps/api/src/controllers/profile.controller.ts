@@ -18,6 +18,7 @@ const UPDATABLE_PROFILE_FIELDS = [
   'weekly_goal_hours',
   'comfort_zone_score',
   'explored_languages',
+  'portfolio_theme',
 ] as const;
 
 function pickUpdatableFields(body: Record<string, unknown>) {

@@ -39,7 +39,8 @@ CREATE TABLE user_profiles (
   created_at          timestamptz DEFAULT now(),
   comfort_zone_score  integer DEFAULT 100,
   last_new_domain_at  timestamptz,
-  explored_languages  text[] DEFAULT '{}'
+  explored_languages  text[] DEFAULT '{}',
+  portfolio_theme     text DEFAULT 'editorial'
 );
 
 CREATE TABLE user_social_links (

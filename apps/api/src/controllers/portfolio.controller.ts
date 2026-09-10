@@ -4,7 +4,7 @@ import { catchAsync } from '../middleware/errorHandler';
 import { dbRowToApiProfile } from '../lib/profileFields';
 
 const PUBLIC_PROFILE_FIELDS =
-  'user_id, username, name, location, bio, github_url, linkedin_url, x_url, reddit_url, personal_website, leetcode_username, hackerrank_username';
+  'user_id, username, name, location, bio, github_url, linkedin_url, x_url, reddit_url, personal_website, leetcode_username, hackerrank_username, portfolio_theme';
 
 const PUBLIC_PROJECT_FIELDS =
   'id, title, status, raw_notes, technical_challenges, metrics, tech_stack, github_url, live_url, created_at';

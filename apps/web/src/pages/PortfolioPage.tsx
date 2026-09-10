@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { AlertCircle, Copy, ExternalLink, Loader2, User, Briefcase, Folder } from 'lucide-react';
 import { useAuth } from '../auth/useAuth';
-import { fetchProfile } from '../lib/profile';
+import { fetchProfile, upsertProfile } from '../lib/profile';
 import type { UserProfile } from '../types/profile';
 import { InViewFade } from '../components/ui/InViewFade';
+import { PORTFOLIO_THEMES, resolveThemeId } from '../components/portfolio-templates/types';
 import { useAppTheme } from '../lib/ThemeProvider';
 
 export default function PortfolioPage() {
@@ -13,6 +14,22 @@ export default function PortfolioPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [savingTheme, setSavingTheme] = useState(false);
+
+  const activeTheme = resolveThemeId(profile?.portfolio_theme);
+
+  async function selectTheme(themeId: string) {
+    if (!user || savingTheme || themeId === activeTheme) return;
+    setSavingTheme(true);
+    const prev = profile;
+    setProfile({ ...(profile ?? {}), portfolio_theme: themeId });
+    const { error: saveError } = await upsertProfile(user.id, { portfolio_theme: themeId });
+    if (saveError) {
+      setProfile(prev);
+      setError(saveError);
+    }
+    setSavingTheme(false);
+  }
 
   useEffect(() => {
     if (!isLoggedIn || !user) {
@@ -111,6 +128,34 @@ export default function PortfolioPage() {
                 <Copy className="h-4 w-4" />
                 {copied ? 'Copied' : 'Copy'}
               </button>
+            </div>
+          </div>
+
+          <div className="pt-6 border-t" style={{ borderColor: theme.cardBorder }}>
+            <h3 className="text-sm font-semibold mb-1" style={{ color: theme.heading }}>Theme</h3>
+            <p className="text-xs mb-4" style={{ color: theme.muted }}>How your public portfolio page looks. Applies immediately.</p>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              {PORTFOLIO_THEMES.map((t) => {
+                const selected = t.id === activeTheme;
+                return (
+                  <button
+                    key={t.id}
+                    onClick={() => selectTheme(t.id)}
+                    disabled={savingTheme}
+                    className="rounded-xl border p-4 text-left transition-colors disabled:opacity-60"
+                    style={{
+                      background: selected ? theme.accentSoftBg : theme.bgBase,
+                      borderColor: selected ? theme.accentText : theme.cardBorder,
+                    }}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-bold" style={{ color: theme.heading }}>{t.label}</span>
+                      {selected && <span className="text-xs font-mono" style={{ color: theme.accentText }}>active</span>}
+                    </div>
+                    <p className="mt-1 text-xs" style={{ color: theme.muted }}>{t.blurb}</p>
+                  </button>
+                );
+              })}
             </div>
           </div>
 

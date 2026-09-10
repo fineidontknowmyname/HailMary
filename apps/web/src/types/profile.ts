@@ -15,6 +15,7 @@ export interface UserProfile {
   comfort_zone_score: number
   last_new_domain_at: string | null
   explored_languages: string[]
+  portfolio_theme: string | null
 }
 
 export type ProfileUpdate = Partial<Omit<UserProfile, 'user_id'>>
