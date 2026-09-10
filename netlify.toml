@@ -1,0 +1,19 @@
+[build]
+  base = "."
+  command = "pnpm --filter @hailmary/web build"
+  publish = "apps/web/dist"
+  ignore = "git diff --quiet HEAD^ HEAD -- apps/web packages pnpm-lock.yaml package.json netlify.toml"
+
+[build.environment]
+  NODE_VERSION = "22"
+  PNPM_VERSION = "10.28.1"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
