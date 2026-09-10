@@ -63,15 +63,18 @@ export const AIController = {
 
     if (evaluation.passed) {
       const user = req.user;
-      await supabase
+      const { error } = await supabase
         .from('user_progress')
-        .upsert({ 
-          user_id: user.id, 
-          resource_id: intelId, 
+        .upsert({
+          user_id: user.id,
+          resource_id: intelId,
           completed_at: new Date().toISOString(),
           challenge_completed: true,
-          feynman_response: response
-        });
+          feynman_response: response,
+          verified_by: evaluation.verifiedBy,
+        }, { onConflict: 'user_id,resource_id' });
+
+      if (error) throw new Error(error.message);
     }
 
     res.status(200).json({ success: true, data: evaluation });

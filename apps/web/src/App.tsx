@@ -4,8 +4,6 @@ import { FilterBar } from './components/FilterBar';
 import { IntelCard } from './components/IntelCard';
 import { SkeletonCard } from './components/SkeletonCard';
 import { SignInModal } from './components/SignInModal';
-import { DoubtSolverModal } from './components/DoubtSolverModal';
-import { ChallengeModal } from './components/ChallengeModal';
 import SessionManager from './components/SessionManager';
 import { AnimatedNumber } from './components/ui/AnimatedNumber';
 import { TextReveal } from './components/ui/TextReveal';
@@ -27,8 +25,6 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState<string | null>(null);
   const [selectedDepth, setSelectedDepth] = useState<string | null>(null);
-  const [intelForDoubt, setIntelForDoubt] = useState<Intel | null>(null);
-  const [intelForChallenge, setIntelForChallenge] = useState<Intel | null>(null);
   const [showSignIn, setShowSignIn] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [activeResource, setActiveResource] = useState<Intel | null>(null);
@@ -39,7 +35,7 @@ export default function App() {
   const isLoggedIn = !!user;
 
   const { intel, isLoading, error, fetchIntel } = useBoundStore();
-  const { completed, toggleComplete } = useProgress();
+  const { completed, refresh: refreshProgress } = useProgress();
 
   useEffect(() => {
     initialize();
@@ -248,30 +244,12 @@ export default function App() {
       </footer>
 
       <AnimatePresence>
-        {intelForDoubt && (
-          <DoubtSolverModal
-            intel={intelForDoubt}
-            onClose={() => setIntelForDoubt(null)}
-          />
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {intelForChallenge && (
-          <ChallengeModal
-            intel={intelForChallenge}
-            onClose={() => setIntelForChallenge(null)}
-            onSuccess={() => toggleComplete(intelForChallenge.id)}
-          />
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
         {activeResource && (
           <SessionManager
             resource={activeResource}
             user={user}
             onClose={() => setActiveResource(null)}
+            onVerified={refreshProgress}
           />
         )}
       </AnimatePresence>

@@ -23,6 +23,12 @@ interface IntelContext {
 
 export type AiMode = 'tutor' | 'debugger';
 
+const FEYNMAN_FALLBACK = {
+  passed: true,
+  feedback: "Our grader is temporarily unavailable, so this wasn't checked. It's marked complete but not verified — you can re-verify it later.",
+  verifiedBy: 'fallback',
+} as const;
+
 export const aiService = {
   resolveDoubt: async (
     intelId: string,
@@ -130,8 +136,12 @@ Tags: ${context.tags.join(', ')}`;
     }
   },
 
-  evaluateFeynman: async (context: IntelContext, challenge: string, response: string): Promise<{ passed: boolean, feedback: string }> => {
-    const systemPrompt = `You are an expert evaluator. The user is trying to explain a technical concept using the Feynman Technique. 
+  evaluateFeynman: async (
+    context: IntelContext,
+    challenge: string,
+    response: string
+  ): Promise<{ passed: boolean; feedback: string; verifiedBy: 'ai' | 'fallback' }> => {
+    const systemPrompt = `You are an expert evaluator. The user is trying to explain a technical concept using the Feynman Technique.
     
 Context: ${context.title}
 Question Asked: ${challenge}
@@ -159,11 +169,27 @@ Do not include any text outside of the JSON object.`;
 
       clearTimeout(timeout);
 
-      const resultText = completion.choices[0]?.message?.content || '{"passed":true,"feedback":"Good effort."}';
-      return JSON.parse(resultText);
-    } catch {
+      const resultText = completion.choices[0]?.message?.content;
+      if (!resultText) {
+        return FEYNMAN_FALLBACK;
+      }
+
+      const parsed = JSON.parse(resultText) as { passed?: unknown; feedback?: unknown };
+      if (typeof parsed.passed !== 'boolean') {
+        return FEYNMAN_FALLBACK;
+      }
+
+      return {
+        passed: parsed.passed,
+        feedback: typeof parsed.feedback === 'string' && parsed.feedback.trim()
+          ? parsed.feedback
+          : (parsed.passed ? 'Solid explanation.' : 'Not quite — revisit the core idea and try again.'),
+        verifiedBy: 'ai',
+      };
+    } catch (error) {
+      console.error('FEYNMAN EVAL FAILED:', error);
       clearTimeout(timeout);
-      return { passed: true, feedback: 'Validation bypassed due to server load. Good work.' };
+      return FEYNMAN_FALLBACK;
     }
   },
 

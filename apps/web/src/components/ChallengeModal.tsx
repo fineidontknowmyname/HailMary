@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Send, BrainCircuit, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
+import { X, Send, BrainCircuit, CheckCircle2, XCircle, AlertTriangle, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { api } from '../lib/api';
 import type { Intel } from '@hailmary/types';
@@ -11,15 +11,18 @@ interface ChallengeModalProps {
   intel: Intel;
   onClose: () => void;
   onSuccess: () => void;
+  mode?: 'initial' | 'retest';
 }
 
 interface EvaluationResult {
   passed: boolean;
   feedback: string;
+  verifiedBy?: 'ai' | 'fallback' | null;
 }
 
-export function ChallengeModal({ intel, onClose, onSuccess }: ChallengeModalProps) {
+export function ChallengeModal({ intel, onClose, onSuccess, mode = 'initial' }: ChallengeModalProps) {
   const { theme } = useAppTheme();
+  const isRetest = mode === 'retest';
   const [step, setStep] = useState<'loading_challenge' | 'answering' | 'evaluating' | 'result'>('loading_challenge');
   const [challenge, setChallenge] = useState<string>('');
   const [response, setResponse] = useState('');
@@ -110,8 +113,12 @@ export function ChallengeModal({ intel, onClose, onSuccess }: ChallengeModalProp
           <div className="flex items-center gap-3">
             <BrainCircuit className="w-5 h-5" style={{ color: theme.accentText }} />
             <div>
-              <h3 id="challenge-modal-title" className="font-bold tracking-tight" style={{ color: theme.heading }}>Feynman Checkpoint</h3>
-              <p className="text-xs font-mono" style={{ color: theme.muted }}>Verify your understanding</p>
+              <h3 id="challenge-modal-title" className="font-bold tracking-tight" style={{ color: theme.heading }}>
+                {isRetest ? 'Re-verify Understanding' : 'Feynman Checkpoint'}
+              </h3>
+              <p className="text-xs font-mono" style={{ color: theme.muted }}>
+                {isRetest ? `${intel.title} — due for a refresher` : 'Verify your understanding'}
+              </p>
             </div>
           </div>
           <button onClick={onClose} aria-label="Close modal" className="transition-colors p-1" style={{ color: theme.muted }}>
@@ -167,47 +174,57 @@ export function ChallengeModal({ intel, onClose, onSuccess }: ChallengeModalProp
             </form>
           )}
 
-          {step === 'result' && evaluation && (
-            <div className="flex flex-col items-center text-center py-8">
-              {evaluation.passed ? (
-                <CheckCircle2 className="w-16 h-16 mb-4" style={{ color: theme.accentText }} />
-              ) : (
-                <XCircle className="w-16 h-16 text-red-400 mb-4" />
-              )}
+          {step === 'result' && evaluation && (() => {
+            const unverified = evaluation.passed && evaluation.verifiedBy === 'fallback';
 
-              <h3 className="text-xl font-bold mb-2" style={{ color: theme.heading }}>
-                {evaluation.passed ? 'Mission Accomplished' : 'Requires Revision'}
-              </h3>
-
-              <p className="mb-8 max-w-md leading-relaxed" style={{ color: theme.muted }}>
-                {evaluation.feedback}
-              </p>
-
-              <div className="flex gap-4 w-full">
-                {!evaluation.passed && (
-                  <button
-                    onClick={() => setStep('answering')}
-                    className="flex-1 py-3 px-4 border rounded-xl transition-colors font-bold"
-                    style={{ borderColor: theme.cardBorder, color: theme.heading }}
-                  >
-                    Try Again
-                  </button>
+            return (
+              <div className="flex flex-col items-center text-center py-8">
+                {!evaluation.passed ? (
+                  <XCircle className="w-16 h-16 text-red-400 mb-4" />
+                ) : unverified ? (
+                  <AlertTriangle className="w-16 h-16 mb-4" style={{ color: '#f59e0b' }} />
+                ) : (
+                  <CheckCircle2 className="w-16 h-16 mb-4" style={{ color: theme.accentText }} />
                 )}
-                <button
-                  onClick={() => {
-                    if (evaluation.passed) onSuccess();
-                    onClose();
-                  }}
-                  className="flex-1 py-3 px-4 font-bold rounded-xl transition-colors"
-                  style={evaluation.passed
-                    ? { background: theme.accentText, color: theme.bgBase }
-                    : { background: theme.cardBg, color: theme.heading, border: `1px solid ${theme.cardBorder}` }}
-                >
-                  {evaluation.passed ? 'Complete Mission' : 'Skip & Close'}
-                </button>
+
+                <h3 className="text-xl font-bold mb-2" style={{ color: theme.heading }}>
+                  {!evaluation.passed
+                    ? 'Requires Revision'
+                    : unverified
+                      ? 'Marked Complete — Not Verified'
+                      : 'Mission Accomplished'}
+                </h3>
+
+                <p className="mb-8 max-w-md leading-relaxed" style={{ color: theme.muted }}>
+                  {evaluation.feedback}
+                </p>
+
+                <div className="flex gap-4 w-full">
+                  {!evaluation.passed && (
+                    <button
+                      onClick={() => setStep('answering')}
+                      className="flex-1 py-3 px-4 border rounded-xl transition-colors font-bold"
+                      style={{ borderColor: theme.cardBorder, color: theme.heading }}
+                    >
+                      Try Again
+                    </button>
+                  )}
+                  <button
+                    onClick={() => {
+                      if (evaluation.passed) onSuccess();
+                      onClose();
+                    }}
+                    className="flex-1 py-3 px-4 font-bold rounded-xl transition-colors"
+                    style={evaluation.passed
+                      ? { background: theme.accentText, color: theme.bgBase }
+                      : { background: theme.cardBg, color: theme.heading, border: `1px solid ${theme.cardBorder}` }}
+                  >
+                    {evaluation.passed ? 'Continue' : 'Skip & Close'}
+                  </button>
+                </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
           </motion.div>
         </AnimatePresence>
       </motion.div>

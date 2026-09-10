@@ -8,11 +8,15 @@
     "build": "pnpm run check-env && turbo run build",
     "lint": "turbo run lint",
     "type-check": "turbo run type-check",
+    "migrate": "node database/migrate.mjs",
+    "migrate:status": "node database/migrate.mjs --status",
     "deploy": "git add . && git commit -m 'chore: automated deployment' && git push origin main",
     "deploy:ask": "read -p 'Commit message: ' msg && git add . && git commit -m \"$msg\" && git push origin main"
   },
   "devDependencies": {
     "concurrently": "^9.1.2",
+    "dotenv": "^16.4.5",
+    "pg": "^8.13.1",
     "turbo": "latest"
   }
 }

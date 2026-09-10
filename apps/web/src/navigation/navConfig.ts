@@ -1,6 +1,7 @@
 import {
   LayoutDashboard,
   UserCircle2,
+  Target,
   FolderKanban,
   Layers,
   FileText,
@@ -49,6 +50,13 @@ export const NAV_GROUPS: NavGroup[] = [
         path: '/profile',
         icon: UserCircle2,
         description: 'User settings and stats',
+      },
+      {
+        key: 'missions',
+        label: 'Mission Log',
+        path: '/missions',
+        icon: Target,
+        description: 'Completed resources and verification status',
       },
     ],
   },

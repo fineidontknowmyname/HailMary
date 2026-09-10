@@ -21,4 +21,5 @@ export interface UserProgress {
   completedAt: string;
   challengeCompleted: boolean;
   feynmanResponse?: string;
+  verifiedBy?: 'ai' | 'fallback' | null;
 }

@@ -4,3 +4,4 @@ dist
 .turbo
 .env.local
 documentation/
+COMMENTS_LOG.md

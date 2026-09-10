@@ -4,6 +4,7 @@ import { backdropVariants, modalVariants, modalTransition } from '../lib/motion'
 import { api } from '../lib/api';
 import type { Intel } from '@hailmary/types';
 import AITutorPanel from './AITutorPanel';
+import { ChallengeModal } from './ChallengeModal';
 import { useAppTheme } from '../lib/ThemeProvider';
 import { useModalFocusTrap } from '../hooks/useModalFocusTrap';
 
@@ -21,15 +22,17 @@ interface SessionManagerProps {
   resource: Intel;
   onClose: () => void;
   user: { id: string } | null;
+  onVerified?: () => void;
 }
 
-export default function SessionManager({ resource, onClose, user }: SessionManagerProps) {
+export default function SessionManager({ resource, onClose, user, onVerified }: SessionManagerProps) {
   const { theme } = useAppTheme();
   const [step, setStep] = useState<'launch' | 'active' | 'reflect'>('launch');
   const [plannedMinutes, setPlannedMinutes] = useState(60);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showAITutor, setShowAITutor] = useState(false);
+  const [showCheckpoint, setShowCheckpoint] = useState(false);
   const modalRef = useModalFocusTrap<HTMLDivElement>();
 
   useEffect(() => {
@@ -57,15 +60,20 @@ export default function SessionManager({ resource, onClose, user }: SessionManag
     }
   };
 
+  const endSession = async (feeling: 'great' | 'neutral' | 'stuck') => {
+    const data = await api.post<SessionEndResponse>('/api/sessions/end', {
+      session_id: sessionId,
+      resource_id: resource.id,
+      actual_minutes: plannedMinutes,
+      feeling
+    });
+    return data;
+  };
+
   const handleEndSession = async (feeling: 'great' | 'neutral' | 'stuck') => {
     setLoading(true);
     try {
-      const data = await api.post<SessionEndResponse>('/api/sessions/end', {
-        session_id: sessionId,
-        resource_id: resource.id,
-        actual_minutes: plannedMinutes,
-        feeling
-      });
+      const data = await endSession(feeling);
 
       if (data.needsAITutor) {
         setShowAITutor(true);
@@ -82,6 +90,29 @@ export default function SessionManager({ resource, onClose, user }: SessionManag
       setLoading(false);
     }
   };
+
+  const handleVerifyUnderstanding = async () => {
+    setLoading(true);
+    try {
+      await endSession('great');
+      setShowCheckpoint(true);
+    } catch (error) {
+      console.error('Failed to end session', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (showCheckpoint) {
+    return (
+      <ChallengeModal
+        intel={resource}
+        mode="initial"
+        onClose={onClose}
+        onSuccess={() => onVerified?.()}
+      />
+    );
+  }
 
   if (!user) {
     return (
@@ -219,22 +250,39 @@ export default function SessionManager({ resource, onClose, user }: SessionManag
 
                 <div className="flex flex-col gap-3">
                   <motion.button
-                    onClick={() => handleEndSession('great')}
-                    className="p-4 rounded-xl text-left flex items-center gap-3 transition-colors border"
-                    style={{ background: theme.cardBg, borderColor: theme.cardBorder }}
-                    whileHover={{ x: 4, borderColor: theme.accentBorderStrong }}
+                    onClick={handleVerifyUnderstanding}
+                    disabled={loading}
+                    className="p-4 rounded-xl text-left flex items-center gap-3 transition-colors border disabled:opacity-60"
+                    style={{ background: theme.accentSoftBg, borderColor: theme.accentBorderStrong }}
+                    whileHover={{ x: 4 }}
                     whileTap={{ scale: 0.98 }}
                   >
                     <span className="text-2xl">🧠</span>
                     <div>
+                      <div className="font-bold" style={{ color: theme.heading }}>I can explain this</div>
+                      <div className="text-xs" style={{ color: theme.muted }}>Prove it with a Feynman checkpoint to complete the mission.</div>
+                    </div>
+                  </motion.button>
+
+                  <motion.button
+                    onClick={() => handleEndSession('great')}
+                    disabled={loading}
+                    className="p-4 rounded-xl text-left flex items-center gap-3 transition-colors border disabled:opacity-60"
+                    style={{ background: theme.cardBg, borderColor: theme.cardBorder }}
+                    whileHover={{ x: 4, borderColor: theme.accentBorderStrong }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <span className="text-2xl">📖</span>
+                    <div>
                       <div className="font-bold" style={{ color: theme.heading }}>Learned a lot</div>
-                      <div className="text-xs" style={{ color: theme.muted }}>Making solid progress.</div>
+                      <div className="text-xs" style={{ color: theme.muted }}>Making progress — not ready to be tested yet.</div>
                     </div>
                   </motion.button>
 
                   <motion.button
                     onClick={() => handleEndSession('stuck')}
-                    className="p-4 rounded-xl text-left flex items-center gap-3 transition-colors border"
+                    disabled={loading}
+                    className="p-4 rounded-xl text-left flex items-center gap-3 transition-colors border disabled:opacity-60"
                     style={{ background: theme.cardBg, borderColor: theme.cardBorder }}
                     whileHover={{ x: 4, borderColor: 'rgba(239,68,68,0.4)' }}
                     whileTap={{ scale: 0.98 }}

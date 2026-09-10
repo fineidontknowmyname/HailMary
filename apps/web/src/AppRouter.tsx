@@ -10,6 +10,7 @@ import { useAppTheme } from './lib/ThemeProvider';
 import './AppRouter.css';
 
 const ProfilePage = lazy(() => import('./pages/ProfilePage'));
+const MissionLog = lazy(() => import('./pages/MissionLog'));
 const AssessmentEngine = lazy(() => import('./components/AssessmentEngine').then(m => ({ default: m.AssessmentEngine })));
 const TutorialsAndLabs = lazy(() => import('./pages/TutorialsAndLabs'));
 const ContributeResource = lazy(() => import('./components/ContributeResource'));
@@ -137,6 +138,17 @@ export function AppRouter() {
             <Route
               path="/profile"
               element={<PageWrapper><ProfilePage onBack={() => window.history.back()} /></PageWrapper>}
+            />
+
+            <Route
+              path="/missions"
+              element={
+                <PageWrapper>
+                  <RequireAuth title="Mission Log">
+                    <MissionLog />
+                  </RequireAuth>
+                </PageWrapper>
+              }
             />
 
             {/* ── Dedicated password-reset landing route ──────────── */}

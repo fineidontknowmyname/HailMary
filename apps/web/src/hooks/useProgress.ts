@@ -5,7 +5,7 @@ import type { UserProgress } from '@hailmary/types';
 
 export function useProgress() {
   const { user } = useAuth();
-  const [, setEntries] = useState<UserProgress[]>([]);
+  const [entries, setEntries] = useState<UserProgress[]>([]);
   const [completed, setCompleted] = useState<Set<string>>(new Set());
 
   const fetchProgress = useCallback(async () => {
@@ -18,14 +18,12 @@ export function useProgress() {
     try {
       const data = await api.get<UserProgress[]>('/api/progress');
       setEntries(data);
-      // Map the array into a Set for O(1) lookups in the UI
       setCompleted(new Set(data.map(r => r.intelId)));
     } catch (err) {
       console.error('Failed to fetch Mission Log:', err);
     }
   }, [user]);
 
-  // Initial load
   useEffect(() => {
     fetchProgress();
   }, [fetchProgress]);
@@ -41,20 +39,17 @@ export function useProgress() {
       return next;
     });
 
-    // Server Request
     try {
       if (wasCompleted) {
         await api.delete(`/api/progress/${intelId}`);
       } else {
         await api.post(`/api/progress`, { intelId });
       }
-      
-      // Silently refresh the full entry list in the background to ensure sync
+
       fetchProgress();
     } catch (err) {
       console.error('Failed to sync progress to server:', err);
-      
-      // Revert the optimistic update if the server request failed
+
       setCompleted(prev => {
         const next = new Set(prev);
         if (wasCompleted) next.add(intelId); else next.delete(intelId);
@@ -64,8 +59,10 @@ export function useProgress() {
   }
 
   return {
+    entries,
     completed,
     toggleComplete,
-    isComplete: (id: string) => completed.has(id), // Drop-in compatibility with existing components
+    refresh: fetchProgress,
+    isComplete: (id: string) => completed.has(id),
   };
 }

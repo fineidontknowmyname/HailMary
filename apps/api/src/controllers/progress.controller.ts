@@ -8,7 +8,7 @@ export const ProgressController = {
     
     const { data, error } = await supabase
       .from('user_progress')
-      .select('resource_id, completed_at, challenge_completed, feynman_response')
+      .select('resource_id, completed_at, challenge_completed, feynman_response, verified_by')
       .eq('user_id', user.id);
 
     if (error) throw new Error(error.message);
@@ -18,7 +18,8 @@ export const ProgressController = {
       intelId: row.resource_id,
       completedAt: row.completed_at,
       challengeCompleted: row.challenge_completed,
-      feynmanResponse: row.feynman_response
+      feynmanResponse: row.feynman_response,
+      verifiedBy: row.verified_by
     }));
 
     res.status(200).json({ success: true, data: mappedData });

@@ -29,14 +29,14 @@ hailmary/
 # Install dependencies
 npm install
 
-# Set up environment variables
-cp .env.example .env.local
+# Set up environment variables (see .env.example and apps/*/.env.example)
+cp .env.example .env
 
-# Run migrations
-npm run migrate
+# Apply database migrations (needs DATABASE_URL in .env)
+pnpm migrate
 
 # Start development servers
-npm run dev
+pnpm dev
 ```
 
 ### Development
