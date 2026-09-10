@@ -4,7 +4,7 @@ import { useAssessmentStore } from '../store/useAssessmentStore';
 import type { GradedAnswer, SectionBreakdown } from '../store/useAssessmentStore';
 import { useAppTheme } from '../lib/ThemeProvider';
 import { api } from '../lib/api';
-import type { AssessmentAttempt } from '@hailmary/types';
+import type { AssessmentAttempt, SectionRecommendation } from '@hailmary/types';
 
 function attemptAge(iso: string): string {
   const days = Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000);
@@ -289,9 +289,26 @@ function QuizInterface() {
   );
 }
 
+const WEAK_SECTION_SCORE = 60;
+
 function ResultScreen() {
   const { result, assessmentType, resetAssessment } = useAssessmentStore();
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [recommendations, setRecommendations] = useState<SectionRecommendation[]>([]);
+
+  const weakSections = (result?.sectionBreakdowns ?? [])
+    .filter((s) => s.score < WEAK_SECTION_SCORE)
+    .map((s) => s.section);
+  const weakKey = weakSections.join(',');
+
+  useEffect(() => {
+    if (!weakKey) { setRecommendations([]); return; }
+    let active = true;
+    api.post<SectionRecommendation[]>('/api/recommendations/sections', { sections: weakKey.split(',') })
+      .then((rows) => { if (active) setRecommendations(rows); })
+      .catch(() => setRecommendations([]));
+    return () => { active = false; };
+  }, [weakKey]);
 
   if (!result) return null;
 
@@ -333,6 +350,26 @@ function ResultScreen() {
           </div>
         ))}
       </div>
+
+      {recommendations.length > 0 && (
+        <div className="assessment-reco-list">
+          <h2 className="assessment-reco-title">Shore up your weak sections</h2>
+          {recommendations.map((rec) => (
+            <div key={rec.section} className="assessment-reco-group">
+              <div className="assessment-reco-section">{rec.section}</div>
+              <ul className="assessment-reco-items">
+                {rec.resources.map((r) => (
+                  <li key={r.id}>
+                    <a href={r.link} target="_blank" rel="noopener noreferrer" className="assessment-reco-link">
+                      {r.title}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className="assessment-review-list">
         <h2 className="assessment-review-title">Question Review</h2>

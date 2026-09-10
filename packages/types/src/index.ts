@@ -44,12 +44,24 @@ export interface AssessmentAttempt {
 export interface KnowledgeStateEntry {
   topic: string;
   status: 'verified' | 'weak' | 'decaying' | 'untested' | null;
-  source: 'feynman' | 'assessment' | null;
+  source: 'feynman' | 'assessment' | 'struggle' | null;
   confidence: number | null;
   lastVerifiedAt: string | null;
   lastTestedAt: string | null;
+  lastStruggledAt: string | null;
+  struggleCount: number;
   difficulty: string | null;
   solvedStreak: number;
   hardSkips: number;
   updatedAt: string | null;
 }
+
+export interface SectionRecommendation {
+  section: string;
+  resources: Intel[];
+}
+
+export type NextAction =
+  | { kind: 'weak-section'; topic: string; message: string; resourceId: string; resourceTitle: string; resourceLink: string | null }
+  | { kind: 'revisit'; message: string; resourceId: string; resourceTitle: string; resourceLink: string | null }
+  | { kind: 'none'; message: null };

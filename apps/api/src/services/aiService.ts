@@ -193,7 +193,12 @@ Do not include any text outside of the JSON object.`;
     }
   },
 
-  tutorSession: async (resourceTitle: string, userMessage: string, mode: AiMode = 'tutor'): Promise<string> => {
+  tutorSession: async (
+    resourceTitle: string,
+    userMessage: string,
+    mode: AiMode = 'tutor',
+    strugglingTopics: string[] = []
+  ): Promise<string> => {
     let modePrompt: string;
 
     switch (mode) {
@@ -206,7 +211,11 @@ Do not include any text outside of the JSON object.`;
         break;
     }
 
-    const systemPrompt = `${modePrompt.trim()}
+    const struggleNote = strugglingTopics.length > 0
+      ? `\n\nThis learner has recently struggled with or tested weak on: ${strugglingTopics.join(', ')}. If the question touches any of these, slow down and check their reasoning rather than just giving the answer.`
+      : '';
+
+    const systemPrompt = `${modePrompt.trim()}${struggleNote}
 
 Keep responses under 3 short paragraphs. Use markdown for code snippets.`;
 

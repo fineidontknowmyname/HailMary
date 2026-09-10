@@ -85,17 +85,19 @@ CREATE TABLE study_sessions (
 );
 
 CREATE TABLE learner_knowledge_state (
-  user_id          uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  topic            text NOT NULL,
-  difficulty       text DEFAULT 'easy',
-  solved_streak    integer DEFAULT 0,
-  hard_skips       integer DEFAULT 0,
-  status           text,
-  source           text,
-  confidence       numeric,
-  last_verified_at timestamptz,
-  last_tested_at   timestamptz,
-  updated_at       timestamptz DEFAULT now(),
+  user_id           uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  topic             text NOT NULL,
+  difficulty        text DEFAULT 'easy',
+  solved_streak     integer DEFAULT 0,
+  hard_skips        integer DEFAULT 0,
+  status            text,
+  source            text,
+  confidence        numeric,
+  last_verified_at  timestamptz,
+  last_tested_at    timestamptz,
+  last_struggled_at timestamptz,
+  struggle_count    integer DEFAULT 0,
+  updated_at        timestamptz DEFAULT now(),
   PRIMARY KEY (user_id, topic)
 );
 

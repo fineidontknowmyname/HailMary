@@ -4,6 +4,7 @@ import { FilterBar } from './components/FilterBar';
 import { IntelCard } from './components/IntelCard';
 import { SkeletonCard } from './components/SkeletonCard';
 import { SignInModal } from './components/SignInModal';
+import { NextAction } from './components/NextAction';
 import SessionManager from './components/SessionManager';
 import { AnimatedNumber } from './components/ui/AnimatedNumber';
 import { TextReveal } from './components/ui/TextReveal';
@@ -170,6 +171,8 @@ export default function App() {
             </motion.div>
           )}
         </motion.div>
+
+        {isLoggedIn && <NextAction onStartResource={setActiveResource} />}
 
         <FilterBar
           searchQuery={searchQuery}

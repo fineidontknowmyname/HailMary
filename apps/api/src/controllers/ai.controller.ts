@@ -61,9 +61,10 @@ export const AIController = {
     }
 
     const evaluation = await aiService.evaluateFeynman(context, challenge, response);
+    const user = req.user;
+    const topics = await knowledgeState.resourceTopics(intelId);
 
     if (evaluation.passed) {
-      const user = req.user;
       const { error } = await supabase
         .from('user_progress')
         .upsert({
@@ -77,14 +78,9 @@ export const AIController = {
 
       if (error) throw new Error(error.message);
 
-      const { data: resource } = await supabase
-        .from('resources')
-        .select('tags, domains')
-        .eq('id', intelId)
-        .single();
-
-      const topics = [...(resource?.tags ?? []), ...(resource?.domains ?? [])];
       await knowledgeState.recordFeynman(user.id, topics, evaluation.verifiedBy);
+    } else {
+      await knowledgeState.recordStruggle(user.id, topics);
     }
 
     res.status(200).json({ success: true, data: evaluation });

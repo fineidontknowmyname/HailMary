@@ -1,6 +1,7 @@
 import { supabase } from '../lib/supabase';
 import { catchAsync } from '../middleware/errorHandler';
 import { aiService } from '../services/aiService';
+import { knowledgeState } from '../services/knowledgeState.service';
 import type { AuthenticatedRequest } from '../types/express';
 
 const MAX_MESSAGE_LENGTH = 1000;
@@ -72,6 +73,11 @@ export const SessionsController = {
       .eq('user_id', user_id)
       .eq('resource_id', resource_id);
 
+    if (feeling === 'stuck' && resource_id) {
+      const topics = await knowledgeState.resourceTopics(resource_id);
+      await knowledgeState.recordStruggle(user_id, topics);
+    }
+
     const isMilestone = newSessionCount > 0 && newSessionCount % 5 === 0;
 
     res.status(200).json({
@@ -95,7 +101,8 @@ export const SessionsController = {
       return res.status(400).json({ success: false, error: `user_message must be ${MAX_MESSAGE_LENGTH} characters or fewer` });
     }
 
-    const ai_response = await aiService.tutorSession(resource_title, user_message);
+    const struggles = await knowledgeState.strugglingTopics(user_id);
+    const ai_response = await aiService.tutorSession(resource_title, user_message, 'tutor', struggles);
 
     const { error: insertError } = await supabase
       .from('ai_doubts')
