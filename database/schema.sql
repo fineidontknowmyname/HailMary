@@ -84,12 +84,18 @@ CREATE TABLE study_sessions (
   ended_at        timestamptz
 );
 
-CREATE TABLE user_topic_difficulty (
-  user_id       uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  topic         text NOT NULL,
-  difficulty    text DEFAULT 'easy',
-  solved_streak integer DEFAULT 0,
-  hard_skips    integer DEFAULT 0,
+CREATE TABLE learner_knowledge_state (
+  user_id          uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  topic            text NOT NULL,
+  difficulty       text DEFAULT 'easy',
+  solved_streak    integer DEFAULT 0,
+  hard_skips       integer DEFAULT 0,
+  status           text,
+  source           text,
+  confidence       numeric,
+  last_verified_at timestamptz,
+  last_tested_at   timestamptz,
+  updated_at       timestamptz DEFAULT now(),
   PRIMARY KEY (user_id, topic)
 );
 
@@ -181,14 +187,14 @@ CREATE TABLE hailmary_experience (
   created_at timestamptz DEFAULT now()
 );
 
-ALTER TABLE resources             ENABLE ROW LEVEL SECURITY;
-ALTER TABLE user_profiles         ENABLE ROW LEVEL SECURITY;
-ALTER TABLE user_social_links     ENABLE ROW LEVEL SECURITY;
-ALTER TABLE user_progress         ENABLE ROW LEVEL SECURITY;
-ALTER TABLE user_resources        ENABLE ROW LEVEL SECURITY;
-ALTER TABLE study_sessions        ENABLE ROW LEVEL SECURITY;
-ALTER TABLE user_topic_difficulty ENABLE ROW LEVEL SECURITY;
-ALTER TABLE user_paths            ENABLE ROW LEVEL SECURITY;
+ALTER TABLE resources               ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_profiles           ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_social_links       ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_progress           ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_resources          ENABLE ROW LEVEL SECURITY;
+ALTER TABLE study_sessions          ENABLE ROW LEVEL SECURITY;
+ALTER TABLE learner_knowledge_state ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_paths              ENABLE ROW LEVEL SECURITY;
 ALTER TABLE ai_doubts             ENABLE ROW LEVEL SECURITY;
 ALTER TABLE aptitude_questions    ENABLE ROW LEVEL SECURITY;
 ALTER TABLE mock_test_questions   ENABLE ROW LEVEL SECURITY;
@@ -225,7 +231,7 @@ CREATE POLICY "Users can manage their own resource tracking" ON user_resources
 CREATE POLICY "Users can manage their own study sessions" ON study_sessions
   FOR ALL USING (auth.uid() = user_id);
 
-CREATE POLICY "users can manage own difficulty" ON user_topic_difficulty
+CREATE POLICY "users can manage own difficulty" ON learner_knowledge_state
   FOR ALL USING (auth.uid() = user_id);
 
 CREATE POLICY "users can view own path" ON user_paths

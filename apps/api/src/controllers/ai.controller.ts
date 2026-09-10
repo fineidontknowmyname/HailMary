@@ -3,6 +3,7 @@ import { aiService } from '../services/aiService';
 import type { AiMode } from '../services/aiService';
 import { catchAsync } from '../middleware/errorHandler';
 import { supabase } from '../lib/supabase';
+import { knowledgeState } from '../services/knowledgeState.service';
 import type { AuthenticatedRequest } from '../types/express';
 
 const VALID_MODES: AiMode[] = ['tutor', 'debugger'];
@@ -75,6 +76,15 @@ export const AIController = {
         }, { onConflict: 'user_id,resource_id' });
 
       if (error) throw new Error(error.message);
+
+      const { data: resource } = await supabase
+        .from('resources')
+        .select('tags, domains')
+        .eq('id', intelId)
+        .single();
+
+      const topics = [...(resource?.tags ?? []), ...(resource?.domains ?? [])];
+      await knowledgeState.recordFeynman(user.id, topics, evaluation.verifiedBy);
     }
 
     res.status(200).json({ success: true, data: evaluation });

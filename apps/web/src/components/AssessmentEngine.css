@@ -162,6 +162,42 @@
   color: #f87171;
 }
 
+.assessment-start-history {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.9rem 1rem;
+  margin-top: 1rem;
+  background: var(--ae-panel-alt);
+  border: 1px solid var(--ae-border);
+  border-radius: 0.75rem;
+}
+
+.assessment-start-history-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ae-muted);
+  margin-bottom: 0.1rem;
+}
+
+.assessment-start-history-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  font-size: 0.85rem;
+}
+
+.assessment-start-history-score {
+  font-weight: 700;
+  color: var(--ae-accent);
+  min-width: 3rem;
+}
+
+.assessment-start-history-detail {
+  color: var(--ae-muted);
+}
+
 /* ── Buttons ────────────────────────────────────────────────────────────── */
 .assessment-btn-primary {
   background: var(--ae-accent);

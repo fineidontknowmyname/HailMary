@@ -3,6 +3,17 @@ import './AssessmentEngine.css';
 import { useAssessmentStore } from '../store/useAssessmentStore';
 import type { GradedAnswer, SectionBreakdown } from '../store/useAssessmentStore';
 import { useAppTheme } from '../lib/ThemeProvider';
+import { api } from '../lib/api';
+import type { AssessmentAttempt } from '@hailmary/types';
+
+function attemptAge(iso: string): string {
+  const days = Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000);
+  if (Number.isNaN(days)) return '';
+  if (days <= 0) return 'today';
+  if (days === 1) return 'yesterday';
+  if (days < 30) return `${days}d ago`;
+  return `${Math.floor(days / 30)}mo ago`;
+}
 
 function formatTime(seconds: number): string {
   const m = Math.floor(seconds / 60).toString().padStart(2, '0');
@@ -17,6 +28,17 @@ export interface AssessmentEngineProps {
 function StartScreen({ variant }: { variant: 'mock' | 'codevita' }) {
   const { startAssessment, error } = useAssessmentStore();
   const isMock = variant === 'mock';
+  const [history, setHistory] = useState<AssessmentAttempt[]>([]);
+
+  useEffect(() => {
+    let active = true;
+    api.get<AssessmentAttempt[]>('/api/assessments')
+      .then((rows) => {
+        if (active) setHistory(rows.filter((r) => r.variant === variant).slice(0, 3));
+      })
+      .catch(() => setHistory([]));
+    return () => { active = false; };
+  }, [variant]);
 
   return (
     <div className="assessment-start-screen">
@@ -53,6 +75,23 @@ function StartScreen({ variant }: { variant: 'mock' | 'codevita' }) {
         </div>
 
         {error && <div className="assessment-error">{error}</div>}
+
+        {history.length > 0 && (
+          <div className="assessment-start-history">
+            <div className="assessment-start-history-label">Recent attempts</div>
+            {history.map((h) => {
+              const pct = h.totalQuestions > 0 ? Math.round((h.score / h.totalQuestions) * 100) : 0;
+              return (
+                <div key={h.id} className="assessment-start-history-row">
+                  <span className="assessment-start-history-score">{pct}%</span>
+                  <span className="assessment-start-history-detail">
+                    {h.score}/{h.totalQuestions} · {attemptAge(h.createdAt)}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        )}
 
         <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
           {isMock ? (

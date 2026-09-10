@@ -23,3 +23,33 @@ export interface UserProgress {
   feynmanResponse?: string;
   verifiedBy?: 'ai' | 'fallback' | null;
 }
+
+export interface AssessmentSectionBreakdown {
+  section: string;
+  total: number;
+  correct: number;
+  score: number;
+}
+
+export interface AssessmentAttempt {
+  id: string;
+  variant: string | null;
+  score: number;
+  totalQuestions: number;
+  timeTakenSeconds: number;
+  sectionBreakdown: AssessmentSectionBreakdown[] | null;
+  createdAt: string;
+}
+
+export interface KnowledgeStateEntry {
+  topic: string;
+  status: 'verified' | 'weak' | 'decaying' | 'untested' | null;
+  source: 'feynman' | 'assessment' | null;
+  confidence: number | null;
+  lastVerifiedAt: string | null;
+  lastTestedAt: string | null;
+  difficulty: string | null;
+  solvedStreak: number;
+  hardSkips: number;
+  updatedAt: string | null;
+}

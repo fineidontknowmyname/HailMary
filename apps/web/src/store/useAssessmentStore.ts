@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import { mockQuestions, type RawQuestion } from '../data/mockQuestions';
 import { codevitaQuestions } from '../data/codevitaQuestions';
+import { api } from '../lib/api';
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
@@ -80,6 +81,23 @@ export interface AssessmentState {
 
 const MOCK_DURATION_SECONDS = 30 * 60;
 const CODEVITA_DURATION_SECONDS = 45 * 60;
+
+async function persistAttempt(
+  variant: 'mock' | 'codevita' | null,
+  result: GradedResult
+): Promise<void> {
+  try {
+    await api.post('/api/assessments', {
+      variant,
+      score: result.totalCorrect,
+      totalQuestions: result.totalQuestions,
+      timeTakenSeconds: result.timeTakenSeconds,
+      sectionBreakdown: result.sectionBreakdowns,
+    });
+  } catch (err) {
+    console.error('Failed to persist assessment attempt:', err);
+  }
+}
 
 const initialState = {
   status: 'idle' as AssessmentStatus,
@@ -256,6 +274,7 @@ export const useAssessmentStore = create<AssessmentState>()(
         };
 
         set({ status: 'completed', result });
+        void persistAttempt(assessmentType, result);
       },
 
       resetAssessment: () => set(initialState),

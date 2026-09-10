@@ -14,6 +14,8 @@ import portfolioRoutes from './routes/portfolio.routes';
 import projectsRoutes from './routes/projects.routes';
 import educationRoutes from './routes/education.routes';
 import experienceRoutes from './routes/experience.routes';
+import assessmentsRoutes from './routes/assessments.routes';
+import knowledgeRoutes from './routes/knowledge.routes';
 
 
 const app = express();
@@ -51,6 +53,8 @@ app.use('/api/portfolio', portfolioRoutes);
 app.use('/api/projects', projectsRoutes);
 app.use('/api/education', educationRoutes);
 app.use('/api/experience', experienceRoutes);
+app.use('/api/assessments', assessmentsRoutes);
+app.use('/api/knowledge-state', knowledgeRoutes);
 
 app.use(globalErrorHandler);
 
